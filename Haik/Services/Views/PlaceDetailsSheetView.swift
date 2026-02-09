@@ -1,4 +1,5 @@
 import SwiftUI
+import MapKit
 
 struct PlaceDetailSheetView: View {
     let place: Place
@@ -51,11 +52,13 @@ struct PlaceDetailSheetView: View {
 
             Spacer().frame(height: 8)
 
-            Button { } label: {
+            Button {
+                openInMaps()
+            } label: {
                 HStack(spacing: 10) {
                     Image(systemName: "paperplane")
                         .font(.system(size: 20, weight: .regular))
-                    Text("خذني للموقع")
+                    Text("الانتقال إلى الموقع")
                         .font(.system(size: 20, weight: .regular))
                 }
                 .foregroundStyle(blueSecondary)
@@ -64,10 +67,26 @@ struct PlaceDetailSheetView: View {
             }
             .padding(.horizontal, 20)
 
+
             Spacer()
         }
         .environment(\.layoutDirection, .rightToLeft)
         .background(Color.white)
+    }
+
+    private func openInMaps() {
+        let coordinate = CLLocationCoordinate2D(
+            latitude: place.coordinate.latitude,
+            longitude: place.coordinate.longitude
+        )
+
+        let placemark = MKPlacemark(coordinate: coordinate)
+        let mapItem = MKMapItem(placemark: placemark)
+        mapItem.name = place.name
+
+        mapItem.openInMaps(launchOptions: [
+            MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
+        ])
     }
 
     private var serviceIcon: Image {

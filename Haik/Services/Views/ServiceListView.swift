@@ -37,17 +37,20 @@ struct ServiceListView: View {
                         .foregroundStyle(.gray)
                         .padding(.top, 30)
                 } else {
-                    VStack(spacing: 18) {
-                        ForEach(places) { place in
-                            Button {
-                                selectedPlace = place
-                            } label: {
-                                placeRow(place)
+                    ScrollView(.vertical, showsIndicators: true) {
+                        VStack(spacing: 18) {
+                            ForEach(places) { place in
+                                Button {
+                                    selectedPlace = place
+                                } label: {
+                                    placeRow(place)
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
+                        .padding(.top, 6)
+                        .padding(.bottom, 20)
                     }
-                    .padding(.top, 6)
                 }
 
                 Spacer()

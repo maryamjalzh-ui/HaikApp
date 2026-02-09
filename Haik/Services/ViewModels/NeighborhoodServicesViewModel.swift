@@ -61,9 +61,11 @@ final class NeighborhoodServicesViewModel: ObservableObject {
                 Place(
                     name: $0.name,
                     rating: Int.random(in: 3...5),
-                    isOpen: Bool.random()
+                    isOpen: Bool.random(),
+                    coordinate: $0.coordinate
                 )
             }
+
 
             placesByService[service] = uiPlaces
         } catch {

@@ -124,6 +124,7 @@ struct NeighborhoodServicesView: View {
 
     private func serviceTile(_ service: ServiceCategory) -> some View {
         VStack(spacing: 10) {
+
             if let fallback = service.fallbackSystemSymbol {
                 Image(systemName: fallback)
                     .font(.system(size: 34, weight: .regular))
@@ -143,6 +144,8 @@ struct NeighborhoodServicesView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: .black.opacity(0.10), radius: 12, x: 0, y: 10)
     }
+
+
 
     private var chipsRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -306,7 +309,7 @@ private extension ServiceCategory {
             return greenPrimary
         case .metro, .hospitals:
             return Color("BlueSecondary")
-        case .cafes, .universities, .supermarkets:
+        case .cafes, .mall, .supermarkets:
             return Color("PurpleSecondary")
         case .cinema, .restaurants, .schools:
             return yellowHex

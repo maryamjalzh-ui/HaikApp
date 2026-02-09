@@ -41,6 +41,8 @@ enum HaikIcon: String, Hashable {
     case metroPrimary = "tram"
     case metroSometimes = "tram.card"
     case car = "car"
+    case mall = "storefront"
+    
 
     var systemName: String { rawValue }
 }

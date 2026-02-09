@@ -1,9 +1,3 @@
-//
-//  AppleMapsPlacesService.swift
-//  Haik
-//
-//  Created by Shahad Alharbi on 2/9/26.
-//
 import Foundation
 import MapKit
 import CoreLocation
@@ -20,7 +14,9 @@ protocol PlacesSearching {
 
 final class AppleMapsPlacesService: PlacesSearching {
 
-    private let geocoder = CLGeocoder()
+    private let localeAR = Locale(identifier: "ar")
+    private let maxGeocodeCandidates = 25
+    private let maxConcurrentGeocodes = 6
 
     func searchPlaces(
         query: String,
@@ -54,42 +50,162 @@ final class AppleMapsPlacesService: PlacesSearching {
             )
         }
 
-        func addressContainsNeighborhood(_ address: String) -> Bool {
-            address.contains(neighborhoodNameArabic) || address.contains("حي \(neighborhoodNameArabic)")
+        if rawPlaces.isEmpty { return [] }
+
+        let target = normalizeArabic(neighborhoodNameArabic)
+
+        let maxDistanceMeters: CLLocationDistance = min(regionSpanMeters * 0.55, 2200)
+        let centerLoc = CLLocation(latitude: center.latitude, longitude: center.longitude)
+
+        let distanceFiltered = rawPlaces.filter { p in
+            let loc = CLLocation(latitude: p.coordinate.latitude, longitude: p.coordinate.longitude)
+            return loc.distance(from: centerLoc) <= maxDistanceMeters
         }
 
-        let firstPass = rawPlaces.filter { addressContainsNeighborhood($0.address) }
-        let candidates = firstPass.isEmpty ? Array(rawPlaces.prefix(25)) : Array(firstPass.prefix(25))
+        if distanceFiltered.isEmpty { return [] }
 
-        if firstPass.isEmpty {
-            return Array(Set(candidates))
+        var scored: [(place: MapPlace, score: Int)] = distanceFiltered.map { p in
+            (p, scoreMatch(text: p.address, target: target))
         }
 
-        var final: [MapPlace] = []
-        final.reserveCapacity(candidates.count)
+        scored.sort { $0.score > $1.score }
+        let top = Array(scored.prefix(maxGeocodeCandidates))
 
-        for p in candidates {
-            if addressContainsNeighborhood(p.address) {
-                final.append(p)
-                continue
+        let needGeocodeAnyway = (top.first?.score ?? 0) < 2
+
+        let refined: [(MapPlace, Int)] = try await withThrowingTaskGroup(of: (MapPlace, Int).self) { group in
+            let localeAR = self.localeAR
+
+            func run(_ p: MapPlace, _ baseScore: Int) async -> (MapPlace, Int) {
+                if baseScore >= 6 && !needGeocodeAnyway {
+                    return (p, baseScore + 3)
+                }
+
+                do {
+                    let loc = CLLocation(latitude: p.coordinate.latitude, longitude: p.coordinate.longitude)
+                    let geocoder = CLGeocoder()
+                    let placemarks = try await geocoder.reverseGeocodeLocation(loc, preferredLocale: localeAR)
+                    guard let pm = placemarks.first else { return (p, baseScore) }
+
+                    let subLocality = pm.subLocality ?? ""
+                    let subScore = scoreMatch(text: subLocality, target: target)
+                    if subScore == 0 { return (p, baseScore) }
+
+                    let fields: [String] = [
+                        pm.name,
+                        pm.thoroughfare,
+                        pm.locality,
+                        pm.subAdministrativeArea,
+                        pm.administrativeArea
+                    ].compactMap { $0 }
+
+                    let aoi = pm.areasOfInterest ?? []
+                    let combined = (fields + aoi).joined(separator: " ")
+
+                    let geoScore = scoreMatch(text: combined, target: target)
+                    return (p, baseScore + geoScore + 3)
+                } catch {
+                    return (p, baseScore)
+                }
             }
 
-            do {
-                let loc = CLLocation(latitude: p.coordinate.latitude, longitude: p.coordinate.longitude)
-                let placemarks = try await geocoder.reverseGeocodeLocation(loc, preferredLocale: Locale(identifier: "ar"))
-                guard let pm = placemarks.first else { continue }
+            var iterator = top.makeIterator()
+            var running = 0
+            let maxConcurrent = maxConcurrentGeocodes
 
-                let subLocality = pm.subLocality ?? ""
-                let thoroughfare = pm.thoroughfare ?? ""
-                let name = pm.name ?? ""
+            while running < maxConcurrent, let next = iterator.next() {
+                running += 1
+                group.addTask { await run(next.place, next.score) }
+            }
 
-                let combined = (name + " " + thoroughfare + " " + subLocality)
-                if combined.contains(neighborhoodNameArabic) {
-                    final.append(p)
+            var out: [(MapPlace, Int)] = []
+            out.reserveCapacity(top.count)
+
+            while let result = try await group.next() {
+                out.append(result)
+                running -= 1
+
+                if let next = iterator.next() {
+                    running += 1
+                    group.addTask { await run(next.place, next.score) }
                 }
-            } catch { }
+            }
+
+            return out
         }
 
-        return Array(Set(final))
+        let threshold = 5
+        var accepted = refined
+            .filter { $0.1 >= threshold }
+            .sorted { $0.1 > $1.1 }
+            .map { $0.0 }
+
+        accepted = uniquePreservingOrder(accepted)
+
+        if accepted.isEmpty {
+            let fallback = refined
+                .sorted { $0.1 > $1.1 }
+                .prefix(12)
+                .map { $0.0 }
+            return uniquePreservingOrder(Array(fallback))
+        }
+
+        return accepted
     }
+}
+
+private let _localeAR = Locale(identifier: "ar")
+
+private func normalizeArabic(_ input: String) -> String {
+    var s = input.trimmingCharacters(in: .whitespacesAndNewlines)
+
+    s = s.replacingOccurrences(of: "أ", with: "ا")
+    s = s.replacingOccurrences(of: "إ", with: "ا")
+    s = s.replacingOccurrences(of: "آ", with: "ا")
+    s = s.replacingOccurrences(of: "ى", with: "ي")
+    s = s.replacingOccurrences(of: "ة", with: "ه")
+
+    s = s.folding(options: .diacriticInsensitive, locale: _localeAR)
+
+    s = s.replacingOccurrences(of: "حي ", with: "")
+    s = s.replacingOccurrences(of: "حي", with: "")
+    s = s.replacingOccurrences(of: "ال", with: "")
+
+    s = s.components(separatedBy: .whitespacesAndNewlines)
+        .filter { !$0.isEmpty }
+        .joined(separator: " ")
+
+    return s
+}
+
+private func scoreMatch(text: String, target: String) -> Int {
+    let t = normalizeArabic(text)
+    let trg = target
+
+    if trg.isEmpty { return 0 }
+    if t.contains(trg) { return 6 }
+
+    let parts = trg.split(separator: " ").map(String.init)
+    if parts.count >= 2 {
+        let hits = parts.reduce(0) { $0 + (t.contains($1) ? 1 : 0) }
+        if hits == parts.count { return 5 }
+        if hits >= max(1, parts.count - 1) { return 3 }
+        return 0
+    } else {
+        if let p = parts.first, t.contains(p) { return 3 }
+        return 0
+    }
+}
+
+private func uniquePreservingOrder(_ places: [MapPlace]) -> [MapPlace] {
+    var seen = Set<MapPlace>()
+    var out: [MapPlace] = []
+    out.reserveCapacity(places.count)
+    for p in places {
+        if !seen.contains(p) {
+            seen.insert(p)
+            out.append(p)
+        }
+    }
+    return out
 }
