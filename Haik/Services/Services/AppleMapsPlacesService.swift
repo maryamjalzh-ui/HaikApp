@@ -15,7 +15,7 @@ protocol PlacesSearching {
         regionSpanMeters: CLLocationDistance,
         limit: Int,
         neighborhoodNameArabic: String
-    ) async throws -> [Place]
+    ) async throws -> [MapPlace]
 }
 
 final class AppleMapsPlacesService: PlacesSearching {
@@ -28,7 +28,7 @@ final class AppleMapsPlacesService: PlacesSearching {
         regionSpanMeters: CLLocationDistance,
         limit: Int,
         neighborhoodNameArabic: String
-    ) async throws -> [Place] {
+    ) async throws -> [MapPlace] {
 
         let region = MKCoordinateRegion(
             center: center,
@@ -44,58 +44,52 @@ final class AppleMapsPlacesService: PlacesSearching {
         let response = try await MKLocalSearch(request: request).start()
         let items = Array(response.mapItems.prefix(limit))
 
-        let rawPlaces: [Place] = items.compactMap { item in
+        let rawPlaces: [MapPlace] = items.compactMap { item in
             guard let name = item.name else { return nil }
             let addr = item.placemark.title ?? ""
-            return Place(
+            return MapPlace(
                 name: name,
                 address: addr,
                 coordinate: item.placemark.coordinate
             )
         }
 
-        let normalizedNeighborhood = normalize(neighborhoodNameArabic)
-
-        let firstPass = rawPlaces.filter { p in
-            let a = normalize(p.address)
-            return a.contains(normalizedNeighborhood) || a.contains(normalize("حي \(neighborhoodNameArabic)"))
+        func addressContainsNeighborhood(_ address: String) -> Bool {
+            address.contains(neighborhoodNameArabic) || address.contains("حي \(neighborhoodNameArabic)")
         }
 
+        let firstPass = rawPlaces.filter { addressContainsNeighborhood($0.address) }
         let candidates = firstPass.isEmpty ? Array(rawPlaces.prefix(25)) : Array(firstPass.prefix(25))
 
-        var final: [Place] = []
+        if firstPass.isEmpty {
+            return Array(Set(candidates))
+        }
+
+        var final: [MapPlace] = []
         final.reserveCapacity(candidates.count)
 
         for p in candidates {
+            if addressContainsNeighborhood(p.address) {
+                final.append(p)
+                continue
+            }
+
             do {
                 let loc = CLLocation(latitude: p.coordinate.latitude, longitude: p.coordinate.longitude)
                 let placemarks = try await geocoder.reverseGeocodeLocation(loc, preferredLocale: Locale(identifier: "ar"))
                 guard let pm = placemarks.first else { continue }
 
-                let subLocality = normalize(pm.subLocality ?? "")
-                let locality = normalize(pm.locality ?? "")
-                let full = normalize(pm.name ?? "") + normalize(pm.thoroughfare ?? "") + normalize(pm.subLocality ?? "")
+                let subLocality = pm.subLocality ?? ""
+                let thoroughfare = pm.thoroughfare ?? ""
+                let name = pm.name ?? ""
 
-                let matches = subLocality.contains(normalizedNeighborhood)
-                    || (locality.contains(normalize("الرياض")) && full.contains(normalizedNeighborhood))
-
-                if matches { final.append(p) }
-            } catch {
-                continue
-            }
+                let combined = (name + " " + thoroughfare + " " + subLocality)
+                if combined.contains(neighborhoodNameArabic) {
+                    final.append(p)
+                }
+            } catch { }
         }
 
         return Array(Set(final))
-    }
-
-    private func normalize(_ s: String) -> String {
-        s.lowercased()
-            .replacingOccurrences(of: "أ", with: "ا")
-            .replacingOccurrences(of: "إ", with: "ا")
-            .replacingOccurrences(of: "آ", with: "ا")
-            .replacingOccurrences(of: "ة", with: "ه")
-            .replacingOccurrences(of: "ى", with: "ي")
-            .replacingOccurrences(of: "ـ", with: "")
-            .replacingOccurrences(of: " ", with: "")
     }
 }
