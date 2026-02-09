@@ -24,13 +24,7 @@ struct NeighborhoodReview: Identifiable, Hashable {
     let comment: String
     let createdAt: Date
 
-    init(
-        id: UUID = UUID(),
-        category: ReviewCategory,
-        rating: Int,
-        comment: String,
-        createdAt: Date = Date()
-    ) {
+    init(id: UUID = UUID(), category: ReviewCategory, rating: Int, comment: String, createdAt: Date = Date()) {
         self.id = id
         self.category = category
         self.rating = rating

@@ -2,86 +2,131 @@ import SwiftUI
 
 struct ServiceListView: View {
 
-    let neighborhood: Neighborhood
+    @ObservedObject var vm: NeighborhoodServicesViewModel
     let service: ServiceCategory
 
-    @StateObject private var vm: ServicesListViewModel
-    private let pageBackground = Color("PageBackground")
+    @State private var selectedPlace: Place? = nil
 
-    init(neighborhood: Neighborhood, service: ServiceCategory) {
-        self.neighborhood = neighborhood
-        self.service = service
-        _vm = StateObject(wrappedValue: ServicesListViewModel(neighborhood: neighborhood, service: service))
+    private let pageBackground = Color("PageBackground")
+    private let greenPrimary = Color("GreenPrimary")
+
+    private let rowWidth: CGFloat = 348
+    private let rowHeight: CGFloat = 69
+    private let rowCorner: CGFloat = 24
+
+    private var places: [Place] {
+        vm.places(for: service)
+    }
+
+    private var isLoading: Bool {
+        vm.isLoadingByService.contains(service)
     }
 
     var body: some View {
-        VStack(spacing: 12) {
+        ZStack {
+            pageBackground.ignoresSafeArea()
 
-            HStack {
-                Spacer()
-                Text(vm.title)
-                    .font(.system(size: 26, weight: .regular))
-                    .foregroundStyle(.black)
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
+            VStack(spacing: 18) {
+                header
 
-            if vm.isLoading {
-                ProgressView()
-                    .padding(.top, 30)
-            } else {
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 12) {
-                        ForEach(vm.places) { place in
+                if isLoading && places.isEmpty {
+                    ProgressView()
+                        .padding(.top, 30)
+                } else if places.isEmpty {
+                    Text("لا توجد نتائج حالياً")
+                        .foregroundStyle(.gray)
+                        .padding(.top, 30)
+                } else {
+                    VStack(spacing: 18) {
+                        ForEach(places) { place in
                             Button {
-                                vm.selectedPlace = place
+                                selectedPlace = place
                             } label: {
                                 placeRow(place)
                             }
                             .buttonStyle(.plain)
                         }
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
-                    .padding(.bottom, 30)
+                    .padding(.top, 6)
                 }
+
+                Spacer()
             }
+            .padding(.top, 10)
         }
-        .background(pageBackground.ignoresSafeArea())
         .environment(\.layoutDirection, .rightToLeft)
-        .task {
-            await vm.load()
+        .navigationBarBackButtonHidden(true)
+        .sheet(item: $selectedPlace) { place in
+            PlaceDetailSheetView(place: place, service: service)
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
         }
-        .sheet(item: $vm.selectedPlace) { place in
-            PlaceDetailsSheetView(place: place, service: service)
-                .presentationDetents([.medium, .large])
+        .task {
+            await vm.loadPlacesIfNeeded(for: service)
         }
     }
 
-    private func placeRow(_ place: Place) -> some View {
-        HStack(spacing: 12) {
-
-            VStack(alignment: .trailing, spacing: 6) {
-                Text(place.name)
-                    .font(.system(size: 18, weight: .regular))
-                    .foregroundStyle(.black)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-
-                Text(place.address)
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundStyle(.gray)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .lineLimit(2)
+    private var header: some View {
+        ZStack {
+            HStack {
+                BackCircleButton(tint: greenPrimary)
+                Spacer()
             }
 
-            Image(systemName: "chevron.left")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color.gray.opacity(0.7))
+            Text(service.rawValue)
+                .font(.system(size: 34, weight: .regular))
+                .foregroundStyle(.black)
         }
-        .padding(.vertical, 14)
-        .padding(.horizontal, 14)
+        .padding(.horizontal, 22)
+    }
+
+    private func placeRow(_ place: Place) -> some View {
+        HStack {
+            Image(systemName: "chevron.left")
+                .font(.system(size: 18, weight: .regular))
+                .foregroundStyle(Color.gray.opacity(0.65))
+                .padding(.leading, 18)
+
+            Spacer()
+
+            Text(place.name)
+                .font(.system(size: 24, weight: .regular))
+                .foregroundStyle(.black)
+
+            serviceIcon
+                .font(.system(size: 34, weight: .regular))
+                .foregroundStyle(greenPrimary)
+                .padding(.trailing, 18)
+        }
+        .frame(width: rowWidth, height: rowHeight)
         .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 6)
+        .clipShape(RoundedRectangle(cornerRadius: rowCorner, style: .continuous))
+        .shadow(color: .black.opacity(0.14), radius: 12, x: 0, y: 10)
+    }
+
+    private var serviceIcon: Image {
+        if let fallback = service.fallbackSystemSymbol {
+            return Image(systemName: fallback)
+        }
+        return Image(systemName: service.icon.systemName)
+    }
+}
+
+private struct BackCircleButton: View {
+    @Environment(\.dismiss) private var dismiss
+    let tint: Color
+
+    var body: some View {
+        Button {
+            dismiss()
+        } label: {
+            Image(systemName: "arrow.right")
+                .font(.system(size: 18, weight: .regular))
+                .foregroundStyle(tint)
+                .frame(width: 56, height: 56)
+                .background(Color.white)
+                .clipShape(Circle())
+                .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
+        }
     }
 }
