@@ -203,7 +203,7 @@ private extension NeighborhoodServicesView {
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.top, 16)
                     .padding(.trailing, 18)
-                    .environment(\.layoutDirection, .rightToLeft) 
+                    .environment(\.layoutDirection, .leftToRight)
             }
 
             // Stars (Top-Left inside box)
@@ -213,7 +213,11 @@ private extension NeighborhoodServicesView {
                         .font(.system(size: 22))
                         .foregroundStyle(i <= vm.newRating ? .yellow : .gray.opacity(0.35))
                         .onTapGesture { vm.newRating = i }
+
+                    
                 }
+                .environment(\.layoutDirection, .rightToLeft)
+
             }
             .environment(\.layoutDirection, .leftToRight)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -346,3 +350,5 @@ private extension ServiceCategory {
         }
     }
 }
+
+
