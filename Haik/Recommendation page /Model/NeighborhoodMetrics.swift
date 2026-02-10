@@ -25,4 +25,7 @@ struct NeighborhoodMetrics {
     let parks: Int
     let cinema: Int
     
+    let rating: Double
+
+    
 }
