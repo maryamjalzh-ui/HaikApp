@@ -13,29 +13,41 @@ struct NeighborhoodRecommendationFlowView: View {
     @Binding var isPresented: Bool
 
     var body: some View {
-        NeighborhoodQuestionView(vm: vm)
-            .environment(\.layoutDirection, .rightToLeft)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        if vm.currentIndex > 0 {
-                            withAnimation(.easeInOut(duration: 0.18)) {
-                                vm.goBack()
-                            }
-                        } else {
-                            withAnimation(.easeInOut(duration: 0.25)) {
-                                isPresented = false
-                            }
+        Group {
+            if vm.isComputingResults {
+                NeighborhoodComputingView(progress: vm.computeProgress)
+            } else if vm.isShowingResults {
+                NeighborhoodResultView(vm: vm)
+            } else {
+                NeighborhoodQuestionView(vm: vm)
+            }
+        }
+        .environment(\.layoutDirection, .rightToLeft)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    if vm.isShowingResults {
+                        withAnimation(.easeInOut(duration: 0.18)) {
+                            vm.isShowingResults = false
                         }
-                    } label: {
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.black)
-                            .frame(width: 44, height: 44)
-                            .background(Color.white.opacity(0.7))
-                            .clipShape(Circle())
+                    } else if vm.currentIndex > 0 {
+                        withAnimation(.easeInOut(duration: 0.18)) {
+                            vm.goBack()
+                        }
+                    } else {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            isPresented = false
+                        }
                     }
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.black)
+                        .frame(width: 44, height: 44)
+                        .background(Color.white.opacity(0.7))
+                        .clipShape(Circle())
                 }
             }
+        }
     }
 }
