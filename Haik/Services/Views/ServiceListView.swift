@@ -1,19 +1,22 @@
 import SwiftUI
+import MapKit
 
 struct ServiceListView: View {
 
+    // MARK: - Dependencies
     @ObservedObject var vm: NeighborhoodServicesViewModel
     let service: ServiceCategory
 
-    @State private var selectedPlace: Place? = nil
-
+    // MARK: - Styling
     private let pageBackground = Color("PageBackground")
     private let greenPrimary = Color("GreenPrimary")
+    private let blueSecondary = Color("BlueSecondary")
 
     private let rowWidth: CGFloat = 348
     private let rowHeight: CGFloat = 69
     private let rowCorner: CGFloat = 24
 
+    // MARK: - Data
     private var places: [Place] {
         vm.places(for: service)
     }
@@ -22,30 +25,34 @@ struct ServiceListView: View {
         vm.isLoadingByService.contains(service)
     }
 
+    // MARK: - Navigation
+    @Environment(\.dismiss) private var dismiss
+
+    // MARK: - Body
     var body: some View {
         ZStack {
             pageBackground.ignoresSafeArea()
 
             VStack(spacing: 18) {
+
+                // Header
                 header
 
+                // Content
                 if isLoading && places.isEmpty {
                     ProgressView()
                         .padding(.top, 30)
+
                 } else if places.isEmpty {
                     Text("لا توجد نتائج حالياً")
                         .foregroundStyle(.gray)
                         .padding(.top, 30)
+
                 } else {
                     ScrollView(.vertical, showsIndicators: true) {
                         VStack(spacing: 18) {
                             ForEach(places) { place in
-                                Button {
-                                    selectedPlace = place
-                                } label: {
-                                    placeRow(place)
-                                }
-                                .buttonStyle(.plain)
+                                placeRow(place)
                             }
                         }
                         .padding(.top, 6)
@@ -58,78 +65,115 @@ struct ServiceListView: View {
             .padding(.top, 10)
         }
         .environment(\.layoutDirection, .rightToLeft)
+        .toolbar(.hidden, for: .navigationBar)
         .navigationBarBackButtonHidden(true)
-        .sheet(item: $selectedPlace) { place in
-            PlaceDetailSheetView(place: place, service: service)
-                .presentationDetents([.medium])
-                .presentationDragIndicator(.visible)
-        }
         .task {
             await vm.loadPlacesIfNeeded(for: service)
         }
     }
 
+    // MARK: - Header
     private var header: some View {
         ZStack {
-            HStack {
-                BackCircleButton(tint: greenPrimary)
-                Spacer()
-            }
-
             Text(service.rawValue)
-                .font(.system(size: 34, weight: .regular))
+                .font(.system(size: 30, weight: .regular))
                 .foregroundStyle(.black)
+                .lineLimit(1)
+                .padding(.horizontal, 90)
+
+            HStack {
+                Button { dismiss() } label: {
+                    Image(systemName: "chevron.backward")
+                        .font(.system(size: 18, weight: .regular))
+                        .foregroundStyle(.black)
+                        .frame(width: 52, height: 52)
+                        .background(Color.white)
+                        .clipShape(Circle())
+                        .shadow(
+                            color: .black.opacity(0.08),
+                            radius: 10,
+                            x: 0,
+                            y: 6
+                        )
+                }
+
+                Spacer()
+
+                // Placeholder to keep title centered
+                Color.clear
+                    .frame(width: 52, height: 52)
+            }
+            .padding(.horizontal, 20)
+            .environment(\.layoutDirection, .leftToRight)
         }
-        .padding(.horizontal, 22)
+        .padding(.top, 6)
     }
 
+    // MARK: - Row
     private func placeRow(_ place: Place) -> some View {
         HStack {
-            Image(systemName: "chevron.left")
-                .font(.system(size: 18, weight: .regular))
-                .foregroundStyle(Color.gray.opacity(0.65))
-                .padding(.leading, 18)
 
-            Spacer()
+            // Name + Location icon (right aligned)
+            HStack(spacing: 8) {
 
-            Text(place.name)
-                .font(.system(size: 24, weight: .regular))
-                .foregroundStyle(.black)
+                // Location icon (outline, left of text)
+                Button {
+                    openInMaps(place)
+                } label: {
+                    Image(systemName: "location")
+                        .font(.system(size: 18, weight: .regular))
+                        .foregroundStyle(blueSecondary)
+                }
+                .buttonStyle(.plain)
 
-            serviceIcon
+                // Place name
+                Text(place.name)
+                    .font(.system(size: 22, weight: .regular))
+                    .foregroundStyle(.black)
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
+
+            // Service icon (from enum)
+            Image(systemName: service.icon.systemName)
                 .font(.system(size: 34, weight: .regular))
                 .foregroundStyle(greenPrimary)
-                .padding(.trailing, 18)
+                .padding(.leading, 16)
         }
+        .padding(.horizontal, 18)
         .frame(width: rowWidth, height: rowHeight)
         .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: rowCorner, style: .continuous))
-        .shadow(color: .black.opacity(0.14), radius: 12, x: 0, y: 10)
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: rowCorner,
+                style: .continuous
+            )
+        )
+        .shadow(
+            color: .black.opacity(0.06),
+            radius: 20,
+            x: 0,
+            y: 10
+        )
+        .environment(\.layoutDirection, .leftToRight)
     }
 
-    private var serviceIcon: Image {
-        if let fallback = service.fallbackSystemSymbol {
-            return Image(systemName: fallback)
-        }
-        return Image(systemName: service.icon.systemName)
-    }
-}
+    // MARK: - Maps
+    private func openInMaps(_ place: Place) {
+        let coordinate = CLLocationCoordinate2D(
+            latitude: place.coordinate.latitude,
+            longitude: place.coordinate.longitude
+        )
 
-private struct BackCircleButton: View {
-    @Environment(\.dismiss) private var dismiss
-    let tint: Color
+        let placemark = MKPlacemark(coordinate: coordinate)
+        let mapItem = MKMapItem(placemark: placemark)
+        mapItem.name = place.name
 
-    var body: some View {
-        Button {
-            dismiss()
-        } label: {
-            Image(systemName: "arrow.right")
-                .font(.system(size: 18, weight: .regular))
-                .foregroundStyle(tint)
-                .frame(width: 56, height: 56)
-                .background(Color.white)
-                .clipShape(Circle())
-                .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
-        }
+        mapItem.openInMaps(
+            launchOptions: [
+                MKLaunchOptionsDirectionsModeKey:
+                    MKLaunchOptionsDirectionsModeDriving
+            ]
+        )
     }
 }

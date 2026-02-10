@@ -31,6 +31,7 @@ enum ServiceCategory: String, CaseIterable, Identifiable {
         case .mall: return .mall
         case .metro: return .metroPrimary
         case .groceries, .supermarkets: return .fullServices
+            
         default: return .services
         }
     }
@@ -40,6 +41,8 @@ enum ServiceCategory: String, CaseIterable, Identifiable {
     var fallbackSystemSymbol: String? {
         switch self {
         case .gasStations: return "fuelpump"
+        case .libraries:return "books.vertical"
+        case .hospitals:return "stethoscope"
         default: return nil
         }
     }

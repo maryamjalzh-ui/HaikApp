@@ -9,37 +9,26 @@ import SwiftUI
 import MapKit
 
 struct HomeScreen: View {
-
-    @State private var position: MapCameraPosition = .region(
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 24.7136, longitude: 46.6753),
-            span: MKCoordinateSpan(latitudeDelta: 0.15, longitudeDelta: 0.15)
-        )
-    )
-
-    @State private var selectedNeighborhood: Neighborhood? = nil
+    @State private var viewModel = HomeViewModel()
     @State private var showRecommendation = false
-    @State private var showServices = false
-    @State private var neighborhoodForServices: Neighborhood? = nil
 
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
-
-                Map(position: $position) {
-                    ForEach(NeighborhoodData.all) { neighborhood in
+                // الخريطة
+                Map(position: $viewModel.position) {
+                    ForEach(viewModel.allNeighborhoods) { neighborhood in
                         Annotation("", coordinate: neighborhood.coordinate) {
                             NeighborhoodPin(neighborhood: neighborhood) {
-                                withAnimation(.spring()) {
-                                    selectedNeighborhood = neighborhood
-                                }
+                                viewModel.select(neighborhood: neighborhood)
                             }
                         }
                     }
                 }
                 .ignoresSafeArea()
 
-                if let neighborhood = selectedNeighborhood {
+                // الكارت السفلي أو التلميح
+                if let neighborhood = viewModel.selectedNeighborhood {
                     bottomInfoCard(neighborhood: neighborhood)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 } else {
@@ -47,10 +36,11 @@ struct HomeScreen: View {
                 }
             }
             .safeAreaInset(edge: .top) {
-                topSearchBar
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                    .padding(.bottom, 8)
+                VStack(spacing: 8) {
+                    topSearchBar
+                    searchResultsList // قائمة نتائج البحث المنسدلة
+                }
+                .padding(.vertical, 8)
             }
             .environment(\.layoutDirection, .rightToLeft)
             .overlay {
@@ -63,106 +53,98 @@ struct HomeScreen: View {
                 }
             }
             .animation(.easeInOut(duration: 0.25), value: showRecommendation)
-            .navigationDestination(isPresented: $showServices) {
-                if let n = neighborhoodForServices {
+            .navigationDestination(isPresented: $viewModel.showServices) {
+                if let n = viewModel.neighborhoodForServices {
                     NeighborhoodServicesView(neighborhoodName: n.name, coordinate: n.coordinate)
                 }
             }
         }
     }
 }
-
 extension HomeScreen {
 
     private var topSearchBar: some View {
         HStack(spacing: 12) {
-
-            Button {
-                showRecommendation = true
-            } label: {
+            Button { showRecommendation = true } label: {
                 Image(systemName: "sparkles")
-                    .padding(10)
-                    .background(.white)
-                    .clipShape(Circle())
-                    .shadow(radius: 2)
+                    .padding(10).background(.white).clipShape(Circle()).shadow(radius: 2)
             }
             .buttonStyle(.plain)
 
+            // حقل البحث الفعلي (تم حذف المايك)
             HStack {
                 Image(systemName: "magnifyingglass").foregroundColor(.gray)
-                Text("ابحث عن حي...").foregroundColor(.gray)
-                Spacer()
-                Image(systemName: "mic.fill").foregroundColor(.gray)
+                TextField("ابحث عن حي...", text: $viewModel.searchText)
+                    .textFieldStyle(.plain)
+                  //  .multilineTextAlignment(.right)
+                
+                if !viewModel.searchText.isEmpty {
+                    Button(action: { viewModel.searchText = "" }) {
+                        Image(systemName: "xmark.circle.fill").foregroundColor(.gray)
+                    }
+                }
             }
-            .padding(.horizontal)
-            .frame(height: 44)
-            .background(Color.white)
-            .cornerRadius(22)
-            .shadow(radius: 2)
+            .padding(.horizontal).frame(height: 44).background(Color.white).cornerRadius(22).shadow(radius: 2)
 
             Image(systemName: "bookmark")
-                .padding(10)
-                .background(.white)
-                .clipShape(Circle())
-                .shadow(radius: 2)
+                .padding(10).background(.white).clipShape(Circle()).shadow(radius: 2)
         }
         .padding(.horizontal)
     }
 
+    // قائمة تظهر فقط عند الكتابة في البحث
+    private var searchResultsList: some View {
+        Group {
+            if !viewModel.filteredResults.isEmpty {
+                VStack(spacing: 0) {
+                    ScrollView {
+                        ForEach(viewModel.filteredResults) { neighborhood in
+                            Button(action: { viewModel.select(neighborhood: neighborhood) }) {
+                                HStack {
+                                    Spacer()
+                                    Text(neighborhood.name).padding().foregroundColor(.black)
+                                }
+                            }
+                            Divider()
+                        }
+                    }
+                    .frame(maxHeight: 200).background(Color.white).cornerRadius(15).shadow(radius: 5).padding(.horizontal, 60)
+                }
+            }
+        }
+    }
+
     private func bottomInfoCard(neighborhood: Neighborhood) -> some View {
         VStack(alignment: .trailing, spacing: 15) {
-
             HStack {
-                Text("(\(neighborhood.reviewCount))")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-
-                ForEach(0..<5) { _ in
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.yellow)
-                        .font(.system(size: 12))
-                }
-
+                Text("(\(neighborhood.reviewCount))").font(.caption).foregroundColor(.gray)
+                ForEach(0..<5) { _ in Image(systemName: "star.fill").foregroundColor(.yellow).font(.system(size: 12)) }
                 Spacer()
-
-                Text("حي \(neighborhood.name)")
-                    .font(.system(size: 20, weight: .bold))
+                Text("حي \(neighborhood.name)").font(.system(size: 20, weight: .bold))
             }
-
             Spacer().frame(height: 10)
-
             Divider()
-
             Button {
-                neighborhoodForServices = neighborhood
-                showServices = true
+                viewModel.neighborhoodForServices = neighborhood
+                viewModel.showServices = true
             } label: {
                 HStack {
                     Image(systemName: "arrow.left")
                     Text("لمزيد من المعلومات عن الحي")
                 }
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.black)
+                .font(.system(size: 14, weight: .medium)).foregroundColor(.black)
             }
         }
-        .padding(25)
-        .frame(width: 360)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 30))
-        .shadow(color: Color.black.opacity(0.1), radius: 10)
-        .padding(.bottom, 30)
+        .padding(25).frame(width: 360).background(Color.white).clipShape(RoundedRectangle(cornerRadius: 30)).shadow(color: Color.black.opacity(0.1), radius: 10).padding(.bottom, 30)
     }
 
     private var hintCard: some View {
         Text("لسه ما عرفت عن الأحياء؟ اضغط على الحي وبتعرف أكثر")
-            .font(.system(size: 14))
-            .padding()
-            .background(Color.white)
-            .cornerRadius(20)
-            .shadow(radius: 5)
-            .padding(.bottom, 40)
+            .font(.system(size: 14)).padding().background(Color.white).cornerRadius(20).shadow(radius: 5).padding(.bottom, 40)
     }
 }
+
+
 
 struct NeighborhoodPin: View {
     let neighborhood: Neighborhood
