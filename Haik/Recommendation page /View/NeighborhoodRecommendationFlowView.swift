@@ -2,7 +2,7 @@
 //  NeighborhoodRecommendationFlowView.swift
 //  Haik
 //
-//  Created by Shahad Alharbi on 2/8/26.
+
 //
 
 import SwiftUI

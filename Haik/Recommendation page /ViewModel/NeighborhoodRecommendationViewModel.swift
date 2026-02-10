@@ -15,28 +15,28 @@
 //    @Published var currentIndex: Int = 0
 //    @Published private(set) var answers: [String: [String]] = [:]
 //    @Published private(set) var pickedNeighborhoodByOptionID: [String: String] = [:]
-//    
+//
 //    @Published var isShowingResults: Bool = false
 //    @Published var recommendations: [RecommendedNeighborhood] = []
 //    @Published var isLoadingResults: Bool = false
 //    let totalSteps: Int = 4
-//    
+//
 //    @Published var isComputingResults = false
 //    @Published var progress: Double = 0
-//    
+//
 //    @Published var computeProgress: Double = 0.0
-//    
+//
 //    private let metricsService = NeighborhoodMetricsService()
 //
 //    func loadAllMetrics() async -> [NeighborhoodMetrics] {
-//        
+//
 //        var results: [NeighborhoodMetrics] = []
-//        
+//
 //        for neighborhood in NeighborhoodData.all {
 //            let metrics = await metricsService.loadMetrics(for: neighborhood)
 //            results.append(metrics)
 //        }
-//        
+//
 //        return results
 //    }
 //
@@ -246,7 +246,7 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         case .single:
             return !selected.isEmpty
         case .multi(let max):
-            return selected.count == max 
+            return selected.count == max
         }
     }
 
@@ -699,7 +699,7 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
                     RecommendationOption(id: "q2_b", title: "القرب من منزل العائلة أو الأقارب", icon: .nearFamily, showsNeighborhoodPicker: true),
                     RecommendationOption(id: "q2_c", title: "توفر الخدمات", icon: .services, showsNeighborhoodPicker: false),
                     RecommendationOption(id: "q2_d", title: "توفر المدارس", icon: .schools, showsNeighborhoodPicker: false),
-                    RecommendationOption(id: "q2_e", title: "توفر مراكز تجارية", icon: .universities, showsNeighborhoodPicker: false),
+                    RecommendationOption(id: "q2_e", title: "توفر مراكز تجارية", icon: .mall, showsNeighborhoodPicker: false),
                     RecommendationOption(id: "q2_f", title: "توفر المرافق الترفيهية", icon: .entertainment, showsNeighborhoodPicker: false)
                 ],
                 selectionMode: .multi(max: 2)
