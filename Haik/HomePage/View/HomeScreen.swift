@@ -1,4 +1,5 @@
-//
+
+
 //  HomeScreen.swift
 //  Haik
 //
@@ -12,8 +13,10 @@ import Combine
 struct HomeScreen: View {
     @StateObject private var viewModel = HomeViewModel()
     @State private var showRecommendation = false
-    
     @State private var isKeyboardVisible = false
+    
+    // --- الخطوة 1: إضافة متغير للتحكم في الانتقال لصفحتك المحفوظة ---
+    @State private var showFavouritePage = false
     
     var body: some View {
         NavigationStack {
@@ -72,9 +75,15 @@ struct HomeScreen: View {
                     NeighborhoodServicesView(neighborhoodName: n.name, coordinate: n.coordinate)
                 }
             }
+            
+            // ---
+            .navigationDestination(isPresented: $showFavouritePage) {
+                FavouritePage() // هذا ينادي الكود اللي حفظناه سوا
+            }
         }
     }
 }
+
 extension HomeScreen {
     
     private var topSearchBar: some View {
@@ -103,8 +112,14 @@ extension HomeScreen {
             }
             .padding(.horizontal).frame(height: 44).background(Color.white).cornerRadius(22).shadow(radius: 2)
             
-            Image(systemName: "heart")
-                .padding(10).background(.white).clipShape(Circle()).shadow(radius: 2).foregroundColor(.greenPrimary)
+            // ---
+            Button {
+                showFavouritePage = true
+            } label: {
+                Image(systemName: "person")
+                    .padding(10).background(.white).clipShape(Circle()).shadow(radius: 2).foregroundColor(.greenPrimary)
+            }
+            .buttonStyle(.plain)
         }
         .padding(.horizontal)
     }
@@ -115,7 +130,6 @@ extension HomeScreen {
                 VStack(spacing: 0) {
                     VStack(spacing: 0) {
                         if viewModel.filteredNeighborhoods.isEmpty {
-                            // MARK: - التعديل 5: رسالة "لا يوجد نتائج"
                             HStack {
                                 Spacer()
                                 Text("لا يوجد حي بهذا الاسم، تأكد من الكتابة")
@@ -171,7 +185,6 @@ extension HomeScreen {
                 Spacer()
                 Text("(\(neighborhood.reviewCount))").font(.caption).foregroundColor(.gray)
                 ForEach(0..<5) { _ in Image(systemName: "star.fill").foregroundColor(.yellow).font(.system(size: 12)) }
-           //     Spacer()
             }
             Spacer().frame(height: 10)
             Divider()
@@ -208,6 +221,7 @@ struct NeighborhoodPin: View {
         }
     }
 }
+
 #Preview {
     HomeScreen()
 }

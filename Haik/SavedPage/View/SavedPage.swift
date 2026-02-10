@@ -34,7 +34,6 @@ struct FavouritePage: View {
     @State private var draftRating: Double = 0.0
     
     var body: some View {
-        // تغليف الصفحة بـ NavigationStack لتفعيل التنقل
         NavigationStack {
             ZStack {
                 Color(white: 0.97).ignoresSafeArea()
@@ -54,15 +53,14 @@ struct FavouritePage: View {
                 ScrollView {
                     VStack(alignment: .center, spacing: 25) {
                         
-                        // بطاقة الحساب
                         Button(action: { isEditingProfile = true }) {
                             HStack(spacing: 15) {
-                                Image("PersonIcon")
+                                Image(systemName: "person")
                                     .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 60, height: 60)
-                                    
-                                    
+                                    .scaledToFit()
+                                    .frame(width: 30, height: 30)
+                                    .foregroundColor(.black)
+                                
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(userName)
                                         .font(.system(size: 20, weight: .bold))
@@ -71,36 +69,39 @@ struct FavouritePage: View {
                                         .font(.caption)
                                         .foregroundColor(.gray)
                                 }
+                                
                                 Spacer()
+                                
                                 Image(systemName: "chevron.left")
                                     .foregroundColor(.gray)
                             }
-                            .padding()
+                            .padding(20)
+                            .frame(width: 360)
                             .background(Color.white)
                             .cornerRadius(15)
                             .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         }
-                        .padding(.horizontal)
-                        .padding(.top, 10)
+                        .padding(.top, 0)
                         
+                        // عنوان الأحياء المحفوظة
                         HeaderSection(title: "الأحياء المحفوظة:", icon: "heart")
-                            .padding(.horizontal)
+                            .frame(width: 360)
 
-                        // قائمة الأحياء المحفوظة مع تفعيل زر التفاصيل
+                        // قسم الأحياء المحفوظة
                         VStack(spacing: 16) {
-                            NeighborhoodCard(name: "حي الياسمين") {
+                            NeighborhoodCard(name: "الياسمين", reviewCount: "29") {
                                 selectedNeighborhoodName = "حي الياسمين"
                                 showServices = true
                             }
-                            NeighborhoodCard(name: "حي النرجس") {
+                            NeighborhoodCard(name: "النرجس", reviewCount: "15") {
                                 selectedNeighborhoodName = "حي النرجس"
                                 showServices = true
                             }
                         }
                         
                         HeaderSection(title: "تعليقاتك:", icon: "text.bubble")
-                            .padding(.horizontal)
-                            .padding(.top, 30)
+                            .frame(width: 360)
+                            .padding(.top, 10)
 
                         if !comments.isEmpty {
                             HStack(spacing: 15) {
@@ -140,21 +141,17 @@ struct FavouritePage: View {
                                 }
                                 .disabled(selectedCommentIndex >= comments.count - 1)
                             }
-                            .padding(.horizontal)
                         }
                     }
+                    .padding(.top, -15) 
                     .padding(.vertical)
+                    .frame(maxWidth: .infinity)
                 }
             }
             .environment(\.layoutDirection, .rightToLeft)
-            
-
             .navigationDestination(isPresented: $showServices) {
-
                 NeighborhoodServicesView(neighborhoodName: selectedNeighborhoodName, coordinate: .init(latitude: 24.7136, longitude: 46.6753))
             }
-            
-            // شيت إدارة التعليق (تعديل/حذف)
             .sheet(isPresented: $isManagingComment) {
                 CommentManagementView(commentText: $draftCommentText, rating: $draftRating, onSave: {
                     comments[selectedCommentIndex].text = draftCommentText
@@ -172,8 +169,6 @@ struct FavouritePage: View {
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
             }
-            
-            // شيت تعديل الملف الشخصي
             .sheet(isPresented: $isEditingProfile) {
                 EditProfileView(name: $userName, email: userEmail)
             }
@@ -181,12 +176,53 @@ struct FavouritePage: View {
     }
 }
 
-// 2. واجهة تعديل الملف الشخصي
+
+
+struct NeighborhoodCard: View {
+    var name: String
+    var reviewCount: String
+    var onMoreInfo: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 15) {
+            HStack {
+                Text("حي \(name)")
+                    .font(.system(size: 20, weight: .bold))
+                Spacer()
+                Text("(\(reviewCount))")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                ForEach(0..<5) { _ in
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.yellow)
+                        .font(.system(size: 12))
+                }
+            }
+            
+            Spacer().frame(height: 10)
+            Divider()
+            
+            Button(action: onMoreInfo) {
+                HStack {
+                    Text("عرض الحي")
+                    Image(systemName: "arrow.left")
+                }
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.black)
+            }
+        }
+        .padding(25)
+        .frame(width: 360)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 30))
+        .shadow(color: Color.black.opacity(0.1), radius: 10)
+    }
+}
+
 struct EditProfileView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var name: String
     var email: String
-    
     var body: some View {
         NavigationStack {
             Form {
@@ -211,30 +247,24 @@ struct EditProfileView: View {
     }
 }
 
-// 3. مكون النجوم التفاعلي
 struct StarRatingView: View {
     @Binding var rating: Double
     var isInteractive: Bool = true
-    
     var body: some View {
         HStack(spacing: 4) {
             ForEach(1...5, id: \.self) { index in
                 Image(systemName: starIcon(for: Double(index)))
                     .foregroundColor(.yellow)
                     .font(.system(size: isInteractive ? 24 : 14))
-                    .onTapGesture {
-                        if isInteractive { handleTap(index: Double(index)) }
-                    }
+                    .onTapGesture { if isInteractive { handleTap(index: Double(index)) } }
             }
         }
     }
-    
     private func starIcon(for index: Double) -> String {
         if rating >= index { return "star.fill" }
         else if rating >= index - 0.5 { return "star.leadinghalf.filled" }
         else { return "star" }
     }
-    
     private func handleTap(index: Double) {
         if rating == index { rating -= 0.5 }
         else if rating == index - 0.5 { rating -= 0.5 }
@@ -242,19 +272,21 @@ struct StarRatingView: View {
     }
 }
 
-// 4. واجهة إدارة التعليق
 struct CommentManagementView: View {
     @Binding var commentText: String
     @Binding var rating: Double
     var onSave: () -> Void
     var onDelete: () -> Void
-    
     var body: some View {
         VStack(spacing: 20) {
             Text("إدارة تعليقك").font(.system(size: 18, weight: .bold)).padding(.top)
             VStack(alignment: .trailing, spacing: 12) {
                 HStack {
-                    Image("PersonIcon").resizable().scaledToFill().frame(width: 45, height: 45)
+                    Image(systemName: "person")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(.black)
                     VStack(alignment: .leading) {
                         Text("ساره خالد").font(.caption).foregroundColor(.gray.opacity(0.6))
                         Text("العارض").font(.callout).foregroundColor(.black)
@@ -271,9 +303,7 @@ struct CommentManagementView: View {
             }
             .padding().frame(width: 300).background(Color.white.opacity(0.6)).cornerRadius(20)
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.gray.opacity(0.2), lineWidth: 1))
-            
             HStack(spacing: 15) {
-                
                 Button(action: onSave) {
                     Text("حفظ التعديلات").font(.headline).foregroundColor(.white).frame(maxWidth: .infinity).padding().background(Color("GreenPrimary")).cornerRadius(15)
                 }
@@ -288,13 +318,16 @@ struct CommentManagementView: View {
     }
 }
 
-// 5. بطاقة عرض التعليق
 struct CommentCard: View {
     var comment: UserComment
     var body: some View {
         VStack(alignment: .trailing, spacing: 8) {
             HStack {
-                Image("PersonIcon").resizable().scaledToFill().frame(width: 45, height: 45)
+                Image(systemName: "person")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 30, height: 30)
+                    .foregroundColor(.black)
                 VStack(alignment: .leading) {
                     Text("ساره خالد").font(.caption).foregroundColor(.gray.opacity(0.6))
                     Text("العارض").font(.callout).foregroundColor(.black)
@@ -310,7 +343,6 @@ struct CommentCard: View {
     }
 }
 
-// 6. مكونات العناوين والأحياء المعدلة لتدعم التنقل
 struct HeaderSection: View {
     let title: String; let icon: String
     var body: some View {
@@ -322,40 +354,6 @@ struct HeaderSection: View {
     }
 }
 
-struct NeighborhoodCard: View {
-    var name: String
-    var onMoreInfo: () -> Void // إضافة أكشن للضغط
-    
-    var body: some View {
-        VStack(alignment: .trailing, spacing: 12) {
-            HStack {
-                Text(name).font(.system(size: 24, weight: .bold))
-                Spacer()
-                HStack(spacing: 4) {
-                    Text("29").font(.caption).foregroundColor(.gray)
-                    ForEach(0..<5) { _ in Image(systemName: "star.fill").foregroundColor(.yellow).font(.system(size: 14)) }
-                }
-            }
-            Spacer()
-            HStack {
-                Button(action: onMoreInfo) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.left")
-                        Text("لمزيد من المعلومات عن الحي").font(.system(size: 14))
-                    }
-                    .foregroundColor(Color("GreenPrimary"))
-                }
-                .buttonStyle(.plain)
-                Spacer()
-            }
-            .environment(\.layoutDirection, .leftToRight)
-        }
-        .padding(20).frame(width: 333, height: 149).background(Color.white).cornerRadius(20).shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 4)
-    }
-}
-
 #Preview {
     FavouritePage()
 }
-
-
