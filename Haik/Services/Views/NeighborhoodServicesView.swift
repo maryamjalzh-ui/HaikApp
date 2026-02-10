@@ -11,18 +11,18 @@ struct NeighborhoodServicesView: View {
     private let hintGray = Color(hex: "ACACAC")
     private let yellowHex = Color(hex: "E7CB62")
 
-    // MARK: - Grid
+    // MARK: - Layout
     private let grid = [
         GridItem(.flexible(), spacing: 18),
         GridItem(.flexible(), spacing: 18),
         GridItem(.flexible(), spacing: 18)
     ]
 
-    // MARK: - Tile Size
     private let tileSize: CGFloat = 92
     private let tileIconSize: CGFloat = 30
     private let tileTextSize: CGFloat = 14
 
+    // MARK: - State
     @Environment(\.dismiss) private var dismiss
     @StateObject private var vm: NeighborhoodServicesViewModel
     @FocusState private var isCommentFocused: Bool
@@ -36,6 +36,7 @@ struct NeighborhoodServicesView: View {
         )
     }
 
+    // MARK: - View
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -71,15 +72,16 @@ private extension NeighborhoodServicesView {
     var header: some View {
         ZStack {
             Text(vm.neighborhoodName)
-                .font(.system(size: 34))
+                .font(.system(size: 34, weight: .regular))
                 .foregroundStyle(.black)
                 .lineLimit(1)
                 .padding(.horizontal, 90)
 
             HStack {
-                Button { dismiss() } label: {
-                    Image(systemName: "chevron.backward")
-                        .font(.system(size: 18))
+                // Left: Heart (Save)
+                Button { } label: {
+                    Image(systemName: "heart")
+                        .font(.system(size: 18, weight: .regular))
                         .foregroundStyle(.black)
                         .frame(width: 52, height: 52)
                         .background(Color.white)
@@ -89,9 +91,14 @@ private extension NeighborhoodServicesView {
 
                 Spacer()
 
-                Button { } label: {
-                    Image(systemName: "bookmark")
-                        .font(.system(size: 18))
+                // Right: Chevron (points right)
+                Button {
+                    withAnimation(.easeInOut(duration: 0.22)) {
+                        dismiss()
+                    }
+                } label: {
+                    Image(systemName: "chevron.forward")
+                        .font(.system(size: 18, weight: .regular))
                         .foregroundStyle(.black)
                         .frame(width: 52, height: 52)
                         .background(Color.white)
@@ -106,26 +113,26 @@ private extension NeighborhoodServicesView {
     }
 }
 
-// MARK: - Section Titles (Force visual RIGHT)
+// MARK: - Section Titles
 private extension NeighborhoodServicesView {
 
     func sectionTitle(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 22))
+            .font(.system(size: 22, weight: .regular))
             .multilineTextAlignment(.trailing)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.horizontal, 24)
-            .environment(\.layoutDirection, .leftToRight) // يثبتها يمين بصريًا
+            .environment(\.layoutDirection, .leftToRight)
     }
 
     func subsectionHint(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 17))
+            .font(.system(size: 17, weight: .regular))
             .foregroundStyle(hintGray)
             .multilineTextAlignment(.trailing)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.horizontal, 24)
-            .environment(\.layoutDirection, .leftToRight) // يثبتها يمين بصريًا
+            .environment(\.layoutDirection, .leftToRight)
     }
 }
 
@@ -160,12 +167,12 @@ private extension NeighborhoodServicesView {
         }
         .frame(width: tileSize, height: tileSize)
         .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .shadow(color: .black.opacity(0.10), radius: 10, x: 0, y: 8)
     }
 }
 
-// MARK: - Review Input
+// MARK: - Review Composer
 private extension NeighborhoodServicesView {
 
     var chipsRow: some View {
@@ -173,90 +180,100 @@ private extension NeighborhoodServicesView {
             HStack(spacing: 12) {
                 ForEach(ReviewCategory.allCases) { cat in
                     Text(cat.rawValue)
-                        .font(.system(size: 17))
-                        .foregroundStyle(vm.selectedCategory == cat ? .white : .black)
+                        .font(.system(size: 17, weight: .regular))
+                        .foregroundStyle(vm.selectedCategory == cat ? Color.white : Color.black)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
                         .padding(.horizontal, 18)
                         .padding(.vertical, 10)
-                        .background(vm.selectedCategory == cat ? primaryColor : .white)
-                        .overlay(Capsule().stroke(borderGray))
+                        .background(vm.selectedCategory == cat ? primaryColor : Color.white)
+                        .overlay(Capsule().stroke(borderGray, lineWidth: 1))
                         .clipShape(Capsule())
                         .onTapGesture { vm.selectedCategory = cat }
                 }
             }
             .padding(.horizontal, 24)
+            .padding(.top, 4)
+            .padding(.bottom, 6)
         }
     }
 
     var reviewInputBox: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack {
+            // Border
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Color.white)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .stroke(borderGray, lineWidth: 1)
+                )
 
-            RoundedRectangle(cornerRadius: 22)
-                .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 22).stroke(borderGray))
-                .frame(height: 146)
+            // Content inset
+            ZStack(alignment: .topTrailing) {
 
-            // Placeholder (Right)
-            if vm.newComment.isEmpty {
-                Text("اكتب تعليقك...")
-                    .font(.system(size: 17))
-                    .foregroundStyle(hintGray)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.top, 16)
-                    .padding(.trailing, 18)
+                // Top row: Placeholder (right) + Stars (left)
+                HStack(alignment: .top) {
+
+                    if vm.newComment.isEmpty {
+                        Text("اكتب تعليقك...")
+                            .font(.system(size: 17, weight: .regular))
+                            .foregroundStyle(hintGray)
+                            .multilineTextAlignment(.trailing)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .environment(\.layoutDirection, .rightToLeft)
+                            .padding(.top,5)
+                            .offset(x:-35)
+                    } else {
+                        Spacer(minLength: 0)
+                    }
+
+                    HStack(spacing: 8) {
+                        ForEach(1...5, id: \.self) { i in
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 22, weight: .regular))
+                                .foregroundStyle(i <= vm.newRating ? Color.yellow : Color.gray.opacity(0.35))
+                                .onTapGesture { vm.newRating = i }
+                        }
+                    }
                     .environment(\.layoutDirection, .leftToRight)
-            }
-
-            // Stars (Top-Left inside box)
-            HStack(spacing: 8) {
-                ForEach(1...5, id: \.self) { i in
-                    Image(systemName: "star.fill")
-                        .font(.system(size: 22))
-                        .foregroundStyle(i <= vm.newRating ? .yellow : .gray.opacity(0.35))
-                        .onTapGesture { vm.newRating = i }
-
-                    
                 }
-                .environment(\.layoutDirection, .rightToLeft)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 2)
 
-            }
-            .environment(\.layoutDirection, .leftToRight)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.top, 16)
-            .padding(.leading, 18)
+                // TextEditor (right-to-left typing)
+                TextEditor(text: $vm.newComment)
+                    .font(.system(size: 16, weight: .regular))
+                    .focused($isCommentFocused)
+                    .scrollContentBackground(.hidden)
+                    .background(Color.clear)
+                    .environment(\.layoutDirection, .rightToLeft)
+                    .padding(.top, 30) // keeps text below top row
 
-            // TextEditor (Right aligned)
-            TextEditor(text: $vm.newComment)
-                .font(.system(size: 16))
-                .padding(.horizontal, 14)
-                .padding(.top, 44)
-                .focused($isCommentFocused)
-                .scrollContentBackground(.hidden)
-                .background(Color.clear)
-                .environment(\.layoutDirection, .rightToLeft) // هذا السطر هو الحل
-
-
-            // Plus (inside border, bottom-right)
-            VStack {
-                Spacer()
-                HStack {
+                // Add button (bottom-right)
+                VStack {
                     Spacer()
-                    Button {
-                        vm.addReview()
-                        isCommentFocused = true
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(width: 30, height: 30)
-                            .background(primaryColor)
-                            .clipShape(Circle())
+                    HStack {
+                        Spacer()
+                        Button {
+                            vm.addReview()
+                            isCommentFocused = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(.white)
+                                .frame(width: 30, height: 30)
+                                .background(primaryColor)
+                                .clipShape(Circle())
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
-                .padding(.trailing, 18)
-                .padding(.bottom, 18)
             }
+            .padding(18)
         }
+        .frame(height: 146)
         .padding(.horizontal, 24)
+        .contentShape(Rectangle())
         .onTapGesture { isCommentFocused = true }
     }
 }
@@ -271,49 +288,56 @@ private extension NeighborhoodServicesView {
             }
         }
         .padding(.horizontal, 24)
+        .padding(.top, 4)
     }
 
     func commentCard(_ review: NeighborhoodReview) -> some View {
         VStack(alignment: .trailing, spacing: 10) {
 
-            // Top row: Stars left, Category right (inside card)
+            // Top row: stars left, category right
             HStack {
                 HStack(spacing: 6) {
                     ForEach(1...5, id: \.self) { i in
                         Image(systemName: "star.fill")
-                            .font(.system(size: 18))
-                            .foregroundStyle(i <= review.rating ? .yellow : .gray.opacity(0.35))
+                            .font(.system(size: 18, weight: .regular))
+                            .foregroundStyle(i <= review.rating ? Color.yellow : Color.gray.opacity(0.35))
                     }
                 }
 
                 Spacer()
 
                 Text(review.category.rawValue)
-                    .font(.system(size: 17))
+                    .font(.system(size: 17, weight: .regular))
                     .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 10)
                     .background(primaryColor)
                     .clipShape(Capsule())
             }
-            .environment(\.layoutDirection, .leftToRight) // يثبت: نجوم يسار + تصنيف يمين
+            .environment(\.layoutDirection, .leftToRight)
 
-            // Comment text (Right)
+            // Comment text (right aligned)
             Text(review.comment)
-                .font(.system(size: 17))
+                .font(.system(size: 17, weight: .regular))
                 .foregroundStyle(.black)
                 .multilineTextAlignment(.trailing)
                 .frame(maxWidth: .infinity, alignment: .trailing)
+                .environment(\.layoutDirection, .rightToLeft)
+                .offset(x:-7)
+            
 
-            // Date (Right)
+            // Date (right aligned)
             Text(relativeDate(review.createdAt))
-                .font(.system(size: 14))
+                .font(.system(size: 14, weight: .regular))
                 .foregroundStyle(hintGray)
                 .frame(maxWidth: .infinity, alignment: .trailing)
+                .environment(\.layoutDirection, .rightToLeft)
         }
         .padding(16)
-        .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 22))
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 8)
     }
 
@@ -327,28 +351,39 @@ private extension NeighborhoodServicesView {
 // MARK: - Helpers
 private extension Color {
     init(hex: String) {
-        let hex = hex.trimmingCharacters(in: .alphanumerics.inverted)
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
         Scanner(string: hex).scanHexInt64(&int)
-        self.init(
-            .sRGB,
-            red: Double((int >> 16) & 0xFF) / 255,
-            green: Double((int >> 8) & 0xFF) / 255,
-            blue: Double(int & 0xFF) / 255,
-            opacity: 1
-        )
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 6:
+            (a, r, g, b) = (255, (int >> 16) & 0xFF, (int >> 8) & 0xFF, int & 0xFF)
+        case 8:
+            (a, r, g, b) = ((int >> 24) & 0xFF, (int >> 16) & 0xFF, (int >> 8) & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (255, 0, 0, 0)
+        }
+        self.init(.sRGB, red: Double(r) / 255, green: Double(g) / 255, blue: Double(b) / 255, opacity: Double(a) / 255)
     }
 }
 
 private extension ServiceCategory {
     func iconColor(using greenPrimary: Color, yellowHex: Color) -> Color {
         switch self {
-        case .parks, .libraries, .gasStations, .groceries: return greenPrimary
-        case .metro, .hospitals: return Color("BlueSecondary")
-        case .cafes, .mall, .supermarkets: return Color("PurpleSecondary")
-        case .cinema, .restaurants, .schools: return yellowHex
+        case .parks, .libraries, .gasStations, .groceries:
+            return greenPrimary
+        case .metro, .hospitals:
+            return Color("BlueSecondary")
+        case .cafes, .mall, .supermarkets:
+            return Color("PurpleSecondary")
+        case .cinema, .restaurants, .schools:
+            return yellowHex
         }
     }
 }
-
-
+#Preview {
+    NeighborhoodServicesView(
+        neighborhoodName: "اسم الحي",
+        coordinate: .init(latitude: 0.0, longitude: 0.0)
+    )
+}

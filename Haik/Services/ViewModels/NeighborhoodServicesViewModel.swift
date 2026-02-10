@@ -1,4 +1,3 @@
-
 import Foundation
 import Combine
 import CoreLocation
@@ -11,7 +10,9 @@ final class NeighborhoodServicesViewModel: ObservableObject {
 
     let services: [ServiceCategory] = ServiceCategory.allCases
 
-    @Published private(set) var reviews: [NeighborhoodReview] = []
+    @Published private(set) var reviews: [NeighborhoodReview] = [] {
+        didSet { updateReviewsCount() }
+    }
 
     @Published var selectedCategory: ReviewCategory = .electricity
     @Published var newRating: Int = 0
@@ -19,6 +20,9 @@ final class NeighborhoodServicesViewModel: ObservableObject {
 
     @Published private(set) var placesByService: [ServiceCategory: [Place]] = [:]
     @Published private(set) var isLoadingByService: Set<ServiceCategory> = []
+
+    // MARK: - Reviews Count (Backend Logic)
+    @Published private(set) var reviewsCount: Int = 0
 
     private let placesService: PlacesSearching
 
@@ -35,6 +39,18 @@ final class NeighborhoodServicesViewModel: ObservableObject {
             NeighborhoodReview(category: .electricity, rating: 3, comment: "جيده جدا! لايوجد انقطاعات.", createdAt: Date().addingTimeInterval(-2 * 24 * 3600)),
             NeighborhoodReview(category: .internet, rating: 4, comment: "النت ممتاز أغلب الوقت.", createdAt: Date().addingTimeInterval(-6 * 24 * 3600))
         ]
+
+        updateReviewsCount()
+    }
+
+    // MARK: - Public accessor (use in other screens)
+    func getReviewsCount() -> Int {
+        reviewsCount
+    }
+
+    // MARK: - Internal counter updater
+    private func updateReviewsCount() {
+        reviewsCount = reviews.count
     }
 
     func places(for service: ServiceCategory) -> [Place] {
@@ -66,7 +82,6 @@ final class NeighborhoodServicesViewModel: ObservableObject {
                 )
             }
 
-
             placesByService[service] = uiPlaces
         } catch {
             placesByService[service] = []
@@ -84,5 +99,6 @@ final class NeighborhoodServicesViewModel: ObservableObject {
         newRating = 0
         newComment = ""
         selectedCategory = .electricity
+        // reviewsCount updates automatically via didSet
     }
 }
