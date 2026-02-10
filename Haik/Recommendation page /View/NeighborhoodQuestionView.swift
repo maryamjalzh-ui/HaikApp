@@ -10,6 +10,7 @@ import SwiftUI
 struct NeighborhoodQuestionView: View {
 
     @ObservedObject var vm: NeighborhoodRecommendationViewModel
+    @Binding var isPresented: Bool
     private let sidePadding: CGFloat = 26
 
     @State private var expandedOptionID: String? = nil
@@ -22,8 +23,37 @@ struct NeighborhoodQuestionView: View {
 
         VStack(spacing: DS.cardSpacing) {
 
+            HStack {
+                Spacer()
+
+                Button {
+                    if vm.currentIndex > 0 {
+                        withAnimation(.easeInOut(duration: 0.18)) {
+                            vm.goBack()
+                        }
+                    } else {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            isPresented = false
+                        }
+                    }
+                } label: {
+                    Image(systemName: "chevron.forward")
+                        .font(.system(size: 18, weight: .regular))
+                        .foregroundColor(Color("Green2Primary"))
+                        .frame(width: 52, height: 52)
+                        .background(Color.white)
+                        .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, sidePadding)
+            .padding(.top, 10)
+            .environment(\.layoutDirection, .leftToRight)
+
+
+
             DashedProgressBar(total: vm.totalSteps, current: vm.currentStep)
-                .padding(.top, 14)
                 .padding(.horizontal, sidePadding)
 
             Text(question.title)
@@ -152,7 +182,6 @@ struct NeighborhoodQuestionView: View {
                     Text("- يمكنك اختيار خيارين كحد أقصى ")
                         .frame(maxWidth: .infinity, alignment: .trailing)
                     Text("- اختيارك الأول يحدد أولويتك")
-
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 .font(.system(size: 12))
@@ -161,7 +190,6 @@ struct NeighborhoodQuestionView: View {
                 .padding(.horizontal, sidePadding)
                 .padding(.top, 4)
                 .environment(\.layoutDirection, .leftToRight)
-
             }
 
         }
@@ -383,27 +411,28 @@ struct NeighborhoodSearchField: View {
 struct NeighborhoodRow: View {
     let title: String
     let isChosen: Bool
-    
+
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(isChosen ? Color("Green2Primary").opacity(0.12) : Color("GreyBackground"))
-            
+
             HStack(spacing: 10) {
-                
+
                 Text(title)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(.black)
                     .multilineTextAlignment(.trailing)
                     .frame(maxWidth: .infinity, alignment: .trailing)
-                
+
                 Image("NHIcon")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 18, height: 18)
             }
             .padding(.horizontal, 14)
-            .frame(maxWidth: .infinity, alignment: .trailing)        .environment(\.layoutDirection, .leftToRight)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .environment(\.layoutDirection, .leftToRight)
 
         }
         .frame(height: 48)

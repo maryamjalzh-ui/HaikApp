@@ -8,7 +8,6 @@
 import SwiftUI
 import MapKit
 
-// 1. موديل التعليق
 struct UserComment: Identifiable {
     let id = UUID()
     var text: String
@@ -22,6 +21,8 @@ struct FavouritePage: View {
     
     @State private var showServices = false
     @State private var selectedNeighborhoodName = ""
+    
+    @Environment(\.dismiss) private var dismiss
     
     @State private var comments: [UserComment] = [
         UserComment(text: "حي جيد وهادي لكن الشوارع مكسره من الجهه العلوية", rating: 4.0),
@@ -50,105 +51,129 @@ struct FavouritePage: View {
                 }
                 .ignoresSafeArea()
                 
-                ScrollView {
-                    VStack(alignment: .center, spacing: 25) {
-                        
-                        Button(action: { isEditingProfile = true }) {
-                            HStack(spacing: 15) {
-                                Image(systemName: "person")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 30, height: 30)
-                                    .foregroundColor(.black)
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(userName)
-                                        .font(.system(size: 20, weight: .bold))
+                VStack(spacing: 0) {
+                    HStack {
+                        Spacer()
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "chevron.forward")
+                                .font(.system(size: 18, weight: .regular))
+                                .foregroundColor(Color("Green2Primary"))
+                                .frame(width: 52, height: 52)
+                                .background(Color.white)
+                                .clipShape(Circle())
+                                .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, 26)
+                    .padding(.top, 10)
+                    .environment(\.layoutDirection, .leftToRight)
+                    
+                    ScrollView {
+                        VStack(alignment: .center, spacing: 25) {
+                            
+                            Button(action: { isEditingProfile = true }) {
+                                HStack(spacing: 15) {
+                                    Image(systemName: "person")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 30, height: 30)
                                         .foregroundColor(.black)
-                                    Text("عرض وتعديل الملف الشخصي")
-                                        .font(.caption)
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(userName)
+                                            .font(.system(size: 20, weight: .bold))
+                                            .foregroundColor(.black)
+                                        Text("عرض وتعديل الملف الشخصي")
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "chevron.left")
                                         .foregroundColor(.gray)
                                 }
-                                
-                                Spacer()
-                                
-                                Image(systemName: "chevron.left")
-                                    .foregroundColor(.gray)
+                                .padding(20)
+                                .frame(width: 360)
+                                .background(Color.white)
+                                .cornerRadius(15)
+                                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                             }
-                            .padding(20)
-                            .frame(width: 360)
-                            .background(Color.white)
-                            .cornerRadius(15)
-                            .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
-                        }
-                        .padding(.top, 0)
-                        
-                        // عنوان الأحياء المحفوظة
-                        HeaderSection(title: "الأحياء المحفوظة:", icon: "heart")
-                            .frame(width: 360)
+                            .padding(.top, 0)
+                            
+                            HeaderSection(title: "الأحياء المحفوظة:", icon: "heart")
+                                .frame(width: 360)
 
-                        // قسم الأحياء المحفوظة
-                        VStack(spacing: 16) {
-                            NeighborhoodCard(name: "الياسمين", reviewCount: "29") {
-                                selectedNeighborhoodName = "حي الياسمين"
-                                showServices = true
+                            VStack(spacing: 16) {
+                                NeighborhoodCard(name: "الياسمين", reviewCount: "29") {
+                                    selectedNeighborhoodName = "حي الياسمين"
+                                    showServices = true
+                                }
+                                NeighborhoodCard(name: "النرجس", reviewCount: "15") {
+                                    selectedNeighborhoodName = "حي النرجس"
+                                    showServices = true
+                                }
                             }
-                            NeighborhoodCard(name: "النرجس", reviewCount: "15") {
-                                selectedNeighborhoodName = "حي النرجس"
-                                showServices = true
-                            }
-                        }
-                        
-                        HeaderSection(title: "تعليقاتك:", icon: "text.bubble")
-                            .frame(width: 360)
-                            .padding(.top, 10)
+                            
+                            HeaderSection(title: "تعليقاتك:", icon: "text.bubble")
+                                .frame(width: 360)
+                                .padding(.top, 10)
 
-                        if !comments.isEmpty {
-                            HStack(spacing: 15) {
-                                Button(action: {
-                                    if selectedCommentIndex > 0 {
-                                        withAnimation { selectedCommentIndex -= 1 }
+                            if !comments.isEmpty {
+                                HStack(spacing: 15) {
+                                    Button(action: {
+                                        if selectedCommentIndex > 0 {
+                                            withAnimation { selectedCommentIndex -= 1 }
+                                        }
+                                    }) {
+                                        Image(systemName: "arrow.right")
+                                            .foregroundColor(selectedCommentIndex == 0 ? .gray.opacity(0.3) : Color("GreenPrimary"))
+                                            .font(.system(size: 20, weight: .bold))
                                     }
-                                }) {
-                                    Image(systemName: "arrow.right")
-                                        .foregroundColor(selectedCommentIndex == 0 ? .gray.opacity(0.3) : Color("GreenPrimary"))
-                                        .font(.system(size: 20, weight: .bold))
-                                }
-                                .disabled(selectedCommentIndex == 0)
+                                    .disabled(selectedCommentIndex == 0)
 
-                                TabView(selection: $selectedCommentIndex) {
-                                    ForEach(0..<comments.count, id: \.self) { index in
-                                        CommentCard(comment: comments[index])
-                                            .tag(index)
-                                            .onTapGesture {
-                                                draftCommentText = comments[index].text
-                                                draftRating = comments[index].rating
-                                                isManagingComment = true
-                                            }
+                                    TabView(selection: $selectedCommentIndex) {
+                                        ForEach(0..<comments.count, id: \.self) { index in
+                                            CommentCard(comment: comments[index])
+                                                .tag(index)
+                                                .onTapGesture {
+                                                    draftCommentText = comments[index].text
+                                                    draftRating = comments[index].rating
+                                                    isManagingComment = true
+                                                }
+                                        }
                                     }
-                                }
-                                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                                .frame(width: 300, height: 180)
+                                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                                    .frame(width: 300, height: 180)
 
-                                Button(action: {
-                                    if selectedCommentIndex < comments.count - 1 {
-                                        withAnimation { selectedCommentIndex += 1 }
+                                    Button(action: {
+                                        if selectedCommentIndex < comments.count - 1 {
+                                            withAnimation { selectedCommentIndex += 1 }
+                                        }
+                                    }) {
+                                        Image(systemName: "arrow.left")
+                                            .foregroundColor(selectedCommentIndex >= comments.count - 1 ? .gray.opacity(0.3) : Color("GreenPrimary"))
+                                            .font(.system(size: 20, weight: .bold))
                                     }
-                                }) {
-                                    Image(systemName: "arrow.left")
-                                        .foregroundColor(selectedCommentIndex >= comments.count - 1 ? .gray.opacity(0.3) : Color("GreenPrimary"))
-                                        .font(.system(size: 20, weight: .bold))
+                                    .disabled(selectedCommentIndex >= comments.count - 1)
                                 }
-                                .disabled(selectedCommentIndex >= comments.count - 1)
                             }
                         }
+                        .padding(.top, -15)
+                        .padding(.vertical)
+                        .frame(maxWidth: .infinity)
                     }
-                    .padding(.top, -15) 
-                    .padding(.vertical)
-                    .frame(maxWidth: .infinity)
+                    .padding(.top, 8)
                 }
             }
             .environment(\.layoutDirection, .rightToLeft)
+            
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
+            
             .navigationDestination(isPresented: $showServices) {
                 NeighborhoodServicesView(neighborhoodName: selectedNeighborhoodName, coordinate: .init(latitude: 24.7136, longitude: 46.6753))
             }

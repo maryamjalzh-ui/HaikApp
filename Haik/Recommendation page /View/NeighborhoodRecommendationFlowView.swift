@@ -2,9 +2,6 @@
 //  NeighborhoodRecommendationFlowView.swift
 //  Haik
 //
-
-//
-
 import SwiftUI
 
 struct NeighborhoodRecommendationFlowView: View {
@@ -19,35 +16,11 @@ struct NeighborhoodRecommendationFlowView: View {
             } else if vm.isShowingResults {
                 NeighborhoodResultView(vm: vm)
             } else {
-                NeighborhoodQuestionView(vm: vm)
+                NeighborhoodQuestionView(vm: vm, isPresented: $isPresented)
             }
         }
         .environment(\.layoutDirection, .rightToLeft)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    if vm.isShowingResults {
-                        withAnimation(.easeInOut(duration: 0.18)) {
-                            vm.isShowingResults = false
-                        }
-                    } else if vm.currentIndex > 0 {
-                        withAnimation(.easeInOut(duration: 0.18)) {
-                            vm.goBack()
-                        }
-                    } else {
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            isPresented = false
-                        }
-                    }
-                } label: {
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(.black)
-                        .frame(width: 44, height: 44)
-                        .background(Color.white.opacity(0.7))
-                        .clipShape(Circle())
-                }
-            }
-        }
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
     }
 }

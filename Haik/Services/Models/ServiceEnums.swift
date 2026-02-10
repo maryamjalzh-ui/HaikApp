@@ -30,8 +30,10 @@ enum ServiceCategory: String, CaseIterable, Identifiable {
         case .schools: return .schools
         case .mall: return .mall
         case .metro: return .metroPrimary
-        case .groceries, .supermarkets: return .fullServices
+        case .supermarkets: return .services      
+         case .groceries: return .fullServices
         case .cafes: return .cafes
+        case .restaurants: return .restaurants
         default: return .services
         }
     }

@@ -39,7 +39,7 @@ final class NeighborhoodServicesViewModel: ObservableObject {
             NeighborhoodReview(category: .electricity, rating: 3, comment: "جيده جدا! لايوجد انقطاعات.", createdAt: Date().addingTimeInterval(-2 * 24 * 3600)),
             NeighborhoodReview(category: .internet, rating: 4, comment: "النت ممتاز أغلب الوقت.", createdAt: Date().addingTimeInterval(-6 * 24 * 3600))
         ]
-
+            
         updateReviewsCount()
     }
 

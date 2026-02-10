@@ -82,7 +82,7 @@ private extension NeighborhoodServicesView {
                 Button { } label: {
                     Image(systemName: "heart")
                         .font(.system(size: 18, weight: .regular))
-                        .foregroundStyle(.black)
+                        .foregroundColor(Color("Green2Primary"))
                         .frame(width: 52, height: 52)
                         .background(Color.white)
                         .clipShape(Circle())
@@ -99,7 +99,7 @@ private extension NeighborhoodServicesView {
                 } label: {
                     Image(systemName: "chevron.forward")
                         .font(.system(size: 18, weight: .regular))
-                        .foregroundStyle(.black)
+                        .foregroundColor(Color("Green2Primary"))
                         .frame(width: 52, height: 52)
                         .background(Color.white)
                         .clipShape(Circle())
@@ -324,7 +324,7 @@ private extension NeighborhoodServicesView {
                 .foregroundStyle(.black)
                 .multilineTextAlignment(.trailing)
                 .frame(maxWidth: .infinity, alignment: .trailing)
-                .environment(\.layoutDirection, .rightToLeft)
+                .environment(\.layoutDirection, .leftToRight)
                 .offset(x:-7)
             
 
@@ -333,10 +333,12 @@ private extension NeighborhoodServicesView {
                 .font(.system(size: 14, weight: .regular))
                 .foregroundStyle(hintGray)
                 .frame(maxWidth: .infinity, alignment: .trailing)
-                .environment(\.layoutDirection, .rightToLeft)
+                .environment(\.layoutDirection, .leftToRight)
         }
+
         .padding(16)
         .background(Color.white)
+
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 8)
     }
@@ -370,11 +372,11 @@ private extension Color {
 private extension ServiceCategory {
     func iconColor(using greenPrimary: Color, yellowHex: Color) -> Color {
         switch self {
-        case .parks, .libraries, .gasStations, .groceries:
+        case  .libraries, .gasStations, .groceries:
             return greenPrimary
-        case .metro, .hospitals:
+        case .hospitals ,.mall ,.parks:
             return Color("BlueSecondary")
-        case .cafes, .mall, .supermarkets:
+        case .cafes, .supermarkets , .metro:
             return Color("PurpleSecondary")
         case .cinema, .restaurants, .schools:
             return yellowHex

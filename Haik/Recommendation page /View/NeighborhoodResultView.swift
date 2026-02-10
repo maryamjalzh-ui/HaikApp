@@ -1,4 +1,3 @@
-
 //
 //  NeighborhoodResultView.swift
 //  Haik
@@ -19,7 +18,6 @@ struct NeighborhoodResultView: View {
     @State private var cardOrder: [Int] = []
     @State private var dragOffset: CGFloat = 0
 
-    // ✅ added (go back to HomeScreen on save)
     @State private var goHome: Bool = false
 
     private let sidePadding: CGFloat = 26
@@ -31,9 +29,32 @@ struct NeighborhoodResultView: View {
     var body: some View {
         VStack(spacing: 0) {
 
+            HStack {
+                Spacer()
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.18)) {
+                        vm.isShowingResults = false
+                    }
+                } label: {
+                    Image(systemName: "chevron.forward")
+                        .environment(\.layoutDirection, .leftToRight) // ✅ فقط للأيقونة
+                        .font(.system(size: 18, weight: .regular))
+                        .foregroundColor(Color("Green2Primary"))
+                        .frame(width: 52, height: 52)
+                        .background(Color.white)
+                        .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, sidePadding)
+            .padding(.top, 10)
+            .environment(\.layoutDirection, .leftToRight)
+
             DashedProgressBar(total: vm.totalSteps, current: vm.currentStep)
-                .padding(.top, 14)
                 .padding(.horizontal, sidePadding)
+                .padding(.top, 25) 
 
             Text("الاحي الانسب لك")
                 .font(.system(size: 28, weight: .bold))
@@ -48,7 +69,6 @@ struct NeighborhoodResultView: View {
                 Spacer()
             } else {
 
-                // Stacked Carousel
                 ZStack {
                     ForEach(cardOrder, id: \.self) { id in
                         cardView(for: id)
@@ -56,7 +76,6 @@ struct NeighborhoodResultView: View {
                 }
                 .frame(height: 420)
 
-                // Page Indicators
                 HStack(spacing: 8) {
                     ForEach(0..<neighborhoods.count, id: \.self) { i in
                         Circle()
@@ -70,7 +89,6 @@ struct NeighborhoodResultView: View {
 
             Spacer()
 
-            // ✅ Save -> HomeScreen
             Button(action: { goHome = true }) {
                 Text("تم")
                     .font(.system(size: 22, weight: .bold))
@@ -92,7 +110,6 @@ struct NeighborhoodResultView: View {
             cardOrder = Array(newValue.indices)
             dragOffset = 0
         }
-        // ✅ presents HomeScreen (no need to know your navigation stack structure)
         .fullScreenCover(isPresented: $goHome) {
             HomeScreen()
         }
@@ -117,7 +134,6 @@ struct NeighborhoodResultView: View {
             .zIndex(-Double(position))
             .offset(x: position == 0 ? dragOffset : 0)
             .contentShape(Rectangle())
-            // ✅ SWIPE FIX: gesture only on the top card
             .gesture(
                 position == 0
                 ? DragGesture()
@@ -146,7 +162,6 @@ struct NeighborhoodResultView: View {
         return vm.resultInfoItems(for: n)
     }
 
-    // Carousel Logic
     private func getPosition(for id: Int) -> Int { cardOrder.firstIndex(of: id) ?? 0 }
 
     private func shiftForward() {
@@ -211,6 +226,7 @@ struct ResultCardView: View {
                         .font(.system(size: 26, weight: .bold))
                         .foregroundColor(.black)
                 }
+                .environment(\.layoutDirection, .leftToRight)
             }
             .padding([.horizontal, .top], 20)
 
@@ -259,12 +275,13 @@ struct ResultCardView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "arrow.left")
                         .font(.system(size: 14, weight: .bold))
-                    Text("عرض المزيد")
+                    Text("عرض الحي")
                         .font(.system(size: 16, weight: .medium))
                 }
                 .foregroundColor(Color("Green2Primary"))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 25)
+                .environment(\.layoutDirection, .leftToRight)
             }
             .buttonStyle(.plain)
             .offset(y: -20)

@@ -133,11 +133,11 @@ struct ServiceListView: View {
     // MARK: - Icon Color (matches Neighborhood page)
     private func serviceIconColor(_ service: ServiceCategory) -> Color {
         switch service {
-        case .parks, .libraries, .gasStations, .groceries:
+        case .libraries, .gasStations, .groceries:
             return greenPrimary
-        case .metro, .hospitals:
+        case .parks, .hospitals , .mall:
             return blueSecondary
-        case .cafes, .mall, .supermarkets:
+        case .cafes, .metro, .supermarkets:
             return purpleSecondary
         case .cinema, .restaurants, .schools:
             return yellowHex
