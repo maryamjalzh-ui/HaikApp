@@ -1,7 +1,7 @@
 import SwiftUI
+import MapKit
 
-struct PlaceDetailsSheetView: View {
-
+struct PlaceDetailSheetView: View {
     let place: Place
     let service: ServiceCategory
 
@@ -10,7 +10,6 @@ struct PlaceDetailsSheetView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-
             Capsule()
                 .fill(Color.gray.opacity(0.25))
                 .frame(width: 50, height: 6)
@@ -19,7 +18,7 @@ struct PlaceDetailsSheetView: View {
             HStack(spacing: 8) {
                 ForEach(1...5, id: \.self) { i in
                     Image(systemName: "star.fill")
-                        .font(.system(size: 22))
+                        .font(.system(size: 22, weight: .regular))
                         .foregroundStyle(i <= place.rating ? Color.yellow : Color.gray.opacity(0.35))
                 }
                 Spacer()
@@ -28,7 +27,7 @@ struct PlaceDetailsSheetView: View {
 
             HStack {
                 Text(place.isOpen ? "مفتوح" : "مغلق")
-                    .font(.system(size: 18))
+                    .font(.system(size: 18, weight: .regular))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 10)
@@ -38,12 +37,12 @@ struct PlaceDetailsSheetView: View {
                 Spacer()
 
                 Text(place.name)
-                    .font(.system(size: 26))
+                    .font(.system(size: 26, weight: .regular))
                     .foregroundStyle(.black)
 
-                Image(systemName: service.systemIconName)
-                    .font(.system(size: 34))
-                    .foregroundStyle(service.iconColor())
+                serviceIcon
+                    .font(.system(size: 34, weight: .regular))
+                    .foregroundStyle(greenPrimary)
                     .frame(width: 66, height: 66)
                     .background(Color.white)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -51,12 +50,16 @@ struct PlaceDetailsSheetView: View {
             }
             .padding(.horizontal, 20)
 
-            Button { } label: {
+            Spacer().frame(height: 8)
+
+            Button {
+                openInMaps()
+            } label: {
                 HStack(spacing: 10) {
                     Image(systemName: "paperplane")
-                        .font(.system(size: 20))
-                    Text("خذني للموقع")
-                        .font(.system(size: 20))
+                        .font(.system(size: 20, weight: .regular))
+                    Text("الانتقال إلى الموقع")
+                        .font(.system(size: 20, weight: .regular))
                 }
                 .foregroundStyle(blueSecondary)
                 .frame(maxWidth: .infinity)
@@ -64,9 +67,32 @@ struct PlaceDetailsSheetView: View {
             }
             .padding(.horizontal, 20)
 
+
             Spacer()
         }
         .environment(\.layoutDirection, .rightToLeft)
         .background(Color.white)
+    }
+
+    private func openInMaps() {
+        let coordinate = CLLocationCoordinate2D(
+            latitude: place.coordinate.latitude,
+            longitude: place.coordinate.longitude
+        )
+
+        let placemark = MKPlacemark(coordinate: coordinate)
+        let mapItem = MKMapItem(placemark: placemark)
+        mapItem.name = place.name
+
+        mapItem.openInMaps(launchOptions: [
+            MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
+        ])
+    }
+
+    private var serviceIcon: Image {
+        if let fallback = service.fallbackSystemSymbol {
+            return Image(systemName: fallback)
+        }
+        return Image(systemName: service.icon.systemName)
     }
 }

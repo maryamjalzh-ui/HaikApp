@@ -1,36 +1,33 @@
 //
-//  Place.swift
+//  MapPlace.swift
 //  Haik
 //
-//  Created by layan Alturki on 09/02/2026.
+//  Created by Shahad Alharbi on 2/9/26.
 //
+
 
 import Foundation
 import CoreLocation
 
-struct Place: Identifiable, Hashable {
-
+struct MapPlace: Identifiable, Hashable {
     let id: UUID
     let name: String
-    let rating: Int
-    let isOpen: Bool
+    let address: String
     let coordinate: CLLocationCoordinate2D
 
     init(
         id: UUID = UUID(),
         name: String,
-        rating: Int,
-        isOpen: Bool,
+        address: String,
         coordinate: CLLocationCoordinate2D
     ) {
         self.id = id
         self.name = name
-        self.rating = rating
-        self.isOpen = isOpen
+        self.address = address
         self.coordinate = coordinate
     }
 
-    static func == (lhs: Place, rhs: Place) -> Bool {
+    static func == (lhs: MapPlace, rhs: MapPlace) -> Bool {
         lhs.id == rhs.id
     }
 
