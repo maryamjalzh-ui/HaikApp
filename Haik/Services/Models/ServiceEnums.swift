@@ -31,7 +31,7 @@ enum ServiceCategory: String, CaseIterable, Identifiable {
         case .mall: return .mall
         case .metro: return .metroPrimary
         case .groceries, .supermarkets: return .fullServices
-            
+        case .cafes: return .cafes
         default: return .services
         }
     }
