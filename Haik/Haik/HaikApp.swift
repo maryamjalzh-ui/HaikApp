@@ -21,15 +21,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 // MARK: - Main App
 @main
 struct HaikApp: App {
-    // ربط الـ AppDelegate لضمان عمل Firebase
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
-    // --- المتغيرات اللي كانت ناقصة وسببت الأخطاء ---
     @State private var isUserLoggedIn = false
     @State private var hasChecked = false
 
     init() {
-        // إجبار الواجهة على دعم الاتجاه من اليمين لليسار (اللغة العربية)
         UIView.appearance().semanticContentAttribute = .forceRightToLeft
     }
 
@@ -37,7 +34,6 @@ struct HaikApp: App {
         WindowGroup {
             ZStack {
                 if !hasChecked {
-                    // شاشة بيضاء مؤقتة حتى ينتهي التحقق من حالة المستخدم
                     Color.white.ignoresSafeArea()
                 } else {
                     if isUserLoggedIn {
