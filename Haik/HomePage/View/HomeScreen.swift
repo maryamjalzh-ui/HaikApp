@@ -39,7 +39,6 @@ struct HomeScreen: View {
                 }
                 .ignoresSafeArea()
                 
-                // عرض البطاقة السفلية أو رسالة التلميح بناءً على اختيار الحي
                 if !isKeyboardVisible {
                     if let neighborhood = viewModel.selectedNeighborhood {
                         bottomInfoCard(neighborhood: neighborhood)
@@ -50,13 +49,10 @@ struct HomeScreen: View {
                     }
                 }
             }
-            // تشغيل فحص الدخول لأول مرة عند ظهور الشاشة
             .onAppear {
                 checkFirstTimeLogin()
-                // لا تنسي مناداة دالة تحديث التقييمات التي اضفناها سابقاً في الـ ViewModel
                 viewModel.updateNeighborhoodRatings()
             }
-            // رسالة الترحيب الاحترافية
             .alert("مرحباً بك في حيك! 🎉", isPresented: $showWelcomeAlert) {
                 Button("استكشاف الأحياء", role: .cancel) { }
             } message: {
@@ -99,10 +95,13 @@ struct HomeScreen: View {
     
     // دالة فحص الدخول لأول مرة (مكانها صحيح هنا داخل الـ Struct)
     func checkFirstTimeLogin() {
+        let isNewUser = UserDefaults.standard.bool(forKey: "isNewUser")
         let hasSeenWelcome = UserDefaults.standard.bool(forKey: "hasSeenWelcome")
-        if !hasSeenWelcome {
+        if isNewUser && !hasSeenWelcome {
             self.showWelcomeAlert = true
             UserDefaults.standard.set(true, forKey: "hasSeenWelcome")
+            // نحذف علامة المستخدم الجديد لكي لا تظهر مرة أخرى أبداً
+            UserDefaults.standard.set(false, forKey: "isNewUser")
         }
     }
 }
@@ -141,6 +140,7 @@ extension HomeScreen {
         .padding(.horizontal)
     }
     
+    // --- التعديل هنا: البحث الأصلي مع NHIcon والارتفاع المرن ---
     private var searchResultsList: some View {
         Group {
             if !viewModel.searchText.isEmpty && viewModel.selectedNeighborhood == nil {
@@ -153,21 +153,36 @@ extension HomeScreen {
                             VStack(spacing: 0) {
                                 ForEach(viewModel.filteredNeighborhoods) { neighborhood in
                                     Button(action: { viewModel.selectNeighborhood(neighborhood) }) {
-                                        HStack {
-                                            Text(neighborhood.name).font(.system(size: 16, weight: .medium)).foregroundColor(.primary)
+                                        HStack(spacing: 12) {
+                                            // إضافة اللوقو الأصلي NHIcon
+                                            Image("NHIcon")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 24, height: 24)
+                                            
+                                            Text(neighborhood.name)
+                                                .font(.system(size: 16, weight: .medium))
+                                                .foregroundColor(.primary)
+                                            
                                             Spacer()
-                                            Text(neighborhood.region).font(.system(size: 12)).foregroundColor(.secondary)
+                                            
+                                            Text(neighborhood.region)
+                                                .font(.system(size: 12)).foregroundColor(.secondary)
                                         }
                                         .padding(.vertical, 14).padding(.horizontal, 16)
                                     }
-                                    Divider().padding(.leading, 16)
+                                    if neighborhood.id != viewModel.filteredNeighborhoods.last?.id {
+                                        Divider().padding(.leading, 52)
+                                    }
                                 }
                             }
                         }
-                        .frame(maxHeight: 250)
+                        // الارتفاع يتحدد حسب عدد النتائج بحد أقصى 250
+                        .frame(maxHeight: viewModel.filteredNeighborhoods.count > 3 ? 250 : .infinity)
                     }
                 }
                 .background(Color.white).cornerRadius(16).shadow(radius: 10).padding(.horizontal, 20)
+                .fixedSize(horizontal: false, vertical: true) // هذا السطر يمنع الخلفية من التمدد الزائد
             }
         }
     }

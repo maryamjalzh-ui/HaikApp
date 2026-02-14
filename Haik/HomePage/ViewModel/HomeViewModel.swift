@@ -29,8 +29,16 @@ class HomeViewModel: ObservableObject {
     )
     
     var filteredNeighborhoods: [Neighborhood] {
-        if searchText.isEmpty { return [] }
-        return neighborhoods.filter { $0.name.contains(searchText) }
+        // 1. تنظيف النص من المسافات الزائدة في البداية والنهاية
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // 2. إذا كان الحقل فارغاً، لا تظهر نتائج
+        if query.isEmpty { return [] }
+        
+        // 3. البحث المرن الذي يتجاهل الهمزات وحالة الأحرف
+        return neighborhoods.filter { neighborhood in
+            neighborhood.name.localizedCaseInsensitiveContains(query)
+        }
     }
     
     func selectNeighborhood(_ neighborhood: Neighborhood) {
@@ -89,6 +97,7 @@ class HomeViewModel: ObservableObject {
             .map { _ in false }
             .assign(to: \.isKeyboardVisible, on: self)
             .store(in: &cancellables)
+        updateNeighborhoodRatings() // السطر الضروري لجلب البيانات فور البدء
     }
     
 }

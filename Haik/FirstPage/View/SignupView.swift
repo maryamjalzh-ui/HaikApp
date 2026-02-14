@@ -6,15 +6,14 @@
 //
 import SwiftUI
 
-
 struct SignupView: View {
     @StateObject private var viewModel = AuthViewModel()
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topTrailing) {
             Color.white.ignoresSafeArea()
             
-            // الخلفية
             VStack {
                 Spacer()
                 Image("Building").resizable().scaledToFit()
@@ -22,9 +21,26 @@ struct SignupView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 30) {
+                // هيدر يحتوي على زر العودة جهة اليمين
+                HStack {
+                    Spacer()
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.forward")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(Color("GreenPrimary"))
+                            .frame(width: 45, height: 45)
+                            .background(Color.white)
+                            .clipShape(Circle())
+                            .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 4)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+
                 Text("مرحبًا بك في حيك")
                     .font(.system(size: 28, weight: .bold))
-                    .padding(.top, 40)
                 
                 VStack(alignment: .trailing, spacing: 20) {
                     // حقل الاسم
@@ -37,7 +53,7 @@ struct SignupView: View {
                     // حقل البريد
                     VStack(alignment: .trailing, spacing: 8) {
                         Text("البريد الإلكتروني").foregroundColor(.gray)
-                        TextField("user@gmail.com", text: $viewModel.email)
+                        TextField("user @gmail.com", text: $viewModel.email)
                             .padding().background(Color(white: 0.92)).cornerRadius(25)
                             .autocapitalization(.none)
                     }
@@ -53,7 +69,7 @@ struct SignupView: View {
                             if viewModel.isPasswordVisible {
                                 TextField("", text: $viewModel.password).multilineTextAlignment(.trailing)
                             } else {
-                                SecureField("", text: $viewModel.password).multilineTextAlignment(.trailing)
+                                SecureField("**********", text: $viewModel.password).multilineTextAlignment(.trailing)
                             }
                         }
                         .padding().background(Color(white: 0.92)).cornerRadius(25)
@@ -70,18 +86,18 @@ struct SignupView: View {
                             if viewModel.isConfirmPasswordVisible {
                                 TextField("", text: $viewModel.confirmPassword).multilineTextAlignment(.trailing)
                             } else {
-                                SecureField("", text: $viewModel.confirmPassword).multilineTextAlignment(.trailing)
+                                SecureField("**********", text: $viewModel.confirmPassword).multilineTextAlignment(.trailing)
                             }
                         }
                         .padding().background(Color(white: 0.92)).cornerRadius(25)
                     }
+                    
                     if !viewModel.confirmPassword.isEmpty && !viewModel.isPasswordMatching {
                         Text("كلمات المرور غير متطابقة")
                             .font(.caption)
                             .foregroundColor(.red)
                             .padding(.trailing, 10)
                     }
-                    
                 }
                 .padding(.horizontal, 30)
                 
@@ -100,11 +116,11 @@ struct SignupView: View {
                         .background(Color.white)
                         .cornerRadius(30)
                         .shadow(color: Color("GreenPrimary").opacity(0.90), radius: 1, x: 1, y: 3)
-                        .overlay(RoundedRectangle(cornerRadius: 30).stroke(Color.black.opacity(0.05), lineWidth: 0.5))
                 }
                 .padding(.horizontal, 40).padding(.bottom, 40)
             }
         }
+        .navigationBarBackButtonHidden(true)
     }
 }
 #Preview {

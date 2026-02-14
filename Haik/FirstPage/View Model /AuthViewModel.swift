@@ -46,6 +46,7 @@ class AuthViewModel: ObservableObject {
     // داخل AuthViewModel
     var isPasswordMatching: Bool {
         !confirmPassword.isEmpty && password == confirmPassword
+        
     }
     func signUp() {
         // 1. التأكد من التطابق قبل البدء
@@ -59,7 +60,7 @@ class AuthViewModel: ObservableObject {
                 self.errorMessage = error.localizedDescription
                 return
             }
-
+            UserDefaults.standard.set(true, forKey: "isNewUser")
             // 2. إرسال رابط تأكيد الإيميل (تحسين UX)
             authResult?.user.sendEmailVerification { error in
                 if error == nil {
@@ -82,4 +83,5 @@ class AuthViewModel: ObservableObject {
             db.collection("users").document(uid).setData(userData)
         }
     }
+    
 }

@@ -5,15 +5,15 @@
 //  Created by Maryam Jalal Alzahrani on 23/08/1447 AH.
 //
 import SwiftUI
-import Firebase // استيراد فايربيس
+import Firebase
 import FirebaseAuth
-
 
 struct LogInPage: View {
     @StateObject private var viewModel = AuthViewModel()
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topTrailing) {
             Color.white.ignoresSafeArea()
             VStack {
                 Spacer()
@@ -22,12 +22,30 @@ struct LogInPage: View {
             .ignoresSafeArea()
             
             VStack(spacing: 40) {
+                // هيدر يحتوي على زر العودة جهة اليمين
+                HStack {
+                    Spacer()
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.forward")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(Color("GreenPrimary"))
+                            .frame(width: 45, height: 45)
+                            .background(Color.white)
+                            .clipShape(Circle())
+                            .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 4)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+
                 Text("مرحبًا بك في حيك")
                     .font(.system(size: 28, weight: .bold))
-                    .padding(.top, 50)
+                    .padding(.top, 20)
                 
                 VStack(alignment: .trailing, spacing: 25) {
-                    // حقل الإيميل مربوط بالـ ViewModel
+                    // حقل الإيميل
                     VStack(alignment: .trailing, spacing: 8) {
                         Text("البريد الإلكتروني").foregroundColor(.gray).font(.callout)
                         TextField("user@gmail.com", text: $viewModel.loginEmail)
@@ -35,7 +53,7 @@ struct LogInPage: View {
                             .autocapitalization(.none)
                     }
                     
-                    // حقل الباسورد مربوط بالـ ViewModel
+                    // حقل كلمة المرور
                     VStack(alignment: .trailing, spacing: 8) {
                         Text("كلمة المرور").foregroundColor(.gray).font(.callout)
                         HStack {
@@ -54,14 +72,12 @@ struct LogInPage: View {
                 }
                 .padding(.horizontal, 30)
                 
-                // عرض الخطأ من الـ ViewModel
                 if !viewModel.loginError.isEmpty {
                     Text(viewModel.loginError).foregroundColor(.red).font(.caption)
                 }
                 
                 Spacer()
                 
-                // زر الأكشن ينادي الدالة من الـ ViewModel مباشرة
                 Button(action: viewModel.login) {
                     Text("تسجيل الدخول")
                         .font(.system(size: 18, weight: .bold))
@@ -75,9 +91,10 @@ struct LogInPage: View {
                 }
                 .padding(.horizontal, 40).padding(.bottom, 60)
             }
-        }// --- الرابط الجديد هنا ---
+        }
+        .navigationBarBackButtonHidden(true)
         .fullScreenCover(isPresented: $viewModel.isLoginSuccess) {
-            HomeScreen() // الانتقال لصفحة الخريطة عند النجاح
+            HomeScreen()
         }
     }
 }
