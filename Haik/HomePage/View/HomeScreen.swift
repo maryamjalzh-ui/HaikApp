@@ -74,11 +74,14 @@ struct HomeScreen: View {
             .environment(\.layoutDirection, .rightToLeft)
             .overlay {
                 if showRecommendation {
-                    NeighborhoodRecommendationFlowView(isPresented: $showRecommendation)
+                    RecommendationOnboardingView(isPresented: $showRecommendation)
+                        .navigationBarBackButtonHidden(true)
+                        .environment(\.layoutDirection, .rightToLeft)
                         .transition(.move(edge: .trailing))
                         .zIndex(1)
                 }
             }
+
             .animation(.easeInOut(duration: 0.25), value: showRecommendation)
             .navigationDestination(isPresented: $viewModel.showServices) {
                 if let n = viewModel.neighborhoodForServices {
@@ -123,12 +126,14 @@ extension HomeScreen {
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled()
                 
+                
                 if !viewModel.searchText.isEmpty {
                     Button(action: { viewModel.searchText = "" }) {
                         Image(systemName: "xmark.circle.fill").foregroundColor(.gray)
                     }
                 }
             }
+            
             .padding(.horizontal).frame(height: 44).background(Color.white).cornerRadius(22).shadow(radius: 2)
             
             Button { showFavouritePage = true } label: {

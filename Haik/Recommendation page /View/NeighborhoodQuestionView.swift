@@ -4,13 +4,14 @@
 //
 //  Created by Shahad Alharbi on 2/8/26.
 //
-
 import SwiftUI
 
 struct NeighborhoodQuestionView: View {
 
     @ObservedObject var vm: NeighborhoodRecommendationViewModel
     @Binding var isPresented: Bool
+    @Environment(\.dismiss) private var dismiss
+
     private let sidePadding: CGFloat = 26
 
     @State private var expandedOptionID: String? = nil
@@ -33,7 +34,7 @@ struct NeighborhoodQuestionView: View {
                         }
                     } else {
                         withAnimation(.easeInOut(duration: 0.25)) {
-                            isPresented = false
+                            dismiss()
                         }
                     }
                 } label: {
@@ -45,13 +46,9 @@ struct NeighborhoodQuestionView: View {
                         .clipShape(Circle())
                         .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
                 }
-                .buttonStyle(.plain)
             }
-            .padding(.horizontal, sidePadding)
-            .padding(.top, 10)
+            .padding(.trailing, 35)
             .environment(\.layoutDirection, .leftToRight)
-
-
 
             DashedProgressBar(total: vm.totalSteps, current: vm.currentStep)
                 .padding(.horizontal, sidePadding)
@@ -187,7 +184,9 @@ struct NeighborhoodQuestionView: View {
                 .font(.system(size: 12))
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.trailing)
-                .padding(.horizontal, sidePadding)
+                .padding(.trailing, sidePadding + 15)
+                .padding(.leading, sidePadding)
+
                 .padding(.top, 4)
                 .environment(\.layoutDirection, .leftToRight)
             }

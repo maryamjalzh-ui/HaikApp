@@ -19,6 +19,8 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
     @Published var isShowingResults: Bool = false
     @Published var recommendations: [RecommendedNeighborhood] = []
     @Published var isLoadingResults: Bool = false
+    @Environment(\.dismiss) private var dismiss
+
     let totalSteps: Int = 4
 
     @Published var isComputingResults = false

@@ -20,12 +20,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 // MARK: - Main App
 @main
 struct HaikApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    
-    // استخدمي هذه الحالة المبدئية لضمان عدم ظهور شاشة سوداء
-    @State private var isUserLoggedIn = false
-    @State private var hasChecked = false
-
+    init() {
+          UIView.appearance().semanticContentAttribute = .forceRightToLeft
+      }
     var body: some Scene {
         WindowGroup {
             ZStack {
