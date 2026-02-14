@@ -28,7 +28,7 @@ struct WelcomeView: View {
                     
                     Text("مرحبًا بك في حيك")
                         .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(.black)
+                        .foregroundColor(.white)
                     
                     Image("FirstPageLogo")
                         .resizable()

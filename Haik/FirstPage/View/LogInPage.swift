@@ -5,11 +5,12 @@
 //  Created by Maryam Jalal Alzahrani on 23/08/1447 AH.
 //
 import SwiftUI
+import Firebase // استيراد فايربيس
+import FirebaseAuth
+
 
 struct LogInPage: View {
-    @State private var email = ""
-    @State private var password = ""
-    @State private var isPasswordVisible = false
+    @StateObject private var viewModel = AuthViewModel()
     
     var body: some View {
         ZStack {
@@ -26,23 +27,26 @@ struct LogInPage: View {
                     .padding(.top, 50)
                 
                 VStack(alignment: .trailing, spacing: 25) {
+                    // حقل الإيميل مربوط بالـ ViewModel
                     VStack(alignment: .trailing, spacing: 8) {
                         Text("البريد الإلكتروني").foregroundColor(.gray).font(.callout)
-                        TextField("user@gmail.com", text: $email)
+                        TextField("user@gmail.com", text: $viewModel.loginEmail)
                             .padding().background(Color(white: 0.94)).cornerRadius(25)
+                            .autocapitalization(.none)
                     }
                     
+                    // حقل الباسورد مربوط بالـ ViewModel
                     VStack(alignment: .trailing, spacing: 8) {
                         Text("كلمة المرور").foregroundColor(.gray).font(.callout)
                         HStack {
-                            Button(action: { isPasswordVisible.toggle() }) {
-                                Image(systemName: isPasswordVisible ? "eye" : "eye.slash").foregroundColor(.gray)
+                            Button(action: { viewModel.isPasswordVisible.toggle() }) {
+                                Image(systemName: viewModel.isPasswordVisible ? "eye" : "eye.slash").foregroundColor(.gray)
                             }
                             Spacer()
-                            if isPasswordVisible {
-                                TextField("", text: $password).multilineTextAlignment(.trailing)
+                            if viewModel.isPasswordVisible {
+                                TextField("", text: $viewModel.loginPassword).multilineTextAlignment(.trailing)
                             } else {
-                                SecureField("", text: $password).multilineTextAlignment(.trailing)
+                                SecureField("", text: $viewModel.loginPassword).multilineTextAlignment(.trailing)
                             }
                         }
                         .padding().background(Color(white: 0.94)).cornerRadius(25)
@@ -50,9 +54,15 @@ struct LogInPage: View {
                 }
                 .padding(.horizontal, 30)
                 
+                // عرض الخطأ من الـ ViewModel
+                if !viewModel.loginError.isEmpty {
+                    Text(viewModel.loginError).foregroundColor(.red).font(.caption)
+                }
+                
                 Spacer()
                 
-                Button(action: { print("تسجيل دخول...") }) {
+                // زر الأكشن ينادي الدالة من الـ ViewModel مباشرة
+                Button(action: viewModel.login) {
                     Text("تسجيل الدخول")
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.black)
@@ -65,6 +75,9 @@ struct LogInPage: View {
                 }
                 .padding(.horizontal, 40).padding(.bottom, 60)
             }
+        }// --- الرابط الجديد هنا ---
+        .fullScreenCover(isPresented: $viewModel.isLoginSuccess) {
+            HomeScreen() // الانتقال لصفحة الخريطة عند النجاح
         }
     }
 }

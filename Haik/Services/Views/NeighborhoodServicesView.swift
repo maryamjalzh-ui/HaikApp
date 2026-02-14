@@ -70,44 +70,62 @@ struct NeighborhoodServicesView: View {
 private extension NeighborhoodServicesView {
 
     var header: some View {
-        ZStack {
-            Text(vm.neighborhoodName)
-                .font(.system(size: 34, weight: .regular))
-                .foregroundStyle(.black)
-                .lineLimit(1)
-                .padding(.horizontal, 90)
+        VStack(spacing: 4) { // أضفنا VStack لترتيب الاسم والعداد تحت بعض
+            ZStack {
+                Text(vm.neighborhoodName)
+                    .font(.system(size: 34, weight: .regular))
+                    .foregroundStyle(.black)
+                    .lineLimit(1)
+                    .padding(.horizontal, 90)
 
-            HStack {
-                // Left: Heart (Save)
-                Button { } label: {
-                    Image(systemName: "heart")
-                        .font(.system(size: 18, weight: .regular))
-                        .foregroundColor(Color("Green2Primary"))
-                        .frame(width: 52, height: 52)
-                        .background(Color.white)
-                        .clipShape(Circle())
-                        .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
-                }
-
-                Spacer()
-
-                // Right: Chevron (points right)
-                Button {
-                    withAnimation(.easeInOut(duration: 0.22)) {
-                        dismiss()
+                HStack {
+                    
+                    Button {
+                        vm.toggleFavorite() // تنفيذ دالة اللايك
+                    } label: {
+                        // إذا كان isFavorite صح، يعطينا قلب ممتلئ، وإذا خطأ يعطينا قلب فارغ
+                        Image(systemName: vm.isFavorite ? "heart.fill" : "heart")
+                            .font(.system(size: 18, weight: .regular))
+                            .foregroundColor(Color("Green2Primary"))
+                            .frame(width: 52, height: 52)
+                            .background(Color.white)
+                            .clipShape(Circle())
                     }
-                } label: {
-                    Image(systemName: "chevron.forward")
-                        .font(.system(size: 18, weight: .regular))
-                        .foregroundColor(Color("Green2Primary"))
-                        .frame(width: 52, height: 52)
-                        .background(Color.white)
-                        .clipShape(Circle())
-                        .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
+
+                    Spacer()
+
+                    // زر الرجوع
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.22)) {
+                            dismiss()
+                        }
+                    } label: {
+                        Image(systemName: "chevron.forward")
+                            .font(.system(size: 18, weight: .regular))
+                            .foregroundColor(Color("Green2Primary"))
+                            .frame(width: 52, height: 52)
+                            .background(Color.white)
+                            .clipShape(Circle())
+                            .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .environment(\.layoutDirection, .leftToRight)
+            }
+            
+            // --- إضافة عداد التعليقات الحقيقي هنا ---
+            HStack(spacing: 4) {
+                Text("(\(vm.reviewsCount))") // العداد الحقيقي من فايربيس
+                    .font(.system(size: 14))
+                    .foregroundColor(.gray)
+                
+                ForEach(0..<5) { _ in
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 10))
+                        .foregroundColor(.yellow)
                 }
             }
-            .padding(.horizontal, 20)
-            .environment(\.layoutDirection, .leftToRight)
+            .padding(.top, -5)
         }
         .padding(.top, 10)
     }
@@ -299,7 +317,7 @@ private extension NeighborhoodServicesView {
                 HStack(spacing: 6) {
                     ForEach(1...5, id: \.self) { i in
                         Image(systemName: "star.fill")
-                            .font(.system(size: 18, weight: .regular))
+                            .font(.system(size: 18))
                             .foregroundStyle(i <= review.rating ? Color.yellow : Color.gray.opacity(0.35))
                     }
                 }

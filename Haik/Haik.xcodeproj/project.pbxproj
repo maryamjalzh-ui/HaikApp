@@ -6,6 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3CBED85F2F3DFC4300E2048F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 3CBED85E2F3DFC4300E2048F /* FirebaseAuth */; };
+		3CBED8612F3DFC4300E2048F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 3CBED8602F3DFC4300E2048F /* FirebaseFirestore */; };
+		3CBED8642F3DFDDA00E2048F /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 3CBED8632F3DFDDA00E2048F /* FirebaseDatabase */; };
+		3CBED86C2F3E96CC00E2048F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3CBED86B2F3E96CC00E2048F /* GoogleService-Info.plist */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		3C4EBFE72F33E9E400A96EA7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +34,7 @@
 		3C4EBFD92F33E9E300A96EA7 /* Haik.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Haik.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3C4EBFE62F33E9E400A96EA7 /* HaikTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HaikTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3C4EBFF02F33E9E400A96EA7 /* HaikUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HaikUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3CBED86B2F3E96CC00E2048F /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -90,6 +98,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3CBED8642F3DFDDA00E2048F /* FirebaseDatabase in Frameworks */,
+				3CBED85F2F3DFC4300E2048F /* FirebaseAuth in Frameworks */,
+				3CBED8612F3DFC4300E2048F /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,7 +132,9 @@
 				3C4EBFDB2F33E9E300A96EA7 /* Haik */,
 				3C4EBFE92F33E9E400A96EA7 /* HaikTests */,
 				3C4EBFF32F33E9E400A96EA7 /* HaikUITests */,
+				3CBED8622F3DFDDA00E2048F /* Frameworks */,
 				3C4EBFDA2F33E9E300A96EA7 /* Products */,
+				3CBED86B2F3E96CC00E2048F /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -133,6 +146,13 @@
 				3C4EBFF02F33E9E400A96EA7 /* HaikUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		3CBED8622F3DFDDA00E2048F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -160,6 +180,9 @@
 			);
 			name = Haik;
 			packageProductDependencies = (
+				3CBED85E2F3DFC4300E2048F /* FirebaseAuth */,
+				3CBED8602F3DFC4300E2048F /* FirebaseFirestore */,
+				3CBED8632F3DFDDA00E2048F /* FirebaseDatabase */,
 			);
 			productName = Haik;
 			productReference = 3C4EBFD92F33E9E300A96EA7 /* Haik.app */;
@@ -243,6 +266,9 @@
 			);
 			mainGroup = 3C4EBFD02F33E9E300A96EA7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				3CBED85D2F3DFC4300E2048F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3C4EBFDA2F33E9E300A96EA7 /* Products */;
 			projectDirPath = "";
@@ -260,6 +286,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3CBED86C2F3E96CC00E2048F /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -443,7 +470,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2GHTD7A3A9;
+				DEVELOPMENT_TEAM = 6NHY572525;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -495,7 +522,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2GHTD7A3A9;
+				DEVELOPMENT_TEAM = 6NHY572525;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -679,6 +706,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3CBED85D2F3DFC4300E2048F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3CBED85E2F3DFC4300E2048F /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3CBED85D2F3DFC4300E2048F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		3CBED8602F3DFC4300E2048F /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3CBED85D2F3DFC4300E2048F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		3CBED8632F3DFDDA00E2048F /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3CBED85D2F3DFC4300E2048F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 3C4EBFD12F33E9E300A96EA7 /* Project object */;
 }

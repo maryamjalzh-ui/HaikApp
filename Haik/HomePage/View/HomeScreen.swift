@@ -11,13 +11,16 @@ import MapKit
 import Combine
 
 struct HomeScreen: View {
+    // MARK: - Properties
     @StateObject private var viewModel = HomeViewModel()
     @State private var showRecommendation = false
     @State private var isKeyboardVisible = false
-    
-    // --- الخطوة 1: إضافة متغير للتحكم في الانتقال لصفحتك المحفوظة ---
     @State private var showFavouritePage = false
     
+    // تعريف متغير التنبيه داخل الـ Struct ليكون مرئياً للـ body
+    @State private var showWelcomeAlert = false
+
+    // MARK: - Body
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
@@ -36,6 +39,7 @@ struct HomeScreen: View {
                 }
                 .ignoresSafeArea()
                 
+                // عرض البطاقة السفلية أو رسالة التلميح بناءً على اختيار الحي
                 if !isKeyboardVisible {
                     if let neighborhood = viewModel.selectedNeighborhood {
                         bottomInfoCard(neighborhood: neighborhood)
@@ -45,6 +49,18 @@ struct HomeScreen: View {
                             .transition(.opacity)
                     }
                 }
+            }
+            // تشغيل فحص الدخول لأول مرة عند ظهور الشاشة
+            .onAppear {
+                checkFirstTimeLogin()
+                // لا تنسي مناداة دالة تحديث التقييمات التي اضفناها سابقاً في الـ ViewModel
+                viewModel.updateNeighborhoodRatings()
+            }
+            // رسالة الترحيب الاحترافية
+            .alert("مرحباً بك في حيك! 🎉", isPresented: $showWelcomeAlert) {
+                Button("استكشاف الأحياء", role: .cancel) { }
+            } message: {
+                Text("تم تفعيل حسابك بنجاح. الآن يمكنك استكشاف أحياء الرياض، إضافة تعليقاتك، والحصول على أفضل التوصيات المخصصة لك.")
             }
             .safeAreaInset(edge: .top) {
                 VStack(spacing: 8) {
@@ -63,8 +79,6 @@ struct HomeScreen: View {
             .overlay {
                 if showRecommendation {
                     NeighborhoodRecommendationFlowView(isPresented: $showRecommendation)
-                        .navigationBarBackButtonHidden(true)
-                        .environment(\.layoutDirection, .rightToLeft)
                         .transition(.move(edge: .trailing))
                         .zIndex(1)
                 }
@@ -75,49 +89,52 @@ struct HomeScreen: View {
                     NeighborhoodServicesView(neighborhoodName: n.name, coordinate: n.coordinate)
                 }
             }
-            
-            // ---
             .navigationDestination(isPresented: $showFavouritePage) {
-                FavouritePage() // هذا ينادي الكود اللي حفظناه سوا
+                FavouritePage()
             }
+        }
+    }
+
+    // MARK: - Functions
+    
+    // دالة فحص الدخول لأول مرة (مكانها صحيح هنا داخل الـ Struct)
+    func checkFirstTimeLogin() {
+        let hasSeenWelcome = UserDefaults.standard.bool(forKey: "hasSeenWelcome")
+        if !hasSeenWelcome {
+            self.showWelcomeAlert = true
+            UserDefaults.standard.set(true, forKey: "hasSeenWelcome")
         }
     }
 }
 
+// MARK: - Extension for UI Components
 extension HomeScreen {
     
     private var topSearchBar: some View {
         HStack(spacing: 12) {
             Button { showRecommendation = true } label: {
                 Image(systemName: "sparkles")
-                    .padding(10).background(.white).clipShape(Circle()).shadow(radius: 2).foregroundColor(.greenPrimary)
+                    .padding(10).background(.white).clipShape(Circle()).shadow(radius: 2).foregroundColor(Color("GreenPrimary"))
             }
             .buttonStyle(.plain)
             
             HStack {
                 Image(systemName: "magnifyingglass").foregroundColor(.gray)
-                
                 TextField("ابحث عن حي...", text: $viewModel.searchText)
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled()
                 
                 if !viewModel.searchText.isEmpty {
-                    Button(action: {
-                        viewModel.searchText = ""
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                    }) {
+                    Button(action: { viewModel.searchText = "" }) {
                         Image(systemName: "xmark.circle.fill").foregroundColor(.gray)
                     }
                 }
             }
             .padding(.horizontal).frame(height: 44).background(Color.white).cornerRadius(22).shadow(radius: 2)
             
-            // ---
-            Button {
-                showFavouritePage = true
-            } label: {
+            Button { showFavouritePage = true } label: {
                 Image(systemName: "person")
-                    .padding(10).background(.white).clipShape(Circle()).shadow(radius: 2).foregroundColor(.greenPrimary)
+                    .padding(10).background(.white).clipShape(Circle()).shadow(radius: 2).foregroundColor(Color("GreenPrimary"))
             }
             .buttonStyle(.plain)
         }
@@ -128,52 +145,29 @@ extension HomeScreen {
         Group {
             if !viewModel.searchText.isEmpty && viewModel.selectedNeighborhood == nil {
                 VStack(spacing: 0) {
-                    VStack(spacing: 0) {
-                        if viewModel.filteredNeighborhoods.isEmpty {
-                            HStack {
-                                Spacer()
-                                Text("لا يوجد حي بهذا الاسم، تأكد من الكتابة")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                                    .padding(.vertical, 20)
-                                Spacer()
-                            }
-                        } else {
-                            ScrollView {
-                                VStack(spacing: 0) {
-                                    ForEach(viewModel.filteredNeighborhoods) { neighborhood in
-                                        Button(action: {
-                                            viewModel.selectNeighborhood(neighborhood)
-                                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                                        }) {
-                                            HStack {
-                                                Image(systemName: "NHIcon")
-                                                    .foregroundColor(.gray)
-                                                    .font(.system(size: 14))
-                                                Text(neighborhood.name)
-                                                    .font(.system(size: 16, weight: .medium))
-                                                    .foregroundColor(.primary)
-                                                Spacer()
-                                                Text(neighborhood.region)
-                                                    .font(.system(size: 12))
-                                                    .foregroundColor(.secondary)
-                                            }
-                                            .padding(.vertical, 14).padding(.horizontal, 16)
+                    if viewModel.filteredNeighborhoods.isEmpty {
+                        Text("لا يوجد حي بهذا الاسم")
+                            .font(.system(size: 14)).foregroundColor(.secondary).padding(.vertical, 20)
+                    } else {
+                        ScrollView {
+                            VStack(spacing: 0) {
+                                ForEach(viewModel.filteredNeighborhoods) { neighborhood in
+                                    Button(action: { viewModel.selectNeighborhood(neighborhood) }) {
+                                        HStack {
+                                            Text(neighborhood.name).font(.system(size: 16, weight: .medium)).foregroundColor(.primary)
+                                            Spacer()
+                                            Text(neighborhood.region).font(.system(size: 12)).foregroundColor(.secondary)
                                         }
-                                        Divider().padding(.leading, 40)
+                                        .padding(.vertical, 14).padding(.horizontal, 16)
                                     }
+                                    Divider().padding(.leading, 16)
                                 }
                             }
-                            .frame(maxHeight: CGFloat(min(viewModel.filteredNeighborhoods.count * 55, 250)))
                         }
+                        .frame(maxHeight: 250)
                     }
-                    .background(Color.white)
-                    .cornerRadius(16)
-                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray.opacity(0.1), lineWidth: 1))
-                    .padding(.horizontal, 20)
-                    .shadow(color: .black.opacity(0.05), radius: 10, y: 5)
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                .background(Color.white).cornerRadius(16).shadow(radius: 10).padding(.horizontal, 20)
             }
         }
     }
@@ -186,7 +180,6 @@ extension HomeScreen {
                 Text("(\(neighborhood.reviewCount))").font(.caption).foregroundColor(.gray)
                 ForEach(0..<5) { _ in Image(systemName: "star.fill").foregroundColor(.yellow).font(.system(size: 12)) }
             }
-            Spacer().frame(height: 10)
             Divider()
             Button {
                 viewModel.neighborhoodForServices = neighborhood
@@ -195,12 +188,11 @@ extension HomeScreen {
                 HStack {
                     Text("عرض الحي")
                     Image(systemName: "arrow.left")
-                    
                 }
                 .font(.system(size: 14, weight: .medium)).foregroundColor(.black)
             }
         }
-        .padding(25).frame(width: 360).background(Color.white).clipShape(RoundedRectangle(cornerRadius: 30)).shadow(color: Color.black.opacity(0.1), radius: 10).padding(.bottom, 30)
+        .padding(25).frame(width: 360).background(Color.white).clipShape(RoundedRectangle(cornerRadius: 30)).shadow(radius: 10).padding(.bottom, 30)
     }
     
     private var hintCard: some View {
@@ -208,17 +200,47 @@ extension HomeScreen {
             .font(.system(size: 14)).padding().background(Color.white).cornerRadius(20).shadow(radius: 5).padding(.bottom, 40)
     }
 }
+    private var hintCard: some View {
+        Text("اضغط على الخريطة لاستكشاف بيانات الحي")
+            .font(.system(size: 14)).padding().background(Color.white).cornerRadius(20).shadow(radius: 5).padding(.bottom, 40)
+    }
+    
+
 
 struct NeighborhoodPin: View {
     let neighborhood: Neighborhood
     let action: () -> Void
+    
     var body: some View {
         Button(action: action) {
             VStack(spacing: 4) {
-                Text(neighborhood.rating).font(.system(size: 14, weight: .bold)).foregroundColor(.white).padding(.horizontal, 8).padding(.vertical, 4).background(RoundedRectangle(cornerRadius: 8).fill(Color(red: 0.35, green: 0.65, blue: 0.85))).shadow(radius: 2)
-                Text(neighborhood.name).font(.system(size: 12, weight: .bold)).foregroundColor(.black).padding(.horizontal, 4).background(Color.white.opacity(0.8)).cornerRadius(4)
+                Text(neighborhood.rating)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    // تغيير اللون بناءً على التقييم (أخضر للتقييم العالي)
+                    .background(RoundedRectangle(cornerRadius: 8)
+                        .fill(colorForRating(neighborhood.rating)))
+                    .shadow(radius: 2)
+                
+                Text(neighborhood.name)
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 4)
+                    .background(Color.white.opacity(0.8))
+                    .cornerRadius(4)
             }
         }
+    }
+    
+    // دالة لتحديد اللون حسب التقييم
+    private func colorForRating(_ rating: String) -> Color {
+        let val = Double(rating) ?? 0.0
+        if val >= 4.0 { return .green }
+        if val >= 3.0 { return Color(red: 0.35, green: 0.65, blue: 0.85) } // اللون الأزرق حقك
+        if val > 0.0 { return .orange }
+        return .gray // إذا لم يوجد تقييم
     }
 }
 
