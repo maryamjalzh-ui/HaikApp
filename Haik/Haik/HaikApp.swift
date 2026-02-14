@@ -9,6 +9,9 @@ import SwiftUI
 
 @main
 struct HaikApp: App {
+    init() {
+          UIView.appearance().semanticContentAttribute = .forceRightToLeft
+      }
     var body: some Scene {
         WindowGroup {
             HomeScreen()

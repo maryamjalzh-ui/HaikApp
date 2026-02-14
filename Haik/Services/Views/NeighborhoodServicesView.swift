@@ -23,6 +23,7 @@ struct NeighborhoodServicesView: View {
     private let tileTextSize: CGFloat = 14
 
     // MARK: - State
+    
     @Environment(\.dismiss) private var dismiss
     @StateObject private var vm: NeighborhoodServicesViewModel
     @FocusState private var isCommentFocused: Bool
