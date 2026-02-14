@@ -193,14 +193,34 @@ extension HomeScreen {
     }
     
     private func bottomInfoCard(neighborhood: Neighborhood) -> some View {
-        VStack(alignment: .trailing, spacing: 15) {
+        VStack(alignment: .trailing, spacing: 14) {
+
             HStack {
-                Text("حي \(neighborhood.name)").font(.system(size: 20, weight: .bold))
+                Text("حي \(neighborhood.name)")
+                    .font(.system(size: 20, weight: .bold))
+
                 Spacer()
-                Text("(\(neighborhood.reviewCount))").font(.caption).foregroundColor(.gray)
-                ForEach(0..<5) { _ in Image(systemName: "star.fill").foregroundColor(.yellow).font(.system(size: 12)) }
+
+                Text("(\(neighborhood.reviewCount))")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+
+                ForEach(0..<5) { _ in
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.yellow)
+                        .font(.system(size: 12))
+                }
             }
+
+            AvgPriceBadgeView(
+                neighborhoodName: neighborhood.name,
+                aliases: neighborhood.aliases
+            )
+
+
+
             Divider()
+
             Button {
                 viewModel.neighborhoodForServices = neighborhood
                 viewModel.showServices = true
@@ -209,11 +229,18 @@ extension HomeScreen {
                     Text("عرض الحي")
                     Image(systemName: "arrow.left")
                 }
-                .font(.system(size: 14, weight: .medium)).foregroundColor(.black)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.black)
             }
         }
-        .padding(25).frame(width: 360).background(Color.white).clipShape(RoundedRectangle(cornerRadius: 30)).shadow(radius: 10).padding(.bottom, 30)
+        .padding(22)
+        .frame(width: 360)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+        .shadow(radius: 10)
+        .padding(.bottom, 30)
     }
+
     
     private var hintCard: some View {
         Text("اضغط على الخريطة لاستكشاف بيانات الحي")

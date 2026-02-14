@@ -48,7 +48,7 @@ struct LogInPage: View {
                     // حقل الإيميل
                     VStack(alignment: .trailing, spacing: 8) {
                         Text("البريد الإلكتروني").foregroundColor(.gray).font(.callout)
-                        TextField("user@gmail.com", text: $viewModel.loginEmail)
+                        TextField("user @gmail.com", text: $viewModel.loginEmail)
                             .padding().background(Color(white: 0.94)).cornerRadius(25)
                             .autocapitalization(.none)
                     }

@@ -23,7 +23,7 @@ struct NeighborhoodServicesView: View {
     private let tileTextSize: CGFloat = 14
 
     // MARK: - State
-    
+
     @Environment(\.dismiss) private var dismiss
     @StateObject private var vm: NeighborhoodServicesViewModel
     @FocusState private var isCommentFocused: Bool
@@ -80,7 +80,7 @@ private extension NeighborhoodServicesView {
                     .padding(.horizontal, 90)
 
                 HStack {
-                    
+
                     Button {
                         vm.toggleFavorite() // تنفيذ دالة اللايك
                     } label: {
@@ -113,13 +113,13 @@ private extension NeighborhoodServicesView {
                 .padding(.horizontal, 20)
                 .environment(\.layoutDirection, .leftToRight)
             }
-            
+
             // --- إضافة عداد التعليقات الحقيقي هنا ---
             HStack(spacing: 4) {
                 Text("(\(vm.reviewsCount))") // العداد الحقيقي من فايربيس
                     .font(.system(size: 14))
                     .foregroundColor(.gray)
-                
+
                 ForEach(0..<5) { _ in
                     Image(systemName: "star.fill")
                         .font(.system(size: 10))
@@ -127,12 +127,20 @@ private extension NeighborhoodServicesView {
                 }
             }
             .padding(.top, -5)
+
+            AvgPriceBadgeView(
+                neighborhoodName: vm.neighborhoodName,
+                aliases: []
+            )
+
+
+            .padding(.horizontal, 24)
+            .padding(.top, 10)
         }
         .padding(.top, 10)
     }
 }
 
-// MARK: - Section Titles
 private extension NeighborhoodServicesView {
 
     func sectionTitle(_ text: String) -> some View {
@@ -240,8 +248,8 @@ private extension NeighborhoodServicesView {
                             .multilineTextAlignment(.trailing)
                             .frame(maxWidth: .infinity, alignment: .trailing)
                             .environment(\.layoutDirection, .rightToLeft)
-                            .padding(.top,5)
-                            .offset(x:-35)
+                            .padding(.top, 5)
+                            .offset(x: -35)
                     } else {
                         Spacer(minLength: 0)
                     }
@@ -344,8 +352,7 @@ private extension NeighborhoodServicesView {
                 .multilineTextAlignment(.trailing)
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .environment(\.layoutDirection, .leftToRight)
-                .offset(x:-7)
-            
+                .offset(x: -7)
 
             // Date (right aligned)
             Text(relativeDate(review.createdAt))
@@ -369,7 +376,25 @@ private extension NeighborhoodServicesView {
     }
 }
 
-// MARK: - Helpers
+private extension NeighborhoodServicesView {
+
+    func priceChip(title: String, value: String) -> some View {
+        HStack(spacing: 6) {
+            Text(title)
+                .font(.system(size: 13, weight: .regular))
+                .foregroundStyle(hintGray)
+
+            Text(value)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(primaryColor)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color(.systemGray6))
+        .clipShape(Capsule())
+    }
+}
+
 private extension Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
@@ -391,17 +416,18 @@ private extension Color {
 private extension ServiceCategory {
     func iconColor(using greenPrimary: Color, yellowHex: Color) -> Color {
         switch self {
-        case  .libraries, .gasStations, .groceries:
+        case .libraries, .gasStations, .groceries:
             return greenPrimary
-        case .hospitals ,.mall ,.parks:
+        case .hospitals, .mall, .parks:
             return Color("BlueSecondary")
-        case .cafes, .supermarkets , .metro:
+        case .cafes, .supermarkets, .metro:
             return Color("PurpleSecondary")
         case .cinema, .restaurants, .schools:
             return yellowHex
         }
     }
 }
+
 #Preview {
     NeighborhoodServicesView(
         neighborhoodName: "اسم الحي",

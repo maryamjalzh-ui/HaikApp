@@ -1,0 +1,197 @@
+[
+  {
+    "neighborhood": "حطين",
+    "avgPricePerMeter": 10611.18,
+    "transactionsCount": 36
+  },
+  {
+    "neighborhood": "الملقا",
+    "avgPricePerMeter": 11819.54,
+    "transactionsCount": 22
+  },
+  {
+    "neighborhood": "الياسمين",
+    "avgPricePerMeter": 6687.65,
+    "transactionsCount": 67
+  },
+  {
+    "neighborhood": "النرجس",
+    "avgPricePerMeter": 8813.99,
+    "transactionsCount": 78
+  },
+  {
+    "neighborhood": "العليا",
+    "avgPricePerMeter": 10815.3,
+    "transactionsCount": 34
+  },
+  {
+    "neighborhood": "الصحافة",
+    "avgPricePerMeter": 11908.27,
+    "transactionsCount": 26
+  },
+  {
+    "neighborhood": "العقيق",
+    "avgPricePerMeter": 9352.15,
+    "transactionsCount": 10
+  },
+  {
+    "neighborhood": "الغدير",
+    "avgPricePerMeter": 14011.73,
+    "transactionsCount": 6
+  },
+  {
+    "neighborhood": "النخيل",
+    "avgPricePerMeter": 8813.31,
+    "transactionsCount": 3
+  },
+  {
+    "neighborhood": "السفارات",
+    "avgPricePerMeter": null,
+    "transactionsCount": 0
+  },
+  {
+    "neighborhood": "الملز",
+    "avgPricePerMeter": 11883.54,
+    "transactionsCount": 38
+  },
+  {
+    "neighborhood": "السليمانية",
+    "avgPricePerMeter": 9019.86,
+    "transactionsCount": 21
+  },
+  {
+    "neighborhood": "الورود",
+    "avgPricePerMeter": 6311.12,
+    "transactionsCount": 5
+  },
+  {
+    "neighborhood": "الفلاح",
+    "avgPricePerMeter": 4496.04,
+    "transactionsCount": 6
+  },
+  {
+    "neighborhood": "الملك سلمان",
+    "avgPricePerMeter": 4147.76,
+    "transactionsCount": 4
+  },
+  {
+    "neighborhood": "قرطبة",
+    "avgPricePerMeter": 5056.64,
+    "transactionsCount": 25
+  },
+  {
+    "neighborhood": "المونسية",
+    "avgPricePerMeter": 4962.01,
+    "transactionsCount": 21
+  },
+  {
+    "neighborhood": "الروضة",
+    "avgPricePerMeter": 6495.67,
+    "transactionsCount": 17
+  },
+  {
+    "neighborhood": "النسيم",
+    "avgPricePerMeter": 3541.86,
+    "transactionsCount": 74
+  },
+  {
+    "neighborhood": "المنار",
+    "avgPricePerMeter": 5941.7,
+    "transactionsCount": 12
+  },
+  {
+    "neighborhood": "الشفاء",
+    "avgPricePerMeter": 2043.06,
+    "transactionsCount": 37
+  },
+  {
+    "neighborhood": "العزيزية",
+    "avgPricePerMeter": 2922.26,
+    "transactionsCount": 63
+  },
+  {
+    "neighborhood": "الدار البيضاء",
+    "avgPricePerMeter": 2371.51,
+    "transactionsCount": 45
+  },
+  {
+    "neighborhood": "المنصورة",
+    "avgPricePerMeter": 3126.35,
+    "transactionsCount": 24
+  },
+  {
+    "neighborhood": "بدر",
+    "avgPricePerMeter": 3367.34,
+    "transactionsCount": 242
+  },
+  {
+    "neighborhood": "العريجاء",
+    "avgPricePerMeter": 2183.98,
+    "transactionsCount": 61
+  },
+  {
+    "neighborhood": "طويق",
+    "avgPricePerMeter": 3085.75,
+    "transactionsCount": 92
+  },
+  {
+    "neighborhood": "لبن",
+    "avgPricePerMeter": 3042.39,
+    "transactionsCount": 93
+  },
+  {
+    "neighborhood": "المحمدية",
+    "avgPricePerMeter": 7848.09,
+    "transactionsCount": 3
+  },
+  {
+    "neighborhood": "القيروان",
+    "avgPricePerMeter": 13329.7,
+    "transactionsCount": 17
+  },
+  {
+    "neighborhood": "العارض",
+    "avgPricePerMeter": 6549.47,
+    "transactionsCount": 36
+  },
+  {
+    "neighborhood": "الرمال",
+    "avgPricePerMeter": 4737.21,
+    "transactionsCount": 160
+  },
+  {
+    "neighborhood": "المهدية",
+    "avgPricePerMeter": 4375.91,
+    "transactionsCount": 46
+  },
+  {
+    "neighborhood": "الندى",
+    "avgPricePerMeter": 9412.14,
+    "transactionsCount": 8
+  },
+  {
+    "neighborhood": "التعاون",
+    "avgPricePerMeter": 9363.55,
+    "transactionsCount": 18
+  },
+  {
+    "neighborhood": "النفل",
+    "avgPricePerMeter": 6816.88,
+    "transactionsCount": 4
+  },
+  {
+    "neighborhood": "إشبيلية",
+    "avgPricePerMeter": 3990.12,
+    "transactionsCount": 17
+  },
+  {
+    "neighborhood": "النهضة",
+    "avgPricePerMeter": 4108.07,
+    "transactionsCount": 35
+  },
+  {
+    "neighborhood": "المروة",
+    "avgPricePerMeter": 3029.81,
+    "transactionsCount": 4
+  }
+]

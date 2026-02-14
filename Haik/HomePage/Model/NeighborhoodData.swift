@@ -15,6 +15,8 @@ struct Neighborhood: Identifiable {
     let coordinate: CLLocationCoordinate2D
     var rating: String = "0.0"
     var reviewCount: String = "0"
+    
+    var aliases: [String] = []
 }
 
 // MARK: - Neighborhood Data Storage
@@ -38,7 +40,12 @@ struct NeighborhoodData {
         Neighborhood(name: "السليمانية", region: "وسط", coordinate: CLLocationCoordinate2D(latitude: 24.7076, longitude: 46.6947)),
         Neighborhood(name: "الورود", region: "وسط", coordinate: CLLocationCoordinate2D(latitude: 24.7237, longitude: 46.6734)),
         Neighborhood(name: "الفلاح", region: "وسط", coordinate: CLLocationCoordinate2D(latitude: 24.7901, longitude: 46.7034)),
-        Neighborhood(name: "الواحة", region: "وسط", coordinate: CLLocationCoordinate2D(latitude: 24.7533, longitude: 46.7107)),
+        Neighborhood(
+            name: "الملك سلمان",
+            region: "وسط",
+            coordinate: CLLocationCoordinate2D(latitude: 24.7533, longitude: 46.7107),
+            aliases: ["الواحة"]
+        ),
         Neighborhood(name: "قرطبة", region: "شرق", coordinate: CLLocationCoordinate2D(latitude: 24.8156, longitude: 46.7346)),
         Neighborhood(name: "المونسية", region: "شرق", coordinate: CLLocationCoordinate2D(latitude: 24.8479, longitude: 46.7829)),
         Neighborhood(name: "الروضة", region: "شرق", coordinate: CLLocationCoordinate2D(latitude: 24.7249, longitude: 46.7532)),
@@ -53,7 +60,7 @@ struct NeighborhoodData {
         Neighborhood(name: "بدر", region: "جنوب", coordinate: CLLocationCoordinate2D(latitude: 24.5071, longitude: 46.6862)),
         Neighborhood(name: "العريجاء", region: "غرب", coordinate: CLLocationCoordinate2D(latitude: 24.6216, longitude: 46.6094)),
         Neighborhood(name: "طويق", region: "غرب", coordinate: CLLocationCoordinate2D(latitude: 24.5924, longitude: 46.5286)),
-        Neighborhood(name: "ظهرة لبن", region: "غرب", coordinate: CLLocationCoordinate2D(latitude: 24.6491, longitude: 46.5387)),
+  
         Neighborhood(name: "لبن", region: "غرب", coordinate: CLLocationCoordinate2D(latitude: 24.6374, longitude: 46.5511)),
         Neighborhood(name: "المحمدية", region: "غرب", coordinate: CLLocationCoordinate2D(latitude: 24.7326, longitude: 46.6532)),
 
