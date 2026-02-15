@@ -56,7 +56,7 @@ struct NeighborhoodResultView: View {
                 .padding(.horizontal, sidePadding)
                 .padding(.top, 25) 
 
-            Text("الاحي الانسب لك")
+            Text("الأحياء الانسب لك")
                 .font(.system(size: 28, weight: .bold))
                 .foregroundColor(.black)
                 .padding(.top, 30)

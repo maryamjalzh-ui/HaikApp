@@ -1,5 +1,3 @@
-
-
 //  HomeScreen.swift
 //  Haik
 //
@@ -9,6 +7,7 @@
 import SwiftUI
 import MapKit
 import Combine
+import FirebaseAuth // تم إضافة المكتبة للتحقق من حالة المستخدم
 
 struct HomeScreen: View {
     // MARK: - Properties
@@ -19,6 +18,9 @@ struct HomeScreen: View {
     
     // تعريف متغير التنبيه داخل الـ Struct ليكون مرئياً للـ body
     @State private var showWelcomeAlert = false
+    
+    // متغير للتحكم في ظهور صفحة تسجيل الدخول للضيف
+    @State private var showWelcomeSheet = false
 
     // MARK: - Body
     var body: some View {
@@ -53,7 +55,7 @@ struct HomeScreen: View {
                 checkFirstTimeLogin()
                 viewModel.updateNeighborhoodRatings()
             }
-            .alert("مرحباً بك في حيك! 🎉", isPresented: $showWelcomeAlert) {
+            .alert("مرحباً بك في حيّك! 🎉", isPresented: $showWelcomeAlert) {
                 Button("استكشاف الأحياء", role: .cancel) { }
             } message: {
                 Text("تم تفعيل حسابك بنجاح. الآن يمكنك استكشاف أحياء الرياض، إضافة تعليقاتك، والحصول على أفضل التوصيات المخصصة لك.")
@@ -91,19 +93,22 @@ struct HomeScreen: View {
             .navigationDestination(isPresented: $showFavouritePage) {
                 FavouritePage()
             }
+            // إضافة غطاء كامل لصفحة الترحيب عند محاولة الضيف الدخول للبروفايل
+            .fullScreenCover(isPresented: $showWelcomeSheet) {
+                WelcomeView()
+            }
         }
     }
 
     // MARK: - Functions
     
-    // دالة فحص الدخول لأول مرة (مكانها صحيح هنا داخل الـ Struct)
+    // دالة فحص الدخول لأول مرة
     func checkFirstTimeLogin() {
         let isNewUser = UserDefaults.standard.bool(forKey: "isNewUser")
         let hasSeenWelcome = UserDefaults.standard.bool(forKey: "hasSeenWelcome")
         if isNewUser && !hasSeenWelcome {
             self.showWelcomeAlert = true
             UserDefaults.standard.set(true, forKey: "hasSeenWelcome")
-            // نحذف علامة المستخدم الجديد لكي لا تظهر مرة أخرى أبداً
             UserDefaults.standard.set(false, forKey: "isNewUser")
         }
     }
@@ -136,7 +141,14 @@ extension HomeScreen {
             
             .padding(.horizontal).frame(height: 44).background(Color.white).cornerRadius(22).shadow(radius: 2)
             
-            Button { showFavouritePage = true } label: {
+            // تعديل منطق زر البروفايل
+            Button {
+                if Auth.auth().currentUser != nil {
+                    showFavouritePage = true
+                } else {
+                    showWelcomeSheet = true // إظهار صفحة التسجيل للضيف
+                }
+            } label: {
                 Image(systemName: "person")
                     .padding(10).background(.white).clipShape(Circle()).shadow(radius: 2).foregroundColor(Color("GreenPrimary"))
             }
@@ -145,7 +157,6 @@ extension HomeScreen {
         .padding(.horizontal)
     }
     
-    // --- التعديل هنا: البحث الأصلي مع NHIcon والارتفاع المرن ---
     private var searchResultsList: some View {
         Group {
             if !viewModel.searchText.isEmpty && viewModel.selectedNeighborhood == nil {
@@ -159,7 +170,6 @@ extension HomeScreen {
                                 ForEach(viewModel.filteredNeighborhoods) { neighborhood in
                                     Button(action: { viewModel.selectNeighborhood(neighborhood) }) {
                                         HStack(spacing: 12) {
-                                            // إضافة اللوقو الأصلي NHIcon
                                             Image("NHIcon")
                                                 .resizable()
                                                 .scaledToFit()
@@ -182,12 +192,11 @@ extension HomeScreen {
                                 }
                             }
                         }
-                        // الارتفاع يتحدد حسب عدد النتائج بحد أقصى 250
                         .frame(maxHeight: viewModel.filteredNeighborhoods.count > 3 ? 250 : .infinity)
                     }
                 }
                 .background(Color.white).cornerRadius(16).shadow(radius: 10).padding(.horizontal, 20)
-                .fixedSize(horizontal: false, vertical: true) // هذا السطر يمنع الخلفية من التمدد الزائد
+                .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -217,8 +226,6 @@ extension HomeScreen {
                 aliases: neighborhood.aliases
             )
 
-
-
             Divider()
 
             Button {
@@ -247,12 +254,6 @@ extension HomeScreen {
             .font(.system(size: 14)).padding().background(Color.white).cornerRadius(20).shadow(radius: 5).padding(.bottom, 40)
     }
 }
-    private var hintCard: some View {
-        Text("اضغط على الخريطة لاستكشاف بيانات الحي")
-            .font(.system(size: 14)).padding().background(Color.white).cornerRadius(20).shadow(radius: 5).padding(.bottom, 40)
-    }
-    
-
 
 struct NeighborhoodPin: View {
     let neighborhood: Neighborhood
@@ -266,7 +267,6 @@ struct NeighborhoodPin: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    // تغيير اللون بناءً على التقييم (أخضر للتقييم العالي)
                     .background(RoundedRectangle(cornerRadius: 8)
                         .fill(colorForRating(neighborhood.rating)))
                     .shadow(radius: 2)
@@ -281,13 +281,12 @@ struct NeighborhoodPin: View {
         }
     }
     
-    // دالة لتحديد اللون حسب التقييم
     private func colorForRating(_ rating: String) -> Color {
         let val = Double(rating) ?? 0.0
         if val >= 4.0 { return .green }
-        if val >= 3.0 { return Color(red: 0.35, green: 0.65, blue: 0.85) } // اللون الأزرق حقك
+        if val >= 3.0 { return Color(red: 0.35, green: 0.65, blue: 0.85) }
         if val > 0.0 { return .orange }
-        return .gray // إذا لم يوجد تقييم
+        return .gray
     }
 }
 

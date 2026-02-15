@@ -39,7 +39,7 @@ struct SignupView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 10)
 
-                Text("مرحبًا بك في حيك")
+                Text("مرحبًا بك في حيّك")
                     .font(.system(size: 28, weight: .bold))
                 
                 VStack(alignment: .trailing, spacing: 20) {

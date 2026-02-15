@@ -1,9 +1,9 @@
-//
 //  SavedPage.swift
 //  Haik
 //
 //  Created by Maryam Jalal Alzahrani on 21/08/1447 AH.
 //
+
 import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
@@ -11,16 +11,13 @@ import Combine
 internal import _LocationEssentials
 
 struct FavouritePage: View {
-    // ربط الصفحة بالـ ViewModel
     @StateObject private var viewModel = ProfileViewModel()
-    
     @State private var isEditingProfile: Bool = false
     @State private var showServices = false
     @State private var selectedNeighborhoodName = ""
     
     @Environment(\.dismiss) private var dismiss
     
-    // متغيرات لإدارة التنقل بين التعليقات
     @State private var selectedCommentIndex: Int = 0
     @State private var isManagingComment: Bool = false
     @State private var draftCommentText: String = ""
@@ -31,7 +28,6 @@ struct FavouritePage: View {
             ZStack {
                 Color(white: 0.97).ignoresSafeArea()
                 
-                // صورة المباني في الخلفية
                 GeometryReader { geometry in
                     VStack {
                         Spacer()
@@ -45,7 +41,6 @@ struct FavouritePage: View {
                 .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Header: زر الرجوع
                     HStack {
                         Spacer()
                         Button { dismiss() } label: {
@@ -64,8 +59,6 @@ struct FavouritePage: View {
                     
                     ScrollView {
                         VStack(alignment: .center, spacing: 25) {
-                            
-                            // كرت الملف الشخصي (يعرض البيانات من ViewModel)
                             Button(action: { isEditingProfile = true }) {
                                 HStack(spacing: 15) {
                                     Image(systemName: "person.circle.fill")
@@ -74,7 +67,7 @@ struct FavouritePage: View {
                                         .foregroundColor(Color("GreenPrimary"))
                                     
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text(viewModel.userName) // الاسم من فايربيس
+                                        Text(viewModel.userName)
                                             .font(.system(size: 20, weight: .bold))
                                             .foregroundColor(.black)
                                         Text("عرض وتعديل الملف الشخصي")
@@ -101,7 +94,6 @@ struct FavouritePage: View {
                                         .foregroundColor(.gray)
                                         .padding()
                                 } else {
-                                    // العرض الحقيقي للأحياء اللي سويتي لها لايك
                                     ForEach(viewModel.savedNeighborhoodNames, id: \.self) { name in
                                         NeighborhoodCard(name: name, reviewCount: "عرض التفاصيل") {
                                             selectedNeighborhoodName = name
@@ -111,11 +103,10 @@ struct FavouritePage: View {
                                 }
                             }
                             
-                            HeaderSection(title: "تعليقاتك الحقيقية:", icon: "text.bubble")
+                            HeaderSection(title: "تعليقاتك:", icon: "text.bubble")
                                 .frame(width: 360)
                                 .padding(.top, 10)
 
-                            // عرض التعليقات الحقيقية من الموديل المتداخل
                             if !viewModel.userComments.isEmpty {
                                 commentsPagerView
                             } else {
@@ -138,12 +129,14 @@ struct FavouritePage: View {
                 NeighborhoodServicesView(neighborhoodName: selectedNeighborhoodName, coordinate: .init(latitude: 24.7136, longitude: 46.6753))
             }
             .sheet(isPresented: $isEditingProfile) {
-                EditProfileView(name: $viewModel.userName, email: viewModel.userEmail)
+                // مررنا dismiss التابع لـ FavouritePage لكي يتم استدعاؤه عند تسجيل الخروج
+                EditProfileView(name: $viewModel.userName, email: viewModel.userEmail) {
+                    self.dismiss()
+                }
             }
         }
     }
     
-    // نظام عرض التعليقات (Pager)
     private var commentsPagerView: some View {
         HStack(spacing: 15) {
             Button {
@@ -176,13 +169,74 @@ struct FavouritePage: View {
     }
 }
 
-// MARK: - Supporting Components
+// MARK: - Modified EditProfileView
+
+struct EditProfileView: View {
+    @Binding var name: String
+    var email: String
+    @Environment(\.dismiss) var dismiss
+    
+    // إضافة هاندلر لإغلاق الصفحة الرئيسية
+    var onSignOut: () -> Void
+    
+    @State private var showSignOutError = false
+    @State private var errorMessage = ""
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section(header: Text("المعلومات الشخصية")) {
+                    TextField("الاسم", text: $name)
+                    Text(email).foregroundColor(.gray)
+                }
+                
+                Section {
+                    Button(role: .destructive) {
+                        signOut()
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Text("تسجيل الخروج")
+                                .fontWeight(.bold)
+                            Image(systemName: "log.out.fill")
+                            Spacer()
+                        }
+                    }
+                }
+            }
+            .navigationTitle("تعديل الحساب")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("تم") { dismiss() }
+                }
+            }
+            .alert("تنبيه", isPresented: $showSignOutError) {
+                Button("موافق", role: .cancel) { }
+            } message: {
+                Text(errorMessage)
+            }
+        }
+        .environment(\.layoutDirection, .rightToLeft)
+    }
+    
+    private func signOut() {
+        do {
+            try Auth.auth().signOut()
+            dismiss()      // يغلق الشيت
+            onSignOut()    // يغلق صفحة FavouritePage ويرجعك للهوم
+        } catch let error {
+            errorMessage = error.localizedDescription
+            showSignOutError = true
+        }
+    }
+}
+
+// MARK: - Supporting Components (باقي الكود كما هو)
 
 struct CommentCard: View {
-    // الإشارة للموديل المتداخل داخل الـ ViewModel
     var comment: ProfileViewModel.UserComment
     var userName: String
-    
     var body: some View {
         VStack(alignment: .trailing, spacing: 8) {
             HStack {
@@ -196,16 +250,13 @@ struct CommentCard: View {
                 }
                 Spacer()
             }
-            
             Text(comment.text)
                 .font(.system(size: 14))
                 .foregroundColor(.black.opacity(0.8))
                 .lineLimit(3)
                 .multilineTextAlignment(.trailing)
                 .frame(maxWidth: .infinity, alignment: .trailing)
-            
             Spacer(minLength: 0)
-            
             HStack(spacing: 4) {
                 ForEach(1...5, id: \.self) { index in
                     Image(systemName: index <= Int(comment.rating) ? "star.fill" : "star")
@@ -221,7 +272,6 @@ struct CommentCard: View {
         .shadow(color: .black.opacity(0.05), radius: 5)
     }
 }
-// MARK: - الأكواد المساعدة المفقودة (أضيفيها في نهاية الملف)
 
 struct HeaderSection: View {
     let title: String
@@ -257,23 +307,6 @@ struct NeighborhoodCard: View {
     }
 }
 
-struct EditProfileView: View {
-    @Binding var name: String
-    var email: String
-    @Environment(\.dismiss) var dismiss
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section("المعلومات الشخصية") {
-                    TextField("الاسم", text: $name)
-                    Text(email).foregroundColor(.gray)
-                }
-            }
-            .navigationTitle("تعديل الحساب")
-            .toolbar { Button("تم") { dismiss() } }
-        }
-    }
-}
 #Preview {
     FavouritePage()
 }

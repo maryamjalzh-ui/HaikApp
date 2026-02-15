@@ -1,5 +1,6 @@
 import SwiftUI
 import CoreLocation
+import FirebaseAuth // إضافة المكتبة للتحقق من حالة المستخدم
 
 struct NeighborhoodServicesView: View {
 
@@ -23,10 +24,12 @@ struct NeighborhoodServicesView: View {
     private let tileTextSize: CGFloat = 14
 
     // MARK: - State
-
     @Environment(\.dismiss) private var dismiss
     @StateObject private var vm: NeighborhoodServicesViewModel
     @FocusState private var isCommentFocused: Bool
+    
+    // متغير للتحكم بظهور صفحة الترحيب (تسجيل الدخول)
+    @State private var showLoginSheet = false
 
     init(neighborhoodName: String, coordinate: CLLocationCoordinate2D) {
         _vm = StateObject(
@@ -49,11 +52,8 @@ struct NeighborhoodServicesView: View {
                     servicesGrid
 
                     sectionTitle("التقييمات والتعليقات")
-                    subsectionHint("نوع التعليق")
-
-                    chipsRow
-                    reviewInputBox
-
+                    reviewComposerSection // تم فصل قسم التعليقات للتنظيم
+                    
                     subsectionHint("التعليقات")
                     commentsList
                 }
@@ -62,6 +62,10 @@ struct NeighborhoodServicesView: View {
             .background(pageBackground.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
             .navigationBarBackButtonHidden(true)
+            // إظهار صفحة الترحيب كغطاء كامل عند الحاجة
+            .fullScreenCover(isPresented: $showLoginSheet) {
+                WelcomeView()
+            }
         }
         .environment(\.layoutDirection, .rightToLeft)
     }
@@ -71,7 +75,7 @@ struct NeighborhoodServicesView: View {
 private extension NeighborhoodServicesView {
 
     var header: some View {
-        VStack(spacing: 4) { // أضفنا VStack لترتيب الاسم والعداد تحت بعض
+        VStack(spacing: 4) {
             ZStack {
                 Text(vm.neighborhoodName)
                     .font(.system(size: 34, weight: .regular))
@@ -80,22 +84,25 @@ private extension NeighborhoodServicesView {
                     .padding(.horizontal, 90)
 
                 HStack {
-
+                    // تعديل زر المفضلة (اللايك)
                     Button {
-                        vm.toggleFavorite() // تنفيذ دالة اللايك
+                        if Auth.auth().currentUser != nil {
+                            vm.toggleFavorite()
+                        } else {
+                            showLoginSheet = true // منع الضيف وإظهار صفحة الترحيب
+                        }
                     } label: {
-                        // إذا كان isFavorite صح، يعطينا قلب ممتلئ، وإذا خطأ يعطينا قلب فارغ
                         Image(systemName: vm.isFavorite ? "heart.fill" : "heart")
                             .font(.system(size: 18, weight: .regular))
                             .foregroundColor(Color("Green2Primary"))
                             .frame(width: 52, height: 52)
                             .background(Color.white)
                             .clipShape(Circle())
+                            .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
                     }
 
                     Spacer()
 
-                    // زر الرجوع
                     Button {
                         withAnimation(.easeInOut(duration: 0.22)) {
                             dismiss()
@@ -114,9 +121,8 @@ private extension NeighborhoodServicesView {
                 .environment(\.layoutDirection, .leftToRight)
             }
 
-            // --- إضافة عداد التعليقات الحقيقي هنا ---
             HStack(spacing: 4) {
-                Text("(\(vm.reviewsCount))") // العداد الحقيقي من فايربيس
+                Text("(\(vm.reviewsCount))")
                     .font(.system(size: 14))
                     .foregroundColor(.gray)
 
@@ -132,8 +138,6 @@ private extension NeighborhoodServicesView {
                 neighborhoodName: vm.neighborhoodName,
                 aliases: []
             )
-
-
             .padding(.horizontal, 24)
             .padding(.top, 10)
         }
@@ -141,7 +145,17 @@ private extension NeighborhoodServicesView {
     }
 }
 
+// MARK: - Helper Sections
 private extension NeighborhoodServicesView {
+    
+    // تجميع قسم إدخال التعليقات والـ Chips
+    var reviewComposerSection: some View {
+        VStack(spacing: 12) {
+            subsectionHint("نوع التعليق")
+            chipsRow
+            reviewInputBox
+        }
+    }
 
     func sectionTitle(_ text: String) -> some View {
         Text(text)
@@ -199,7 +213,7 @@ private extension NeighborhoodServicesView {
     }
 }
 
-// MARK: - Review Composer
+// MARK: - Review Composer Logic
 private extension NeighborhoodServicesView {
 
     var chipsRow: some View {
@@ -227,7 +241,6 @@ private extension NeighborhoodServicesView {
 
     var reviewInputBox: some View {
         ZStack {
-            // Border
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(Color.white)
                 .overlay(
@@ -235,12 +248,8 @@ private extension NeighborhoodServicesView {
                         .stroke(borderGray, lineWidth: 1)
                 )
 
-            // Content inset
             ZStack(alignment: .topTrailing) {
-
-                // Top row: Placeholder (right) + Stars (left)
                 HStack(alignment: .top) {
-
                     if vm.newComment.isEmpty {
                         Text("اكتب تعليقك...")
                             .font(.system(size: 17, weight: .regular))
@@ -267,23 +276,28 @@ private extension NeighborhoodServicesView {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 2)
 
-                // TextEditor (right-to-left typing)
                 TextEditor(text: $vm.newComment)
                     .font(.system(size: 16, weight: .regular))
                     .focused($isCommentFocused)
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)
                     .environment(\.layoutDirection, .rightToLeft)
-                    .padding(.top, 30) // keeps text below top row
+                    .padding(.top, 30)
 
-                // Add button (bottom-right)
+                // تعديل زر الإضافة (الكومنت)
                 VStack {
                     Spacer()
                     HStack {
                         Spacer()
                         Button {
-                            vm.addReview()
-                            isCommentFocused = true
+                            // فحص الدخول قبل إضافة التعليق
+                            if Auth.auth().currentUser != nil {
+                                vm.addReview()
+                                isCommentFocused = false
+                            } else {
+                                isCommentFocused = false
+                                showLoginSheet = true // إظهار صفحة الترحيب للضيف
+                            }
                         } label: {
                             Image(systemName: "plus")
                                 .font(.system(size: 16, weight: .bold))
@@ -301,7 +315,14 @@ private extension NeighborhoodServicesView {
         .frame(height: 146)
         .padding(.horizontal, 24)
         .contentShape(Rectangle())
-        .onTapGesture { isCommentFocused = true }
+        .onTapGesture {
+            // حتى عند مجرد الضغط للبدء في الكتابة، يفضل الفحص فوراً
+            if Auth.auth().currentUser != nil {
+                isCommentFocused = true
+            } else {
+                showLoginSheet = true
+            }
+        }
     }
 }
 
@@ -320,8 +341,6 @@ private extension NeighborhoodServicesView {
 
     func commentCard(_ review: NeighborhoodReview) -> some View {
         VStack(alignment: .trailing, spacing: 10) {
-
-            // Top row: stars left, category right
             HStack {
                 HStack(spacing: 6) {
                     ForEach(1...5, id: \.self) { i in
@@ -330,9 +349,7 @@ private extension NeighborhoodServicesView {
                             .foregroundStyle(i <= review.rating ? Color.yellow : Color.gray.opacity(0.35))
                     }
                 }
-
                 Spacer()
-
                 Text(review.category.rawValue)
                     .font(.system(size: 17, weight: .regular))
                     .foregroundStyle(.white)
@@ -345,7 +362,6 @@ private extension NeighborhoodServicesView {
             }
             .environment(\.layoutDirection, .leftToRight)
 
-            // Comment text (right aligned)
             Text(review.comment)
                 .font(.system(size: 17, weight: .regular))
                 .foregroundStyle(.black)
@@ -354,17 +370,14 @@ private extension NeighborhoodServicesView {
                 .environment(\.layoutDirection, .leftToRight)
                 .offset(x: -7)
 
-            // Date (right aligned)
             Text(relativeDate(review.createdAt))
                 .font(.system(size: 14, weight: .regular))
                 .foregroundStyle(hintGray)
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .environment(\.layoutDirection, .leftToRight)
         }
-
         .padding(16)
         .background(Color.white)
-
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 8)
     }
@@ -373,25 +386,6 @@ private extension NeighborhoodServicesView {
         let f = RelativeDateTimeFormatter()
         f.locale = Locale(identifier: "ar")
         return f.localizedString(for: date, relativeTo: Date())
-    }
-}
-
-private extension NeighborhoodServicesView {
-
-    func priceChip(title: String, value: String) -> some View {
-        HStack(spacing: 6) {
-            Text(title)
-                .font(.system(size: 13, weight: .regular))
-                .foregroundStyle(hintGray)
-
-            Text(value)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(primaryColor)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(Color(.systemGray6))
-        .clipShape(Capsule())
     }
 }
 
