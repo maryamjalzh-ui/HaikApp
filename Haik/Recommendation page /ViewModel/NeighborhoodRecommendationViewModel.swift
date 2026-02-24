@@ -1,9 +1,3 @@
-////
-////  NeighborhoodRecommendationViewModel.swift
-////  Haik
-////
-////  Created by Shahad Alharbi on 2/8/26.
-///
 import SwiftUI
 import Combine
 import CoreLocation
@@ -21,7 +15,7 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
     @Published var isLoadingResults: Bool = false
     @Environment(\.dismiss) private var dismiss
 
-    let totalSteps: Int = 4
+    let totalSteps: Int = 5
 
     @Published var isComputingResults = false
     @Published var progress: Double = 0
@@ -30,8 +24,6 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
 
     private let metricsService = NeighborhoodMetricsService()
 
-    // ✅ Session cache (not permanent):
-    // neighborhoodID -> (category -> count)
     private var countsCache: [UUID: [ServiceCategory: Int]] = [:]
 
     init() {
@@ -43,7 +35,7 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
     }
 
     var currentStep: Int {
-        isShowingResults ? 4 : (currentIndex + 1)
+        isShowingResults ? totalSteps : (currentIndex + 1)
     }
 
     func selectedOptionIDs(for questionID: String) -> [String] {
@@ -98,7 +90,7 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
     }
 
     func goNext() {
-        if currentQuestion.id == "q3" {
+        if currentQuestion.id == "q4" {
             Task { await computeAndShowResults() }
             return
         }
@@ -112,7 +104,6 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         currentIndex -= 1
     }
 
-    // MARK: - Step 5 helpers
 
     private func neededCategories() -> Set<ServiceCategory> {
         let q2 = selectedOptionIDs(for: "q2")
@@ -131,9 +122,6 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
             case "q2_d": // schools
                 set.insert(.schools)
 
-            case "q2_e": // malls
-                set.insert(.mall)
-
             case "q2_f": // entertainment
                 set.insert(.cafes)
                 set.insert(.restaurants)
@@ -141,19 +129,17 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
                 set.insert(.parks)
 
             default:
-                break // near work/family do not add POI categories
+                break
             }
         }
 
-        // transport => metro matters
         if q3 == "q3_a" || q3 == "q3_b" {
             set.insert(.metro)
         }
 
         return set
     }
-    
-    // MARK: - Step 6 Scoring helpers
+
 
     private func count(for neighborhood: Neighborhood, _ category: ServiceCategory) -> Int {
         countsCache[neighborhood.id]?[category] ?? 0
@@ -161,16 +147,11 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
 
     private func clamp01(_ x: Double) -> Double { min(1, max(0, x)) }
 
-    /// Converts a count into a 0..1 score using a soft cap.
-    /// Example: cap=25 -> 25+ becomes ~1.0, 10 becomes 0.4
     private func cappedScore(_ value: Int, cap: Int) -> Double {
         guard cap > 0 else { return 0 }
         return clamp01(Double(value) / Double(cap))
     }
 
-    /// Distance score: closer is better.
-    /// - 0m -> 1.0
-    /// - >= maxMeters -> 0.0
     private func distanceScoreMeters(_ meters: CLLocationDistance, maxMeters: CLLocationDistance) -> Double {
         guard maxMeters > 0 else { return 0 }
         return clamp01(1.0 - (meters / maxMeters))
@@ -179,7 +160,6 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
     private func lifestyleScore(for neighborhood: Neighborhood) -> Double {
         let q1 = selectedOptionIDs(for: "q1").first ?? ""
 
-        // Pull only what might exist in cache (if not fetched, it becomes 0)
         let cafes = count(for: neighborhood, .cafes)
         let restaurants = count(for: neighborhood, .restaurants)
         let malls = count(for: neighborhood, .mall)
@@ -190,24 +170,17 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         let hospitals = count(for: neighborhood, .hospitals)
         let gas = count(for: neighborhood, .gasStations)
 
-        // "Activity intensity" proxy
         let activity = cafes + restaurants + malls + cinema
-
-        // "Services completeness" proxy
         let services = groceries + supermarkets + hospitals + gas + malls
 
         switch q1 {
-        case "q1_a": // Quiet
-            // quiet = low activity => invert
-            let activityNorm = cappedScore(activity, cap: 35) // tweak caps later
+        case "q1_a":
+            let activityNorm = cappedScore(activity, cap: 35)
             return 1.0 - activityNorm
-
-        case "q1_b": // Active
+        case "q1_b":
             return cappedScore(activity, cap: 35)
-
-        case "q1_c": // Full services
+        case "q1_c":
             return cappedScore(services, cap: 45)
-
         default:
             return 0.5
         }
@@ -218,26 +191,62 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         let metroCount = count(for: neighborhood, .metro)
 
         switch q3 {
-        case "q3_a": // Metro primary
+        case "q3_a":
             if metroCount >= 2 { return 1.0 }
             if metroCount == 1 { return 0.6 }
             return 0.0
-
-        case "q3_b": // Metro sometimes
+        case "q3_b":
             return metroCount >= 1 ? 1.0 : 0.0
-
-        case "q3_c": // Car
-            // user doesn't care about metro => neutral score
+        case "q3_c":
             return 1.0
-
         default:
             return 0.7
         }
     }
 
+    private func priceScore(for neighborhood: Neighborhood) -> Double {
+        let pref = selectedOptionIDs(for: "q4").first ?? ""
+
+        guard let price = RiyadhAvgPriceService.shared.avgPricePerMeter(for: neighborhood.name, aliases: []) else {
+            return 0.5
+        }
+
+        let prices = RiyadhAvgPriceService.shared.records.compactMap { $0.avgPricePerMeter }.sorted()
+        guard prices.count >= 6 else { return 0.5 }
+
+        let i1 = Int(Double(prices.count - 1) * 0.33)
+        let i2 = Int(Double(prices.count - 1) * 0.66)
+        let t1 = prices[max(0, min(i1, prices.count - 1))]
+        let t2 = prices[max(0, min(i2, prices.count - 1))]
+
+        let tier: Int
+        if price <= t1 { tier = 0 }
+        else if price <= t2 { tier = 1 }
+        else { tier = 2 }
+
+        switch pref {
+        case "q4_low":
+            if tier == 0 { return 1.0 }
+            if tier == 1 { return 0.35 }
+            return 0.0
+
+        case "q4_mid":
+            if tier == 1 { return 1.0 }
+            return 0.4
+
+        case "q4_high":
+            if tier == 2 { return 1.0 }
+            if tier == 1 { return 0.45 }
+            return 0.15
+
+        default:
+            return 0.5
+        }
+    }
+
     private func priorityScore(for neighborhood: Neighborhood) -> Double {
         let q2 = selectedOptionIDs(for: "q2")
-        guard q2.count == 2 else { return 0 } // you require exactly 2 priorities
+        guard q2.count == 2 else { return 0 }
 
         let p1 = q2[0]
         let p2 = q2[1]
@@ -247,32 +256,32 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
 
         func scoreForPriority(_ pid: String) -> Double {
             switch pid {
-            case "q2_a": // near work
-                guard let anchor = anchorCoordinateFromQ2() else { return 0 }
-                let d = distanceMeters(neighborhood.coordinate, anchor)
-                return distanceScoreMeters(d, maxMeters: 18_000) // 18km window (tweak later)
 
-            case "q2_b": // near family
+            case "q2_a":
                 guard let anchor = anchorCoordinateFromQ2() else { return 0 }
                 let d = distanceMeters(neighborhood.coordinate, anchor)
                 return distanceScoreMeters(d, maxMeters: 18_000)
 
-            case "q2_c": // services
+            case "q2_b":
+                guard let anchor = anchorCoordinateFromQ2() else { return 0 }
+                let d = distanceMeters(neighborhood.coordinate, anchor)
+                return distanceScoreMeters(d, maxMeters: 18_000)
+
+            case "q2_c":
                 let v = count(for: neighborhood, .groceries)
                       + count(for: neighborhood, .supermarkets)
                       + count(for: neighborhood, .hospitals)
                       + count(for: neighborhood, .gasStations)
                 return cappedScore(v, cap: 35)
 
-            case "q2_d": // schools
+            case "q2_d":
                 let v = count(for: neighborhood, .schools)
                 return cappedScore(v, cap: 18)
 
-            case "q2_e": // malls
-                let v = count(for: neighborhood, .mall)
-                return cappedScore(v, cap: 8)
+            case "q2_e":
+                return priceScore(for: neighborhood)
 
-            case "q2_f": // entertainment
+            case "q2_f":
                 let v = count(for: neighborhood, .cafes)
                       + count(for: neighborhood, .restaurants)
                       + count(for: neighborhood, .cinema)
@@ -287,14 +296,11 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         return (w1 * scoreForPriority(p1)) + (w2 * scoreForPriority(p2))
     }
 
-
     private func anchorCoordinateFromQ2() -> CLLocationCoordinate2D? {
-        // If near work selected
         if let picked = pickedNeighborhoodByOptionID["q2_a"],
            let n = NeighborhoodData.all.first(where: { $0.name == picked }) {
             return n.coordinate
         }
-        // If near family selected
         if let picked = pickedNeighborhoodByOptionID["q2_b"],
            let n = NeighborhoodData.all.first(where: { $0.name == picked }) {
             return n.coordinate
@@ -314,11 +320,9 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         let selectedNear = q2.contains("q2_a") || q2.contains("q2_b")
 
         guard selectedNear, let anchor = anchorCoordinateFromQ2() else {
-            // Your rule: if NOT near work/family -> evaluate all neighborhoods
             return all
         }
 
-        // shortlist nearest 12
         return all.sorted {
             distanceMeters($0.coordinate, anchor) < distanceMeters($1.coordinate, anchor)
         }
@@ -366,20 +370,20 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         let neighborhoods = neighborhoodsToEvaluate()
         let categories = neededCategories()
 
-        // Step 5: fetch what we need (and fill cache)
         _ = await fetchCounts(neighborhoods: neighborhoods, categories: categories)
 
-        // Step 6: score + rank
-        let wLifestyle = 0.35
-        let wPriority  = 0.45
-        let wTransport = 0.20
+        let wLifestyle = 0.15
+        let wPriority  = 0.55
+        let wTransport = 0.15
+        let wPrice     = 0.15
 
         let scored: [RecommendedNeighborhood] = neighborhoods.map { n in
-            let life = lifestyleScore(for: n)         // 0..1
-            let pri  = priorityScore(for: n)          // 0..1
-            let tr   = transportScore(for: n)         // 0..1
+            let life = lifestyleScore(for: n)   // 0..1
+            let pri  = priorityScore(for: n)    // 0..1
+            let tr   = transportScore(for: n)   // 0..1
+            let prc  = priceScore(for: n)       // 0..1  ✅ always from q4
 
-            let total01 = (wLifestyle * life) + (wPriority * pri) + (wTransport * tr)
+            let total01 = (wLifestyle * life) + (wPriority * pri) + (wTransport * tr) + (wPrice * prc)
             let total100 = total01 * 100.0
 
             return RecommendedNeighborhood(
@@ -400,53 +404,53 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         isShowingResults = true
     }
 
-    func resultInfoItems(for neighborhood: Neighborhood) -> [ResultInfo] {
-        let n = neighborhood
+    // MARK: - Result info items
 
+    func resultInfoItems(for neighborhood: Neighborhood) -> [ResultInfo] {
         let q2 = selectedOptionIDs(for: "q2")
         let p1 = q2.first
         let p2 = q2.dropFirst().first
 
         var items: [ResultInfo] = []
 
-        if let p1 { items.append(infoItem(for: p1, neighborhood: n)) }
-        if let p2 { items.append(infoItem(for: p2, neighborhood: n)) }
+        if let p1 { items.append(infoItem(for: p1, neighborhood: neighborhood)) }
+        if let p2 { items.append(infoItem(for: p2, neighborhood: neighborhood)) }
 
-        // Q3 always as the 3rd item
         let q3 = selectedOptionIDs(for: "q3").first ?? ""
-        items.append(infoItemForTransport(q3, neighborhood: n))
+        items.append(infoItemForTransport(q3, neighborhood: neighborhood))
 
-        // Ensure exactly 3
         return Array(items.prefix(3))
     }
 
     private func infoItem(for priorityID: String, neighborhood: Neighborhood) -> ResultInfo {
         switch priorityID {
 
-        case "q2_a": // near work
+        case "q2_a":
             let label = nearLabel(anchorOptionID: "q2_a", neighborhood: neighborhood)
             return ResultInfo(icon: "briefcase", label: label)
 
-        case "q2_b": // near family
+        case "q2_b":
             let label = nearLabel(anchorOptionID: "q2_b", neighborhood: neighborhood)
             return ResultInfo(icon: "house", label: label)
 
-        case "q2_c": // services
+        case "q2_c":
             let v = count(for: neighborhood, .groceries)
                   + count(for: neighborhood, .supermarkets)
                   + count(for: neighborhood, .hospitals)
                   + count(for: neighborhood, .gasStations)
             return ResultInfo(icon: "cart", label: servicesLabel(v))
 
-        case "q2_d": // schools
+        case "q2_d":
             let v = count(for: neighborhood, .schools)
             return ResultInfo(icon: "pencil.and.ruler", label: schoolsLabel(v))
 
-        case "q2_e": // malls
-            let v = count(for: neighborhood, .mall)
-            return ResultInfo(icon: "storefront", label: mallsLabel(v))
+        case "q2_e":
+            let match = priceScore(for: neighborhood)
+            if match >= 0.9 { return ResultInfo(icon: "banknote", label: "سعر مناسب جدًا") }
+            if match >= 0.4 { return ResultInfo(icon: "banknote", label: "سعر مناسب") }
+            return ResultInfo(icon: "banknote", label: "سعر مرتفع لميزانيتك")
 
-        case "q2_f": // entertainment
+        case "q2_f":
             let v = count(for: neighborhood, .cafes)
                   + count(for: neighborhood, .restaurants)
                   + count(for: neighborhood, .cinema)
@@ -477,9 +481,7 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         guard
             let picked = pickedNeighborhoodByOptionID[anchorOptionID],
             let anchorN = NeighborhoodData.all.first(where: { $0.name == picked })
-        else {
-            return "قريب"
-        }
+        else { return "قريب" }
 
         let dKm = distanceMeters(neighborhood.coordinate, anchorN.coordinate) / 1000.0
 
@@ -501,12 +503,6 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         return "مدارس قليلة"
     }
 
-    private func mallsLabel(_ v: Int) -> String {
-        if v >= 6 { return "مولات كثيرة" }
-        if v >= 2 { return "مولات متوفرة" }
-        return "مولات قليلة"
-    }
-
     private func entertainmentLabel(_ v: Int) -> String {
         if v >= 35 { return "ترفيه كثير" }
         if v >= 18 { return "ترفيه متوفر" }
@@ -524,7 +520,6 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         return "بدون مترو قريب"
     }
 
-    // MARK: - Questions
 
     private static func buildQuestions() -> [Questions] {
         [
@@ -543,14 +538,16 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
                 id: "q2",
                 title: "ما الأولوية الأهم لك عند اختيار الحي؟",
                 options: [
-                    RecommendationOption(id: "q2_a", title: "القرب من مقر العمل", icon: .nearWork, showsNeighborhoodPicker: true),
+                    RecommendationOption(id: "q2_a", title: "القرب من مقر العمل", icon: .nearWork, showsNeighborhoodPicker: true)
+                    ,
                     RecommendationOption(id: "q2_b", title: "القرب من منزل العائلة أو الأقارب", icon: .nearFamily, showsNeighborhoodPicker: true),
                     RecommendationOption(id: "q2_c", title: "توفر الخدمات", icon: .services, showsNeighborhoodPicker: false),
                     RecommendationOption(id: "q2_d", title: "توفر المدارس", icon: .schools, showsNeighborhoodPicker: false),
-                    RecommendationOption(id: "q2_e", title: "توفر مراكز تجارية", icon: .mall, showsNeighborhoodPicker: false),
+                    RecommendationOption(id: "q2_e", title: "سعر المتر المناسب", icon: .price, showsNeighborhoodPicker: false),
                     RecommendationOption(id: "q2_f", title: "توفر المرافق الترفيهية", icon: .entertainment, showsNeighborhoodPicker: false)
                 ],
                 selectionMode: .multi(max: 2)
+                
             ),
 
             Questions(
@@ -562,7 +559,26 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
                     RecommendationOption(id: "q3_c", title: "أعتمد على السيارة", icon: .car, showsNeighborhoodPicker: false)
                 ],
                 selectionMode: .single
+            ),
+
+            Questions(
+                id: "q4",
+                title: "ما ميزانيتك التقريبية لسعر المتر في الحي؟",
+                options: [
+                    RecommendationOption(id: "q4_low", title: "منخفض (مثال: 3,500 ر.س/م²)", icon: .price, showsNeighborhoodPicker: false),
+                    RecommendationOption(id: "q4_mid", title: "متوسط (مثال: 6,500 ر.س/م²)", icon: .price, showsNeighborhoodPicker: false),
+                    RecommendationOption(id: "q4_high", title: "مرتفع (مثال: 11,000 ر.س/م²)", icon: .price, showsNeighborhoodPicker: false)
+                ],
+                selectionMode: .single
             )
         ]
     }
+    
+}
+#Preview {
+    NeighborhoodQuestionView(
+        vm: NeighborhoodRecommendationViewModel(),
+        isPresented: .constant(true)
+    )
+    .environment(\.layoutDirection, .rightToLeft)
 }

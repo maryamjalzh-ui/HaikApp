@@ -1,9 +1,3 @@
-//
-//  NeighborhoodQuestionView.swift
-//  Haik
-//
-//  Created by Shahad Alharbi on 2/8/26.
-//
 import SwiftUI
 
 struct NeighborhoodQuestionView: View {
@@ -17,25 +11,27 @@ struct NeighborhoodQuestionView: View {
     @State private var expandedOptionID: String? = nil
     @State private var q2SelectionOrder: [String] = []
 
+    private var contentWidth: CGFloat {
+        let w = UIScreen.main.bounds.width
+        let usable = w - (sidePadding * 2)
+        return min(420, usable)
+    }
+
     var body: some View {
 
         let question = vm.currentQuestion
         let options = orderedOptions(for: question)
 
-        VStack(spacing: DS.cardSpacing) {
+        return VStack(spacing: DS.cardSpacing) {
 
             HStack {
                 Spacer()
 
                 Button {
                     if vm.currentIndex > 0 {
-                        withAnimation(.easeInOut(duration: 0.18)) {
-                            vm.goBack()
-                        }
+                        vm.goBack()
                     } else {
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            dismiss()
-                        }
+                        dismiss()
                     }
                 } label: {
                     Image(systemName: "chevron.forward")
@@ -50,23 +46,34 @@ struct NeighborhoodQuestionView: View {
             .padding(.trailing, 35)
             .environment(\.layoutDirection, .leftToRight)
 
-            DashedProgressBar(total: vm.totalSteps, current: vm.currentStep)
-                .padding(.horizontal, sidePadding)
+            VStack(spacing: 10) {
+                Text(pageTitle(for: question))
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.black)
+                    .multilineTextAlignment(.center)
+                    .frame(width: contentWidth, alignment: .center)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.horizontal, sidePadding)
+
+                DashedProgressBar(total: vm.totalSteps, current: vm.currentStep)
+                    .frame(width: contentWidth)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
 
             Text(question.title)
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(.black)
-                .padding(.top, 10)
-                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.top, 2)
                 .multilineTextAlignment(.center)
+                .frame(width: contentWidth, alignment: .center)
+                .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.horizontal, sidePadding)
 
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
 
-                        ForEach(options) { option in
-
+                        ForEach(options, id: \.id) { option in
                             if question.id == "q2", option.showsNeighborhoodPicker {
 
                                 ExpandableNeighborhoodOptionCard(
@@ -109,14 +116,15 @@ struct NeighborhoodQuestionView: View {
 
                                         if vm.canGoNext() {
                                             Task {
-                                                try? await Task.sleep(nanoseconds: DS.autoNextDelayMultiAfterConfirm)
-                                                withAnimation(.easeInOut(duration: DS.quickNextAnimationDuration)) {
-                                                    vm.goNext()
-                                                }
+                                                try? await Task.sleep(nanoseconds: DS.autoNextDelaySingle)
+                                                vm.goNext()
                                             }
                                         }
                                     }
                                 )
+                                .environment(\.layoutDirection, .leftToRight)
+                                .frame(width: contentWidth)
+                                .frame(maxWidth: .infinity, alignment: .center)
                                 .id(option.id)
 
                             } else {
@@ -140,6 +148,7 @@ struct NeighborhoodQuestionView: View {
                                                         proxy.scrollTo(q2SelectionOrder.first ?? option.id, anchor: .top)
                                                     }
                                                 }
+
                                             } else {
                                                 if expandedOptionID == option.id { expandedOptionID = nil }
                                             }
@@ -148,26 +157,29 @@ struct NeighborhoodQuestionView: View {
                                         if question.id != "q2" {
                                             Task {
                                                 try? await Task.sleep(nanoseconds: DS.autoNextDelaySingle)
-                                                withAnimation(.easeInOut(duration: DS.quickNextAnimationDuration)) {
-                                                    vm.goNext()
-                                                }
+                                                vm.goNext()
                                             }
                                         } else {
                                             if vm.canGoNext() {
                                                 Task {
-                                                    try? await Task.sleep(nanoseconds: DS.autoNextDelayMultiAfterConfirm)
-                                                    withAnimation(.easeInOut(duration: DS.quickNextAnimationDuration)) {
-                                                        vm.goNext()
-                                                    }
+                                                    try? await Task.sleep(nanoseconds: DS.autoNextDelaySingle)
+                                                    vm.goNext()
                                                 }
                                             }
                                         }
                                     }
                                 )
+                                .frame(width: contentWidth)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .environment(\.layoutDirection, (question.id == "q2" && (option.id == "q2_a" || option.id == "q2_b")) ? .leftToRight : .rightToLeft)
                                 .id(option.id)
                             }
                         }
                     }
+                    .animation(nil, value: vm.currentIndex)
+                    .animation(nil, value: question.id)
+                    .frame(width: contentWidth)
+                    .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.horizontal, sidePadding)
                     .padding(.top, 6)
                     .padding(.bottom, 12)
@@ -181,17 +193,19 @@ struct NeighborhoodQuestionView: View {
                     Text("- اختيارك الأول يحدد أولويتك")
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }
+                .environment(\.layoutDirection, .leftToRight)
+
                 .font(.system(size: 12))
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.trailing)
-                .padding(.trailing, sidePadding + 15)
-                .padding(.leading, sidePadding)
-
+                .frame(width: contentWidth, alignment: .trailing)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.leading, sidePadding + 2)
                 .padding(.top, 4)
-                .environment(\.layoutDirection, .leftToRight)
             }
 
         }
+        .environment(\.layoutDirection, .rightToLeft)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
         .background(Color("GreyBackground"))
         .onChange(of: vm.currentIndex) { _, _ in
@@ -199,6 +213,16 @@ struct NeighborhoodQuestionView: View {
             if vm.currentQuestion.id != "q2" {
                 q2SelectionOrder = []
             }
+        }
+    }
+
+    private func pageTitle(for question: Questions) -> String {
+        switch question.id {
+        case "q1": return "نمط حياتك"
+        case "q2": return "أولوياتك في اختيار الحي"
+        case "q3": return "التنقل اليومي"
+        case "q4": return "نطاق ميزانيتك"
+        default: return "توصية الحي"
         }
     }
 
@@ -312,7 +336,6 @@ struct ExpandableNeighborhoodOptionCard: View {
                         .font(.system(size: DS.iconSize, weight: DS.iconWeight))
                         .foregroundColor(DS.iconColor)
                 }
-                .environment(\.layoutDirection, .leftToRight)
                 .padding(.horizontal, 18)
                 .frame(height: DS.cardHeight)
                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -330,7 +353,7 @@ struct ExpandableNeighborhoodOptionCard: View {
 
                     ScrollView(showsIndicators: false) {
                         LazyVStack(spacing: 8) {
-                            ForEach(filteredNeighborhoods) { n in
+                            ForEach(filteredNeighborhoods, id: \.id) { n in
                                 Button {
                                     tempPicked = n.name
                                 } label: {
@@ -394,6 +417,7 @@ struct NeighborhoodSearchField: View {
                 .font(.system(size: 14, weight: .medium))
                 .multilineTextAlignment(.trailing)
                 .frame(maxWidth: .infinity, alignment: .trailing)
+                .environment(\.layoutDirection, .leftToRight)
 
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.gray)
@@ -403,7 +427,6 @@ struct NeighborhoodSearchField: View {
         .frame(maxWidth: .infinity, alignment: .trailing)
         .background(Color("GreyBackground"))
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .environment(\.layoutDirection, .leftToRight)
     }
 }
 
@@ -431,10 +454,14 @@ struct NeighborhoodRow: View {
             }
             .padding(.horizontal, 14)
             .frame(maxWidth: .infinity, alignment: .trailing)
-            .environment(\.layoutDirection, .leftToRight)
-
         }
         .frame(height: 48)
-        .environment(\.layoutDirection, .leftToRight)
     }
+}
+
+#Preview {
+    NeighborhoodQuestionView(
+        vm: NeighborhoodRecommendationViewModel(),
+        isPresented: .constant(true)
+    )
 }

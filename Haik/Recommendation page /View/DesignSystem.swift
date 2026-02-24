@@ -4,7 +4,6 @@
 //
 //  Created by Shahad Alharbi on 2/8/26.
 //
-
 import SwiftUI
 
 enum DS {
@@ -19,15 +18,16 @@ enum DS {
     static let shadowY: CGFloat = 6
     static let shadowOpacity: Double = 0.12
 
-
     static let progressWidth: CGFloat = 75
     static let progressHeight: CGFloat = 12
     static let progressCornerRadius: CGFloat = 24
+    static let progressSpacing: CGFloat = 12
+    static let progressBarMaxWidth: CGFloat = 400
 
     static let iconSize: CGFloat = 18
     static let iconWeight: Font.Weight = .semibold
     static let iconColor: Color = Color("Green2Primary")
-    
+
     static let autoNextDelaySingle: UInt64 = 900_000_000
     static let autoNextDelayMultiAfterConfirm: UInt64 = 450_000_000
     static let scrollToExpandedDelay: TimeInterval = 0.06
@@ -36,4 +36,5 @@ enum DS {
     static let quickNextAnimationDuration: Double = 0.10
     static let selectionAnimationDuration: Double = 0.12
 
+    static let contentMaxWidth: CGFloat = 360
 }

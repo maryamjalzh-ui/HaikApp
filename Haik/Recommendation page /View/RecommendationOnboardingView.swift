@@ -46,7 +46,6 @@ struct RecommendationOnboardingView: View {
                     .padding(.horizontal, 20)
                     .environment(\.layoutDirection, .leftToRight)
 
-
                     Spacer().frame(height: 10)
 
                     TabView(selection: $page) {
@@ -113,7 +112,7 @@ private extension RecommendationOnboardingView {
                 .foregroundColor(.black)
                 .padding(.top, 6)
 
-            Text("سيتم طرح مجموعة أسئلة مختصرة لتحديد تفضيلاتك، ومن ثم عرض الأحياء الأكثر ملاءمة وفقًا لإجاباتك")
+            Text("سيتم طرح مجموعة أسئلة لتحديد تفضيلاتك، بما يشمل:")
                 .font(.system(size: 15, weight: .regular))
                 .foregroundStyle(.gray)
                 .multilineTextAlignment(.center)
@@ -124,6 +123,7 @@ private extension RecommendationOnboardingView {
                 OnboardingInfoCard(title: "نمط الحياة", icon: "sparkles")
                 OnboardingInfoCard(title: "الأولويات", icon: "slider.horizontal.3")
                 OnboardingInfoCard(title: "وسيلة التنقل", icon: "tram")
+                OnboardingInfoCard(title: "سعر العقار في الحي", icon: "banknote")
             }
             .padding(.horizontal, sidePadding)
             .padding(.top, 6)
@@ -145,7 +145,7 @@ private extension RecommendationOnboardingView {
                 .foregroundColor(.black)
                 .padding(.top, 10)
 
-            Text("ستظهر قائمة بالأحياء المقترحة، متضمنة نسبة التوافق وأبرز مبررات الترشيح، مع إمكانية استعراض تفاصيل الحي")
+            Text("ستظهر قائمة بالأحياء المقترحة، متضمنة نسبة التوافق وأبرز مبررات الترشيح")
                 .font(.system(size: 15, weight: .regular))
                 .foregroundStyle(.gray)
                 .multilineTextAlignment(.center)
@@ -169,6 +169,7 @@ private extension RecommendationOnboardingView {
                 VStack(alignment: .trailing, spacing: 10) {
                     BulletRow(text: "إظهار نسبة التوافق لكل حي")
                     BulletRow(text: "عرض مبررات للترشيح")
+                    BulletRow(text: "متوسط سعر المتر في الحي")
                     BulletRow(text: "إتاحة استعراض الخدمات المتوفرة")
                 }
                 .padding(.horizontal, 6)
