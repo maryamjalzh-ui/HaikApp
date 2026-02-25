@@ -4,7 +4,6 @@
 //
 //  Created by lamess on 10/02/2026.
 //
-
 import SwiftUI
 import MapKit
 import Combine
@@ -28,16 +27,14 @@ class HomeViewModel: ObservableObject {
         )
     )
     
+    // MARK: - المحرك الذكي للبحث (Efficient Search)
     var filteredNeighborhoods: [Neighborhood] {
-        // 1. تنظيف النص من المسافات الزائدة في البداية والنهاية
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let query = searchText.normalizedArabic()
         
-        // 2. إذا كان الحقل فارغاً، لا تظهر نتائج
         if query.isEmpty { return [] }
         
-        // 3. البحث المرن الذي يتجاهل الهمزات وحالة الأحرف
         return neighborhoods.filter { neighborhood in
-            neighborhood.name.localizedCaseInsensitiveContains(query)
+            neighborhood.name.normalizedArabic().contains(query)
         }
     }
     
@@ -51,14 +48,11 @@ class HomeViewModel: ObservableObject {
             ))
         }
     }
-    // MARK: - التعديل في الـ ViewModel
-   
-    // دالة جلب وتحديث التقييمات لكل الأحياء
+    
     func updateNeighborhoodRatings() {
         db.collection("neighborhood_reviews").addSnapshotListener { querySnapshot, error in
             guard let documents = querySnapshot?.documents else { return }
             
-            // 1. تجميع التقييمات حسب اسم الحي
             var ratingsMap: [String: [Int]] = [:]
             for doc in documents {
                 let data = doc.data()
@@ -68,14 +62,13 @@ class HomeViewModel: ObservableObject {
                 }
             }
             
-            // 2. تحديث قائمة الأحياء بالقيم الجديدة
             DispatchQueue.main.async {
                 self.neighborhoods = NeighborhoodData.all.map { neighborhood in
                     var updated = neighborhood
                     if let ratings = ratingsMap[neighborhood.name], !ratings.isEmpty {
                         let avg = Double(ratings.reduce(0, +)) / Double(ratings.count)
-                        updated.rating = String(format: "%.1f", avg) // تحديث التقييم
-                        updated.reviewCount = "\(ratings.count)"    // تحديث العداد
+                        updated.rating = String(format: "%.1f", avg)
+                        updated.reviewCount = "\(ratings.count)"
                     } else {
                         updated.rating = "0.0"
                         updated.reviewCount = "0"
@@ -85,19 +78,37 @@ class HomeViewModel: ObservableObject {
             }
         }
     }
+
     init() {
-        // مراقبة ظهور الكيبورد
         NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)
             .map { _ in true }
             .assign(to: \.isKeyboardVisible, on: self)
             .store(in: &cancellables)
 
-        // مراقبة اختفاء الكيبورد
         NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)
             .map { _ in false }
             .assign(to: \.isKeyboardVisible, on: self)
             .store(in: &cancellables)
-        updateNeighborhoodRatings() // السطر الضروري لجلب البيانات فور البدء
+            
+        updateNeighborhoodRatings()
     }
-    
+}
+
+// MARK: - Arabic Normalization Extension
+extension String {
+    func normalizedArabic() -> String {
+        var text = self.lowercased()
+        
+        // استبدال كل أشكال الألف بألف عادية
+        text = text.replacingOccurrences(of: "[أإآٱ]", with: "ا", options: .regularExpression)
+        
+        // استبدال التاء المربوطة بالهاء
+        text = text.replacingOccurrences(of: "ة", with: "ه")
+        
+        // استبدال الألف المقصورة بالياء
+        text = text.replacingOccurrences(of: "ى", with: "ي")
+        
+        // حذف المسافات الزائدة
+        return text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }
