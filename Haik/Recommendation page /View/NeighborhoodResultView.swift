@@ -39,7 +39,7 @@ struct NeighborhoodResultView: View {
                 } label: {
                     Image(systemName: "chevron.forward")
                         .environment(\.layoutDirection, .leftToRight) // ✅ فقط للأيقونة
-                        .font(.system(size: 18, weight: .regular))
+                        .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                         .foregroundColor(Color("Green2Primary"))
                         .frame(width: 52, height: 52)
                         .background(Color.white)
@@ -57,8 +57,7 @@ struct NeighborhoodResultView: View {
                 .padding(.top, 25) 
 
             Text("الأحياء الانسب لك")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundColor(.black)
+                .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                .foregroundColor(.black)
                 .padding(.top, 30)
                 .padding(.bottom, 20)
 
@@ -91,8 +90,7 @@ struct NeighborhoodResultView: View {
 
             Button(action: { goHome = true }) {
                 Text("تم")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundColor(.black)
+                    .scaledFont(size: 22, weight: .bold, relativeTo: .title3)                    .foregroundColor(.black)
                     .frame(width: 330, height: 65)
                     .background(Color.white)
                     .cornerRadius(40)
@@ -196,8 +194,7 @@ struct ResultCardView: View {
 
                     if isBest {
                         Text("الأفضل لك")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(.white)
+                            .scaledFont(size: 11, weight: .bold, relativeTo: .caption2)                            .foregroundColor(.white)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                             .background(Color(red: 0.6, green: 0.35, blue: 0.9))
@@ -211,7 +208,7 @@ struct ResultCardView: View {
                     HStack(spacing: 4) {
                         Text(String(format: "%.1f", rating))
                             .foregroundColor(.gray)
-                            .font(.system(size: 14))
+                            .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
 
                         ForEach(0..<5) { i in
                             Image(systemName: i < Int(rating.rounded()) ? "star.fill" : "star")
@@ -223,8 +220,7 @@ struct ResultCardView: View {
                     Spacer()
 
                     Text(neighborhood.name)
-                        .font(.system(size: 26, weight: .bold))
-                        .foregroundColor(.black)
+                        .scaledFont(size: 26, weight: .bold, relativeTo: .title2)                        .foregroundColor(.black)
                 }
                 .environment(\.layoutDirection, .leftToRight)
             }
@@ -234,10 +230,10 @@ struct ResultCardView: View {
             VStack {
                 HStack(spacing: 8) {
                     Text("\(Int(compatibility.rounded()))%")
-                        .font(.system(size: 21, weight: .bold))
+                        .scaledFont(size: 21, weight: .bold, relativeTo: .headline)
+                    
                     Text("نسبة التوافق")
-                        .font(.system(size: 12))
-                }
+                    .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                }
                 .foregroundColor(.white)
                 .padding(.top, 16)
                 .environment(\.layoutDirection, .leftToRight)
@@ -274,9 +270,9 @@ struct ResultCardView: View {
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "arrow.left")
-                        .font(.system(size: 14, weight: .bold))
+                        .scaledFont(size: 14, weight: .bold, relativeTo: .caption1)
                     Text("عرض الحي")
-                        .font(.system(size: 16, weight: .medium))
+                        .scaledFont(size: 16, weight: .medium, relativeTo: .body)
                 }
                 .foregroundColor(Color("Green2Primary"))
                 .frame(maxWidth: .infinity, alignment: .leading)

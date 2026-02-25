@@ -29,8 +29,7 @@ struct WelcomeView: View {
                     Spacer()
                     
                     Text("مرحبًا بك في حيّك")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(.white)
+                        .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                        .foregroundColor(.white)
                     
                     Image("FirstPageLogo")
                         .resizable()
@@ -45,8 +44,7 @@ struct WelcomeView: View {
                         // الانتقال لصفحة إنشاء حساب
                         NavigationLink(destination: SignupView()) {
                             Text("انشاء حساب جديد")
-                                .font(.headline)
-                                .foregroundColor(.black)
+                                .scaledFont(size: 17, weight: .semibold, relativeTo: .headline)                                .foregroundColor(.black)
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .background(Color.white)
@@ -56,8 +54,7 @@ struct WelcomeView: View {
                         // الانتقال لصفحة تسجيل الدخول
                         NavigationLink(destination: LogInPage()) {
                             Text("تسجيل الدخول")
-                                .font(.headline)
-                                .foregroundColor(.white)
+                                .scaledFont(size: 17, weight: .semibold, relativeTo: .headline)                                .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .overlay(
@@ -70,7 +67,7 @@ struct WelcomeView: View {
                         Button(action: {
                             dismiss() // يغلق الصفحة ويعيد المستخدم للخريطة أو تفاصيل الحي
                         }) {
-Text("ليس الآن")                                .font(.system(size: 16, weight: .medium))
+Text("ليس الآن")                                .scaledFont(size: 16, weight: .medium, relativeTo: .body)
                                 .foregroundColor(.white.opacity(0.9))
                                 .padding(.top, 8)
                         }

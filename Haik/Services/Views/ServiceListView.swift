@@ -69,8 +69,7 @@ struct ServiceListView: View {
     private var header: some View {
         ZStack {
             Text(service.rawValue)
-                .font(.system(size: 30, weight: .regular))
-                .foregroundStyle(.black)
+                .scaledFont(size: 30, weight: .regular, relativeTo: .title1)                .foregroundStyle(.black)
                 .lineLimit(1)
                 .padding(.horizontal, 90)
 
@@ -82,7 +81,7 @@ struct ServiceListView: View {
 
                 Button { dismiss() } label: {
                     Image(systemName: "chevron.forward")
-                        .font(.system(size: 18, weight: .regular))
+                        .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                         .foregroundStyle(.black)
                         .frame(width: 52, height: 52)
                         .background(Color.white)
@@ -104,21 +103,20 @@ struct ServiceListView: View {
             HStack(spacing: 8) {
                 Button { openInMaps(place) } label: {
                     Image(systemName: "location")
-                        .font(.system(size: 18, weight: .regular))
+                        .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                         .foregroundStyle(blueSecondary)
                 }
                 .buttonStyle(.plain)
 
                 Text(place.name)
-                    .font(.system(size: 22, weight: .regular))
-                    .foregroundStyle(.black)
+                    .scaledFont(size: 22, weight: .regular, relativeTo: .title3)                    .foregroundStyle(.black)
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
 
             // Service icon (same symbol + same color logic)
             Image(systemName: service.fallbackSystemSymbol ?? service.icon.systemName)
-                .font(.system(size: 34, weight: .regular))
+                .scaledFont(size: 34, weight: .regular, relativeTo: .largeTitle)
                 .foregroundStyle(serviceIconColor(service))
                 .padding(.leading, 16)
         }

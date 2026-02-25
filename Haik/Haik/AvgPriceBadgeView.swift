@@ -22,14 +22,12 @@ struct AvgPriceBadgeView: View {
 
             HStack {
                 Text("متوسط سعر المتر")
-                    .font(.system(size: 14, weight: .regular))
-                    .foregroundStyle(.black)
+                    .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)                    .foregroundStyle(.black)
 
                 Spacer()
 
                 Image(systemName: "chart.bar.fill")
-                    .font(.system(size: 14, weight: .regular))
-                    .foregroundStyle(primaryColor)
+                    .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)                    .foregroundStyle(primaryColor)
             }
 
             HStack(spacing: 10) {
@@ -61,12 +59,10 @@ struct AvgPriceBadgeView: View {
         HStack(spacing: 6) {
 
             Text(value)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(primaryColor)
+                .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)                .foregroundStyle(primaryColor)
 
             Text("ر.س / م²")
-                .font(.system(size: 13, weight: .regular))
-                .foregroundStyle(hintGray)
+                .scaledFont(size: 13, weight: .regular, relativeTo: .caption1)                .foregroundStyle(hintGray)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

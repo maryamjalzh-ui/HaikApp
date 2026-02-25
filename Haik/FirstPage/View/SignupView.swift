@@ -28,8 +28,7 @@ struct SignupView: View {
                         dismiss()
                     } label: {
                         Image(systemName: "chevron.forward")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(Color("GreenPrimary"))
+                            .scaledFont(size: 18, weight: .bold, relativeTo: .headline)                            .foregroundColor(Color("GreenPrimary"))
                             .frame(width: 45, height: 45)
                             .background(Color.white)
                             .clipShape(Circle())
@@ -40,19 +39,25 @@ struct SignupView: View {
                 .padding(.top, 10)
 
                 Text("مرحبًا بك في حيّك")
-                    .font(.system(size: 28, weight: .bold))
-                
+                    .scaledFont(size: 28, weight: .bold, relativeTo: .title1)
                 VStack(alignment: .trailing, spacing: 20) {
                     // حقل الاسم
                     VStack(alignment: .trailing, spacing: 8) {
-                        Text("الاسم").foregroundColor(.gray)
+                        
+                        Text("الاسم")
+                            .foregroundColor(.gray)
+                            .scaledFont(size: 16, weight: .regular, relativeTo: .callout)
+
+                        
                         TextField("اكتب اسمك هنا", text: $viewModel.name)
                             .padding().background(Color(white: 0.92)).cornerRadius(25)
                     }
 
                     // حقل البريد
                     VStack(alignment: .trailing, spacing: 8) {
-                        Text("البريد الإلكتروني").foregroundColor(.gray)
+                        Text("كلمة المرور")
+                            .foregroundColor(.gray)
+                            .scaledFont(size: 16, weight: .regular, relativeTo: .callout)
                         TextField("user @gmail.com", text: $viewModel.email)
                             .padding().background(Color(white: 0.92)).cornerRadius(25)
                             .autocapitalization(.none)
@@ -77,7 +82,9 @@ struct SignupView: View {
                     
                     // حقل تأكيد كلمة المرور
                     VStack(alignment: .trailing, spacing: 8) {
-                        Text("تأكيد كلمة المرور").foregroundColor(.gray)
+                        Text("تأكيد كلمة المرور")
+                            .foregroundColor(.gray)
+                            .scaledFont(size: 16, weight: .regular, relativeTo: .callout)
                         HStack {
                             Button(action: { viewModel.isConfirmPasswordVisible.toggle() }) {
                                 Image(systemName: viewModel.isConfirmPasswordVisible ? "eye" : "eye.slash").foregroundColor(.gray)
@@ -94,23 +101,21 @@ struct SignupView: View {
                     
                     if !viewModel.confirmPassword.isEmpty && !viewModel.isPasswordMatching {
                         Text("كلمات المرور غير متطابقة")
-                            .font(.caption)
-                            .foregroundColor(.red)
+                            .scaledFont(size: 13, weight: .regular, relativeTo: .caption1)                            .foregroundColor(.red)
                             .padding(.trailing, 10)
                     }
                 }
                 .padding(.horizontal, 30)
                 
                 if !viewModel.errorMessage.isEmpty {
-                    Text(viewModel.errorMessage).foregroundColor(.red).font(.caption)
+                    Text(viewModel.errorMessage).foregroundColor(.red).scaledFont(size: 13, weight: .regular, relativeTo: .caption1)
                 }
                 
                 Spacer()
                 
                 Button(action: viewModel.signUp) {
                     Text("انشاء حساب جديد")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.black)
+                        .scaledFont(size: 18, weight: .bold, relativeTo: .headline)                        .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                         .background(Color.white)

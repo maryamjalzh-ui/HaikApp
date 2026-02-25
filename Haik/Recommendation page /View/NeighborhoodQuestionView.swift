@@ -35,7 +35,7 @@ struct NeighborhoodQuestionView: View {
                     }
                 } label: {
                     Image(systemName: "chevron.forward")
-                        .font(.system(size: 18, weight: .regular))
+                        .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                         .foregroundColor(Color("Green2Primary"))
                         .frame(width: 52, height: 52)
                         .background(Color.white)
@@ -48,8 +48,7 @@ struct NeighborhoodQuestionView: View {
 
             VStack(spacing: 10) {
                 Text(pageTitle(for: question))
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.black)
+                    .scaledFont(size: 18, weight: .bold, relativeTo: .headline)                    .foregroundColor(.black)
                     .multilineTextAlignment(.center)
                     .frame(width: contentWidth, alignment: .center)
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -61,8 +60,7 @@ struct NeighborhoodQuestionView: View {
             }
 
             Text(question.title)
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundColor(.black)
+                .scaledFont(size: 17, weight: .semibold, relativeTo: .headline)                .foregroundColor(.black)
                 .padding(.top, 2)
                 .multilineTextAlignment(.center)
                 .frame(width: contentWidth, alignment: .center)
@@ -195,8 +193,7 @@ struct NeighborhoodQuestionView: View {
                 }
                 .environment(\.layoutDirection, .leftToRight)
 
-                .font(.system(size: 12))
-                .foregroundColor(.gray)
+                .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                .foregroundColor(.gray)
                 .multilineTextAlignment(.trailing)
                 .frame(width: contentWidth, alignment: .trailing)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -317,15 +314,14 @@ struct ExpandableNeighborhoodOptionCard: View {
 
                     VStack(alignment: .trailing, spacing: 6) {
                         Text(option.title)
-                            .font(.system(size: 16, weight: .semibold))
+                            .scaledFont(size: 16, weight: .semibold, relativeTo: .headline)
                             .foregroundColor(.black)
                             .multilineTextAlignment(.trailing)
                             .frame(maxWidth: .infinity, alignment: .trailing)
 
                         if let name = effectivePicked {
                             Text(name)
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(.gray)
+                                .scaledFont(size: 13, weight: .medium, relativeTo: .caption1)                                .foregroundColor(.gray)
                                 .lineLimit(1)
                                 .multilineTextAlignment(.trailing)
                                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -376,8 +372,7 @@ struct ExpandableNeighborhoodOptionCard: View {
                         }
                     } label: {
                         Text("تأكيد الاختيار")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(Color("Green2Primary"))
+                            .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)                            .foregroundColor(Color("Green2Primary"))
                             .frame(width: 220, height: 46)
                             .background(Color("Green2Primary").opacity(0.14))
                             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -414,8 +409,7 @@ struct NeighborhoodSearchField: View {
         HStack(spacing: 10) {
 
             TextField("ابحث عن الحي", text: $text)
-                .font(.system(size: 14, weight: .medium))
-                .multilineTextAlignment(.trailing)
+                .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline)                .multilineTextAlignment(.trailing)
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .environment(\.layoutDirection, .leftToRight)
 
@@ -442,8 +436,7 @@ struct NeighborhoodRow: View {
             HStack(spacing: 10) {
 
                 Text(title)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.black)
+                    .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)                    .foregroundColor(.black)
                     .multilineTextAlignment(.trailing)
                     .frame(maxWidth: .infinity, alignment: .trailing)
 

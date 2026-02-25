@@ -163,7 +163,7 @@ extension HomeScreen {
                 VStack(spacing: 0) {
                     if viewModel.filteredNeighborhoods.isEmpty {
                         Text("لا يوجد حي بهذا الاسم")
-                            .font(.system(size: 14)).foregroundColor(.secondary).padding(.vertical, 20)
+                            .scaledFont(size: 14, weight: .regular, relativeTo: .caption1).foregroundColor(.secondary).padding(.vertical, 20)
                     } else {
                         ScrollView {
                             VStack(spacing: 0) {
@@ -176,13 +176,13 @@ extension HomeScreen {
                                                 .frame(width: 24, height: 24)
                                             
                                             Text(neighborhood.name)
-                                                .font(.system(size: 16, weight: .medium))
+                                                .scaledFont(size: 16, weight: .medium, relativeTo: .body)
                                                 .foregroundColor(.primary)
                                             
                                             Spacer()
                                             
                                             Text(neighborhood.region)
-                                                .font(.system(size: 12)).foregroundColor(.secondary)
+                                                .scaledFont(size: 12, weight: .regular, relativeTo: .caption1).foregroundColor(.secondary)
                                         }
                                         .padding(.vertical, 14).padding(.horizontal, 16)
                                     }
@@ -206,19 +206,16 @@ extension HomeScreen {
 
             HStack {
                 Text("حي \(neighborhood.name)")
-                    .font(.system(size: 20, weight: .bold))
-
+                    .scaledFont(size: 20, weight: .bold, relativeTo: .headline)
                 Spacer()
 
                 Text("(\(neighborhood.reviewCount))")
-                    .font(.caption)
-                    .foregroundColor(.gray)
+                    .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                    .foregroundColor(.gray)
 
                 ForEach(0..<5) { _ in
                     Image(systemName: "star.fill")
                         .foregroundColor(.yellow)
-                        .font(.system(size: 12))
-                }
+                    .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                }
             }
 
             AvgPriceBadgeView(
@@ -236,8 +233,7 @@ extension HomeScreen {
                     Text("عرض الحي")
                     Image(systemName: "arrow.left")
                 }
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.black)
+                .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline)                .foregroundColor(.black)
             }
         }
         .padding(22)
@@ -251,7 +247,7 @@ extension HomeScreen {
     
     private var hintCard: some View {
         Text("اضغط على الخريطة لاستكشاف بيانات الحي")
-            .font(.system(size: 14)).padding().background(Color.white).cornerRadius(20).shadow(radius: 5).padding(.bottom, 40)
+            .scaledFont(size: 14, weight: .regular, relativeTo: .caption1).padding().background(Color.white).cornerRadius(20).shadow(radius: 5).padding(.bottom, 40)
     }
 }
 
@@ -263,7 +259,7 @@ struct NeighborhoodPin: View {
         Button(action: action) {
             VStack(spacing: 4) {
                 Text(neighborhood.rating)
-                    .font(.system(size: 14, weight: .bold))
+                    .scaledFont(size: 14, weight: .bold, relativeTo: .caption1)
                     .foregroundColor(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
@@ -272,7 +268,7 @@ struct NeighborhoodPin: View {
                     .shadow(radius: 2)
                 
                 Text(neighborhood.name)
-                    .font(.system(size: 12, weight: .bold))
+                    .scaledFont(size: 12, weight: .bold, relativeTo: .caption2)
                     .foregroundColor(.black)
                     .padding(.horizontal, 4)
                     .background(Color.white.opacity(0.8))

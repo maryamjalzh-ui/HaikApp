@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct RecommendationOnboardingView: View {
+    
+    @ScaledMetric(relativeTo: .title) private var logoWidth: CGFloat = 150
 
     @Binding var isPresented: Bool
     @State private var page: Int = 0
@@ -35,7 +37,7 @@ struct RecommendationOnboardingView: View {
                             }
                         } label: {
                             Image(systemName: "chevron.forward")
-                                .font(.system(size: 18, weight: .regular))
+                                .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                                 .foregroundColor(Color("Green2Primary"))
                                 .frame(width: 52, height: 52)
                                 .background(Color.white)
@@ -70,8 +72,7 @@ struct RecommendationOnboardingView: View {
                         }
                     } label: {
                         Text(page < 1 ? "التالي" : "بدء")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(Color("Green2Primary"))
+                            .scaledFont(size: 18, weight: .bold, relativeTo: .headline)                            .foregroundColor(Color("Green2Primary"))
                             .frame(maxWidth: .infinity)
                             .frame(height: 58)
                             .background(Color.white)
@@ -104,17 +105,14 @@ private extension RecommendationOnboardingView {
             Image("HaikLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 150)
-                .padding(.top, 10)
+                .frame(width: logoWidth)                .padding(.top, 10)
 
             Text("توصية الحي المناسب لك")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundColor(.black)
+                .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                .foregroundColor(.black)
                 .padding(.top, 6)
 
             Text("سيتم طرح مجموعة أسئلة لتحديد تفضيلاتك، بما يشمل:")
-                .font(.system(size: 15, weight: .regular))
-                .foregroundStyle(.gray)
+                .scaledFont(size: 15, weight: .regular, relativeTo: .body)                .foregroundStyle(.gray)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 30)
                 .lineSpacing(4)
@@ -141,13 +139,11 @@ private extension RecommendationOnboardingView {
             Spacer().frame(height: 6)
 
             Text("نتائج التوصية")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundColor(.black)
+                .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                .foregroundColor(.black)
                 .padding(.top, 10)
 
             Text("ستظهر قائمة بالأحياء المقترحة، متضمنة نسبة التوافق وأبرز مبررات الترشيح")
-                .font(.system(size: 15, weight: .regular))
-                .foregroundStyle(.gray)
+                .scaledFont(size: 15, weight: .regular, relativeTo: .body)                .foregroundStyle(.gray)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 30)
                 .lineSpacing(4)
@@ -223,7 +219,7 @@ private struct OnboardingInfoCard: View {
                     .foregroundColor(DS.iconColor)
 
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold))
+                    .scaledFont(size: 16, weight: .semibold, relativeTo: .headline)
                     .foregroundColor(.black)
                     .multilineTextAlignment(.trailing)
 
@@ -246,8 +242,7 @@ private struct BulletRow: View {
                 .frame(width: 6, height: 6)
 
             Text(text)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color.gray)
+                .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline)                .foregroundStyle(Color.gray)
 
             Spacer(minLength: 0)
         }

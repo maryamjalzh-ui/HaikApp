@@ -29,8 +29,7 @@ struct LogInPage: View {
                         dismiss()
                     } label: {
                         Image(systemName: "chevron.forward")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(Color("GreenPrimary"))
+                            .scaledFont(size: 18, weight: .bold, relativeTo: .headline)                            .foregroundColor(Color("GreenPrimary"))
                             .frame(width: 45, height: 45)
                             .background(Color.white)
                             .clipShape(Circle())
@@ -41,13 +40,18 @@ struct LogInPage: View {
                 .padding(.top, 10)
 
                 Text("مرحبًا بك في حيّك")
-                    .font(.system(size: 28, weight: .bold))
-                    .padding(.top, 20)
+                    .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                    .padding(.top, 20)
                 
                 VStack(alignment: .trailing, spacing: 25) {
                     // حقل الإيميل
                     VStack(alignment: .trailing, spacing: 8) {
-                        Text("البريد الإلكتروني").foregroundColor(.gray).font(.callout)
+                        Text("البريد الإلكتروني")
+                            .foregroundColor(.gray)
+                            .scaledFont(size: 16, weight: .regular, relativeTo: .callout)
+                            
+                            
+                            
+                           
                         TextField("user @gmail.com", text: $viewModel.loginEmail)
                             .padding().background(Color(white: 0.94)).cornerRadius(25)
                             .autocapitalization(.none)
@@ -55,7 +59,9 @@ struct LogInPage: View {
                     
                     // حقل كلمة المرور
                     VStack(alignment: .trailing, spacing: 8) {
-                        Text("كلمة المرور").foregroundColor(.gray).font(.callout)
+                        Text("كلمة المرور")
+                            .foregroundColor(.gray)
+                            .scaledFont(size: 16, weight: .regular, relativeTo: .callout)
                         HStack {
                             Button(action: { viewModel.isPasswordVisible.toggle() }) {
                                 Image(systemName: viewModel.isPasswordVisible ? "eye" : "eye.slash").foregroundColor(.gray)
@@ -73,14 +79,14 @@ struct LogInPage: View {
                 .padding(.horizontal, 30)
                 
                 if !viewModel.loginError.isEmpty {
-                    Text(viewModel.loginError).foregroundColor(.red).font(.caption)
+                    Text(viewModel.loginError).foregroundColor(.red).scaledFont(size: 13, weight: .regular, relativeTo: .caption1)
                 }
                 
                 Spacer()
                 
                 Button(action: viewModel.login) {
                     Text("تسجيل الدخول")
-                        .font(.system(size: 18, weight: .bold))
+                        .scaledFont(size: 18, weight: .bold, relativeTo: .headline)
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)

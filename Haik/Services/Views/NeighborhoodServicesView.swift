@@ -78,8 +78,7 @@ private extension NeighborhoodServicesView {
         VStack(spacing: 4) {
             ZStack {
                 Text(vm.neighborhoodName)
-                    .font(.system(size: 34, weight: .regular))
-                    .foregroundStyle(.black)
+                    .scaledFont(size: 34, weight: .regular, relativeTo: .largeTitle)                    .foregroundStyle(.black)
                     .lineLimit(1)
                     .padding(.horizontal, 90)
 
@@ -93,7 +92,7 @@ private extension NeighborhoodServicesView {
                         }
                     } label: {
                         Image(systemName: vm.isFavorite ? "heart.fill" : "heart")
-                            .font(.system(size: 18, weight: .regular))
+                            .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                             .foregroundColor(Color("Green2Primary"))
                             .frame(width: 52, height: 52)
                             .background(Color.white)
@@ -109,7 +108,7 @@ private extension NeighborhoodServicesView {
                         }
                     } label: {
                         Image(systemName: "chevron.forward")
-                            .font(.system(size: 18, weight: .regular))
+                            .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                             .foregroundColor(Color("Green2Primary"))
                             .frame(width: 52, height: 52)
                             .background(Color.white)
@@ -123,7 +122,7 @@ private extension NeighborhoodServicesView {
 
             HStack(spacing: 4) {
                 Text("(\(vm.reviewsCount))")
-                    .font(.system(size: 14))
+                    .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
                     .foregroundColor(.gray)
 
                 ForEach(0..<5) { _ in
@@ -159,8 +158,7 @@ private extension NeighborhoodServicesView {
 
     func sectionTitle(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 22, weight: .regular))
-            .multilineTextAlignment(.trailing)
+            .scaledFont(size: 22, weight: .regular, relativeTo: .title3)            .multilineTextAlignment(.trailing)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.horizontal, 24)
             .environment(\.layoutDirection, .leftToRight)
@@ -168,8 +166,7 @@ private extension NeighborhoodServicesView {
 
     func subsectionHint(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 17, weight: .regular))
-            .foregroundStyle(hintGray)
+            .scaledFont(size: 17, weight: .regular, relativeTo: .body)            .foregroundStyle(hintGray)
             .multilineTextAlignment(.trailing)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.horizontal, 24)
@@ -221,8 +218,7 @@ private extension NeighborhoodServicesView {
             HStack(spacing: 12) {
                 ForEach(ReviewCategory.allCases) { cat in
                     Text(cat.rawValue)
-                        .font(.system(size: 17, weight: .regular))
-                        .foregroundStyle(vm.selectedCategory == cat ? Color.white : Color.black)
+                        .scaledFont(size: 17, weight: .regular, relativeTo: .body)                        .foregroundStyle(vm.selectedCategory == cat ? Color.white : Color.black)
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
                         .padding(.horizontal, 18)
@@ -251,9 +247,8 @@ private extension NeighborhoodServicesView {
             ZStack(alignment: .topTrailing) {
                 HStack(alignment: .top) {
                     if vm.newComment.isEmpty {
-                        Text("اكتب تعليقك...")
-                            .font(.system(size: 17, weight: .regular))
-                            .foregroundStyle(hintGray)
+                        Text("اكتب تعليقك")
+                            .scaledFont(size: 17, weight: .regular, relativeTo: .body)                            .foregroundStyle(hintGray)
                             .multilineTextAlignment(.trailing)
                             .frame(maxWidth: .infinity, alignment: .trailing)
                             .environment(\.layoutDirection, .rightToLeft)
@@ -266,8 +261,7 @@ private extension NeighborhoodServicesView {
                     HStack(spacing: 8) {
                         ForEach(1...5, id: \.self) { i in
                             Image(systemName: "star.fill")
-                                .font(.system(size: 22, weight: .regular))
-                                .foregroundStyle(i <= vm.newRating ? Color.yellow : Color.gray.opacity(0.35))
+                                .scaledFont(size: 22, weight: .regular, relativeTo: .title3)                                .foregroundStyle(i <= vm.newRating ? Color.yellow : Color.gray.opacity(0.35))
                                 .onTapGesture { vm.newRating = i }
                         }
                     }
@@ -277,8 +271,7 @@ private extension NeighborhoodServicesView {
                 .padding(.top, 2)
 
                 TextEditor(text: $vm.newComment)
-                    .font(.system(size: 16, weight: .regular))
-                    .focused($isCommentFocused)
+                    .scaledFont(size: 16, weight: .regular, relativeTo: .body)                    .focused($isCommentFocused)
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)
                     .environment(\.layoutDirection, .rightToLeft)
@@ -345,14 +338,12 @@ private extension NeighborhoodServicesView {
                 HStack(spacing: 6) {
                     ForEach(1...5, id: \.self) { i in
                         Image(systemName: "star.fill")
-                            .font(.system(size: 18))
-                            .foregroundStyle(i <= review.rating ? Color.yellow : Color.gray.opacity(0.35))
+                            .scaledFont(size: 18, weight: .regular, relativeTo: .headline)                            .foregroundStyle(i <= review.rating ? Color.yellow : Color.gray.opacity(0.35))
                     }
                 }
                 Spacer()
                 Text(review.category.rawValue)
-                    .font(.system(size: 17, weight: .regular))
-                    .foregroundStyle(.white)
+                    .scaledFont(size: 17, weight: .regular, relativeTo: .body)                    .foregroundStyle(.white)
                     .lineLimit(1)
                     .fixedSize(horizontal: true, vertical: false)
                     .padding(.horizontal, 18)
@@ -363,16 +354,14 @@ private extension NeighborhoodServicesView {
             .environment(\.layoutDirection, .leftToRight)
 
             Text(review.comment)
-                .font(.system(size: 17, weight: .regular))
-                .foregroundStyle(.black)
+                .scaledFont(size: 17, weight: .regular, relativeTo: .body)                .foregroundStyle(.black)
                 .multilineTextAlignment(.trailing)
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .environment(\.layoutDirection, .leftToRight)
                 .offset(x: -7)
 
             Text(relativeDate(review.createdAt))
-                .font(.system(size: 14, weight: .regular))
-                .foregroundStyle(hintGray)
+                .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)                .foregroundStyle(hintGray)
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .environment(\.layoutDirection, .leftToRight)
         }

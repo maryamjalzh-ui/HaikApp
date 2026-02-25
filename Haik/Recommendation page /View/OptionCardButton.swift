@@ -26,7 +26,7 @@ struct OptionCardButton: View {
                     .foregroundColor(DS.iconColor)
 
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold))
+                    .scaledFont(size: 16, weight: .semibold, relativeTo: .headline)
                     .foregroundColor(.black)
                     .multilineTextAlignment(.trailing)
 
