@@ -38,7 +38,7 @@ struct NeighborhoodQuestionView: View {
                         .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                         .foregroundColor(Color("Green2Primary"))
                         .frame(width: 52, height: 52)
-                        .background(Color.white)
+                        .background(Color("GreyBackground"))
                         .clipShape(Circle())
                         .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
                 }
@@ -48,7 +48,7 @@ struct NeighborhoodQuestionView: View {
 
             VStack(spacing: 10) {
                 Text(pageTitle(for: question))
-                    .scaledFont(size: 18, weight: .bold, relativeTo: .headline)                    .foregroundColor(.black)
+                    .scaledFont(size: 18, weight: .bold, relativeTo: .headline)                    .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
                     .frame(width: contentWidth, alignment: .center)
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -60,7 +60,7 @@ struct NeighborhoodQuestionView: View {
             }
 
             Text(question.title)
-                .scaledFont(size: 17, weight: .semibold, relativeTo: .headline)                .foregroundColor(.black)
+                .scaledFont(size: 17, weight: .semibold, relativeTo: .headline)                .foregroundStyle(.primary)
                 .padding(.top, 2)
                 .multilineTextAlignment(.center)
                 .frame(width: contentWidth, alignment: .center)
@@ -193,7 +193,7 @@ struct NeighborhoodQuestionView: View {
                 }
                 .environment(\.layoutDirection, .leftToRight)
 
-                .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                .foregroundColor(.gray)
+                .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.trailing)
                 .frame(width: contentWidth, alignment: .trailing)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -308,20 +308,20 @@ struct ExpandableNeighborhoodOptionCard: View {
 
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(.gray)
+                        .foregroundStyle(.secondary)
 
                     Spacer(minLength: 0)
 
                     VStack(alignment: .trailing, spacing: 6) {
                         Text(option.title)
                             .scaledFont(size: 16, weight: .semibold, relativeTo: .headline)
-                            .foregroundColor(.black)
+                            .foregroundStyle(.primary)
                             .multilineTextAlignment(.trailing)
                             .frame(maxWidth: .infinity, alignment: .trailing)
 
                         if let name = effectivePicked {
                             Text(name)
-                                .scaledFont(size: 13, weight: .medium, relativeTo: .caption1)                                .foregroundColor(.gray)
+                                .scaledFont(size: 13, weight: .medium, relativeTo: .caption1)                                .foregroundStyle(.secondary)
                                 .lineLimit(1)
                                 .multilineTextAlignment(.trailing)
                                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -395,7 +395,7 @@ struct ExpandableNeighborhoodOptionCard: View {
         .frame(minHeight: isExpanded ? expandedCardMinHeight : DS.cardHeight, alignment: .top)
         .background(
             RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous)
-                .fill(isSelected ? Color("Green2Primary").opacity(0.14) : .white)
+                .fill(isSelected ? Color("Green2Primary").opacity(0.14) : Color("GreyBackground"))
         )
         .cardShadow()
         .clipShape(RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous))
@@ -412,9 +412,10 @@ struct NeighborhoodSearchField: View {
                 .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline)                .multilineTextAlignment(.trailing)
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .environment(\.layoutDirection, .leftToRight)
+                .foregroundStyle(.primary)
 
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
+                .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 14)
         .frame(height: 44)
@@ -436,7 +437,7 @@ struct NeighborhoodRow: View {
             HStack(spacing: 10) {
 
                 Text(title)
-                    .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)                    .foregroundColor(.black)
+                    .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)                    .foregroundStyle(.primary)
                     .multilineTextAlignment(.trailing)
                     .frame(maxWidth: .infinity, alignment: .trailing)
 

@@ -118,14 +118,14 @@ extension HomeScreen {
                     .padding(10)
                     .foregroundColor(Color("GreenPrimary"))
                     .frame(width: 52, height: 52)
-                    .background(Color.white)
+                    .background(Color("PageBackground"))
                     .clipShape(Circle())
                     .shadow(radius: 2)
             }
 
             // حقل البحث
             HStack {
-                Image(systemName: "magnifyingglass").foregroundColor(.gray)
+                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
                 TextField("ابحث عن حي...", text: $viewModel.searchText)
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled()
@@ -141,13 +141,13 @@ extension HomeScreen {
                         viewModel.searchText = ""
                         viewModel.selectedNeighborhood = nil
                     }) {
-                        Image(systemName: "xmark.circle.fill").foregroundColor(.gray)
+                        Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
                     }
                 }
             }
             .padding(.horizontal)
             .frame(height: 52)
-            .background(Color.white)
+            .background(Color("PageBackground"))
             .cornerRadius(26)
             .shadow(radius: 2)
             
@@ -164,7 +164,7 @@ extension HomeScreen {
                     .padding(10)
                     .foregroundColor(Color("GreenPrimary"))
                     .frame(width: 52, height: 52)
-                    .background(Color.white)
+                    .background(Color("PageBackground"))
                     .clipShape(Circle())
                     .shadow(radius: 2)
             }
@@ -188,18 +188,18 @@ extension HomeScreen {
                             VStack(spacing: 4) {
                                 Text("لم نجد هذا الحي")
                                     .scaledFont(size: 16, weight: .bold, relativeTo: .body)
-                                    .foregroundColor(.primary)
+                                    .foregroundStyle(.primary)
                                 
                                 Text("تأكد من كتابة الاسم بشكل صحيح أو ابحث عن حي آخر بالرياض")
                                     .scaledFont(size: 13, weight: .regular, relativeTo: .caption1)
-                                    .foregroundColor(.secondary)
+                                    .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                                     .padding(.horizontal, 30)
                             }
                             .padding(.bottom, 25)
                         }
                         .frame(maxWidth: .infinity)
-                        .background(Color.white)
+                        .background(Color("PageBackground"))
                     } else {
                         ScrollView {
                             VStack(spacing: 0) {
@@ -219,17 +219,17 @@ extension HomeScreen {
                                             
                                             Text(neighborhood.name)
                                                 .scaledFont(size: 16, weight: .medium, relativeTo: .body)
-                                                .foregroundColor(.primary)
+                                                .foregroundStyle(.primary)
                                             
                                             Spacer()
                                             
                                             Text(neighborhood.region)
                                                 .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
-                                                .foregroundColor(.secondary)
+                                                .foregroundStyle(.secondary)
                                         }
                                         .padding(.vertical, 14)
                                         .padding(.horizontal, 16)
-                                        .background(Color.white) // لضمان استجابة السطر كامل للضغط
+                                        .background(Color("PageBackground")) // لضمان استجابة السطر كامل للضغط
                                     }
                                     
                                     // إضافة خط فاصل بين العناصر
@@ -242,7 +242,7 @@ extension HomeScreen {
                         .frame(maxHeight: 250) // حد أقصى لطول القائمة
                     }
                 }
-                .background(Color.white)
+                .background(Color("PageBackground"))
                 .cornerRadius(16)
                 .shadow(radius: 10)
                 .padding(.horizontal, 20)
@@ -255,10 +255,11 @@ extension HomeScreen {
             HStack {
                 Text("حي \(neighborhood.name)")
                     .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(.primary)
                 Spacer()
                 Text("(\(neighborhood.reviewCount))")
                     .font(.system(size: 12))
-                    .foregroundColor(.gray)
+                    .foregroundStyle(.secondary)
                 ForEach(0..<5) { _ in
                     Image(systemName: "star.fill").foregroundColor(.yellow).font(.system(size: 10))
                 }
@@ -274,12 +275,12 @@ extension HomeScreen {
                     Image(systemName: "arrow.left")
                 }
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.black)
+                .foregroundStyle(.primary)
             }
         }
         .padding(22)
         .frame(maxWidth: 360)
-        .background(Color.white)
+        .background(Color("PageBackground"))
         .clipShape(RoundedRectangle(cornerRadius: 30))
         .shadow(radius: 10)
         .padding(.bottom, 30)
@@ -288,8 +289,9 @@ extension HomeScreen {
     private var hintCard: some View {
         Text("اضغط على الخريطة لاستكشاف بيانات الحي")
             .font(.system(size: 14))
+            .foregroundStyle(.primary)
             .padding()
-            .background(Color.white)
+            .background(Color("PageBackground"))
             .cornerRadius(20)
             .shadow(radius: 5)
             .padding(.bottom, 40)
@@ -320,9 +322,9 @@ struct NeighborhoodPin: View {
                 
                 Text(neighborhood.name)
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(.black)
+                    .foregroundStyle(.primary)
                     .padding(.horizontal, 4)
-                    .background(Color.white.opacity(0.9))
+                    .background(Color("PageBackground").opacity(0.9))
                     .cornerRadius(4)
             }
         }

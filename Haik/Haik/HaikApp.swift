@@ -35,6 +35,7 @@ struct HaikApp: App {
             // الدخول مباشرة لصفحة الـ HomeScreen
             HomeScreen()
                 .environment(\.layoutDirection, .rightToLeft)
-                .preferredColorScheme(.light)         }
+                
+        }
     }
 }

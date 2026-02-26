@@ -5,7 +5,6 @@
 //  Created by Shahad Alharbi on 2/15/26.
 //
 
-
 import SwiftUI
 
 struct AvgPriceBadgeView: View {
@@ -22,12 +21,14 @@ struct AvgPriceBadgeView: View {
 
             HStack {
                 Text("متوسط سعر المتر")
-                    .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)                    .foregroundStyle(.black)
+                    .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
+                    .foregroundStyle(.secondary)
 
                 Spacer()
 
                 Image(systemName: "chart.bar.fill")
-                    .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)                    .foregroundStyle(primaryColor)
+                    .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
+                    .foregroundStyle(primaryColor)
             }
 
             HStack(spacing: 10) {
@@ -36,7 +37,7 @@ struct AvgPriceBadgeView: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(14)
-        .background(Color.white)
+        .background(Color("GreyBackground"))   // الخلفية تبقى قراي
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(borderGray, lineWidth: 1)
@@ -59,10 +60,12 @@ struct AvgPriceBadgeView: View {
         HStack(spacing: 6) {
 
             Text(value)
-                .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)                .foregroundStyle(primaryColor)
+                .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)
+                .foregroundStyle(.primary)   // أبيض في الدارك / أسود في اللايت
 
             Text("ر.س / م²")
-                .scaledFont(size: 13, weight: .regular, relativeTo: .caption1)                .foregroundStyle(hintGray)
+                .scaledFont(size: 13, weight: .regular, relativeTo: .caption1)
+                .foregroundStyle(.secondary) // رمادي مناسب للنظام
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

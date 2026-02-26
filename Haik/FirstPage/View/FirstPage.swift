@@ -77,6 +77,7 @@ Text("ليس الآن")                                .scaledFont(size: 16, wei
                 }
             }
         }
+        .preferredColorScheme(.dark)
     }
 }
 

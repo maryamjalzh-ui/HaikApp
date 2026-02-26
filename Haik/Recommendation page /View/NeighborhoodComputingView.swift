@@ -36,7 +36,7 @@ struct NeighborhoodComputingView: View {
                         LinearGradient(
                             colors: [
                                 .clear,
-                                Color.white.opacity(0.25),
+                                Color.primary.opacity(0.25),
                                 .clear
                             ],
                             startPoint: .top,
@@ -63,9 +63,10 @@ struct NeighborhoodComputingView: View {
 
             Text("جاري حساب أفضل الأحياء لك…")
                 .scaledFont(size: 20, weight: .bold, relativeTo: .headline)                .multilineTextAlignment(.center)
+                .foregroundStyle(.primary)
 
             Text("\(Int(progress * 100))%")
-                .scaledFont(size: 18, weight: .medium, relativeTo: .body)                .foregroundStyle(.gray)
+                .scaledFont(size: 18, weight: .medium, relativeTo: .body)                .foregroundStyle(.secondary)
 
             Spacer()
         }

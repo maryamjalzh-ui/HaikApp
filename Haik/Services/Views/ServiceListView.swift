@@ -12,7 +12,7 @@ struct ServiceListView: View {
     private let greenPrimary = Color("GreenPrimary")
     private let blueSecondary = Color("BlueSecondary")
     private let purpleSecondary = Color("PurpleSecondary")
-    private let yellowHex = Color("yellow") // from Assets (no Color(hex:))
+    private let yellowHex = Color("yellow")
 
     private let rowWidth: CGFloat = 348
     private let rowHeight: CGFloat = 69
@@ -40,7 +40,7 @@ struct ServiceListView: View {
 
                 } else if places.isEmpty {
                     Text("لا توجد نتائج حالياً")
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(.secondary)
                         .padding(.top, 30)
 
                 } else {
@@ -65,11 +65,12 @@ struct ServiceListView: View {
         .task { await vm.loadPlacesIfNeeded(for: service) }
     }
 
-    // MARK: - Header (Chevron on RIGHT)
+    // MARK: - Header
     private var header: some View {
         ZStack {
             Text(service.rawValue)
-                .scaledFont(size: 30, weight: .regular, relativeTo: .title1)                .foregroundStyle(.black)
+                .scaledFont(size: 30, weight: .regular, relativeTo: .title1)
+                .foregroundStyle(.primary)
                 .lineLimit(1)
                 .padding(.horizontal, 90)
 
@@ -82,11 +83,11 @@ struct ServiceListView: View {
                 Button { dismiss() } label: {
                     Image(systemName: "chevron.forward")
                         .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
-                        .foregroundStyle(.black)
+                        .foregroundColor(Color("Green2Primary"))
                         .frame(width: 52, height: 52)
-                        .background(Color.white)
+                        .background(Color("GreyBackground"))
                         .clipShape(Circle())
-                        .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 6)
+                        .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
                 }
             }
             .padding(.horizontal, 20)
@@ -99,7 +100,6 @@ struct ServiceListView: View {
     private func placeRow(_ place: Place) -> some View {
         HStack {
 
-            // Name + location icon
             HStack(spacing: 8) {
                 Button { openInMaps(place) } label: {
                     Image(systemName: "location")
@@ -109,12 +109,12 @@ struct ServiceListView: View {
                 .buttonStyle(.plain)
 
                 Text(place.name)
-                    .scaledFont(size: 22, weight: .regular, relativeTo: .title3)                    .foregroundStyle(.black)
+                    .scaledFont(size: 22, weight: .regular, relativeTo: .title3)
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
 
-            // Service icon (same symbol + same color logic)
             Image(systemName: service.fallbackSystemSymbol ?? service.icon.systemName)
                 .scaledFont(size: 34, weight: .regular, relativeTo: .largeTitle)
                 .foregroundStyle(serviceIconColor(service))
@@ -122,13 +122,13 @@ struct ServiceListView: View {
         }
         .padding(.horizontal, 18)
         .frame(width: rowWidth, height: rowHeight)
-        .background(Color.white)
+        .background(Color("GreyBackground"))
         .clipShape(RoundedRectangle(cornerRadius: rowCorner, style: .continuous))
         .shadow(color: .black.opacity(0.06), radius: 20, x: 0, y: 10)
         .environment(\.layoutDirection, .leftToRight)
     }
 
-    // MARK: - Icon Color (matches Neighborhood page)
+    // MARK: - Icon Color
     private func serviceIconColor(_ service: ServiceCategory) -> Color {
         switch service {
         case .libraries, .gasStations, .groceries:

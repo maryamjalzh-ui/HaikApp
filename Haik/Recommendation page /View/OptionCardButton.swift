@@ -17,7 +17,7 @@ struct OptionCardButton: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous)
-                .fill(isSelected ? Color("Green2Primary").opacity(0.14) : .white)
+                .fill(isSelected ? Color("Green2Primary").opacity(0.14) : Color("GreyBackground"))
                 .cardShadow()
 
             HStack(spacing: 12) {
@@ -27,7 +27,7 @@ struct OptionCardButton: View {
 
                 Text(title)
                     .scaledFont(size: 16, weight: .semibold, relativeTo: .headline)
-                    .foregroundColor(.black)
+                    .foregroundStyle(.primary)
                     .multilineTextAlignment(.trailing)
 
                 Spacer(minLength: 0)

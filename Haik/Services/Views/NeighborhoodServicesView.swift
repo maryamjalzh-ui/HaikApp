@@ -8,8 +8,8 @@ struct NeighborhoodServicesView: View {
     private let greenPrimary = Color("GreenPrimary")
     private let primaryColor = Color("Green2Primary")
     private let pageBackground = Color("PageBackground")
-    private let borderGray = Color(hex: "DBDBDB")
-    private let hintGray = Color(hex: "ACACAC")
+    private let borderGray = Color(.separator)
+    private let hintGray = Color(.secondary)
     private let yellowHex = Color(hex: "E7CB62")
 
     // MARK: - Layout
@@ -78,7 +78,7 @@ private extension NeighborhoodServicesView {
         VStack(spacing: 4) {
             ZStack {
                 Text(vm.neighborhoodName)
-                    .scaledFont(size: 34, weight: .regular, relativeTo: .largeTitle)                    .foregroundStyle(.black)
+                    .scaledFont(size: 34, weight: .regular, relativeTo: .largeTitle)                    .foregroundStyle(.primary)
                     .lineLimit(1)
                     .padding(.horizontal, 90)
 
@@ -95,7 +95,7 @@ private extension NeighborhoodServicesView {
                             .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                             .foregroundColor(Color("Green2Primary"))
                             .frame(width: 52, height: 52)
-                            .background(Color.white)
+                            .background(Color("GreyBackground"))
                             .clipShape(Circle())
                             .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
                     }
@@ -111,7 +111,7 @@ private extension NeighborhoodServicesView {
                             .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                             .foregroundColor(Color("Green2Primary"))
                             .frame(width: 52, height: 52)
-                            .background(Color.white)
+                            .background(Color("GreyBackground"))
                             .clipShape(Circle())
                             .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
                     }
@@ -123,7 +123,7 @@ private extension NeighborhoodServicesView {
             HStack(spacing: 4) {
                 Text("(\(vm.reviewsCount))")
                     .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
 
                 ForEach(0..<5) { _ in
                     Image(systemName: "star.fill")
@@ -162,6 +162,7 @@ private extension NeighborhoodServicesView {
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.horizontal, 24)
             .environment(\.layoutDirection, .leftToRight)
+            .foregroundStyle(.primary)
     }
 
     func subsectionHint(_ text: String) -> some View {
@@ -200,11 +201,11 @@ private extension NeighborhoodServicesView {
 
             Text(service.rawValue)
                 .font(.system(size: tileTextSize))
-                .foregroundStyle(Color.gray.opacity(0.75))
+                .foregroundStyle(.secondary)
                 .lineLimit(1)
         }
         .frame(width: tileSize, height: tileSize)
-        .background(Color.white)
+        .background(Color("GreyBackground"))
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .shadow(color: .black.opacity(0.10), radius: 10, x: 0, y: 8)
     }
@@ -218,12 +219,12 @@ private extension NeighborhoodServicesView {
             HStack(spacing: 12) {
                 ForEach(ReviewCategory.allCases) { cat in
                     Text(cat.rawValue)
-                        .scaledFont(size: 17, weight: .regular, relativeTo: .body)                        .foregroundStyle(vm.selectedCategory == cat ? Color.white : Color.black)
+                        .scaledFont(size: 17, weight: .regular, relativeTo: .body)                        .foregroundStyle(vm.selectedCategory == cat ? Color.white : Color.primary)
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
                         .padding(.horizontal, 18)
                         .padding(.vertical, 10)
-                        .background(vm.selectedCategory == cat ? primaryColor : Color.white)
+                        .background(vm.selectedCategory == cat ? primaryColor : Color("GreyBackground"))
                         .overlay(Capsule().stroke(borderGray, lineWidth: 1))
                         .clipShape(Capsule())
                         .onTapGesture { vm.selectedCategory = cat }
@@ -238,7 +239,7 @@ private extension NeighborhoodServicesView {
     var reviewInputBox: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(Color.white)
+                .fill(Color("GreyBackground"))
                 .overlay(
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
                         .stroke(borderGray, lineWidth: 1)
@@ -276,6 +277,7 @@ private extension NeighborhoodServicesView {
                     .background(Color.clear)
                     .environment(\.layoutDirection, .rightToLeft)
                     .padding(.top, 30)
+                    .foregroundStyle(.primary)
 
                 // تعديل زر الإضافة (الكومنت)
                 VStack {
@@ -354,7 +356,7 @@ private extension NeighborhoodServicesView {
             .environment(\.layoutDirection, .leftToRight)
 
             Text(review.comment)
-                .scaledFont(size: 17, weight: .regular, relativeTo: .body)                .foregroundStyle(.black)
+                .scaledFont(size: 17, weight: .regular, relativeTo: .body)                .foregroundStyle(.primary)
                 .multilineTextAlignment(.trailing)
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .environment(\.layoutDirection, .leftToRight)
@@ -366,7 +368,7 @@ private extension NeighborhoodServicesView {
                 .environment(\.layoutDirection, .leftToRight)
         }
         .padding(16)
-        .background(Color.white)
+        .background(Color("GreyBackground"))
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 8)
     }

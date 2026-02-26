@@ -17,7 +17,7 @@ struct DashedProgressBar: View {
                     let isFilled = step <= current
 
                     RoundedRectangle(cornerRadius: DS.progressCornerRadius, style: .continuous)
-                        .fill(isFilled ? Color("Green2Primary") : .white)
+                        .fill(isFilled ? Color("Green2Primary") : Color("GreyBackground"))
                         .frame(width: segmentW, height: DS.progressHeight)
                         .overlay(
                             RoundedRectangle(cornerRadius: DS.progressCornerRadius, style: .continuous)

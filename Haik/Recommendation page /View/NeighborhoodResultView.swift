@@ -42,7 +42,7 @@ struct NeighborhoodResultView: View {
                         .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                         .foregroundColor(Color("Green2Primary"))
                         .frame(width: 52, height: 52)
-                        .background(Color.white)
+                        .background(Color("GreyBackground"))
                         .clipShape(Circle())
                         .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
                 }
@@ -54,10 +54,10 @@ struct NeighborhoodResultView: View {
 
             DashedProgressBar(total: vm.totalSteps, current: vm.currentStep)
                 .padding(.horizontal, sidePadding)
-                .padding(.top, 25) 
+                .padding(.top, 25)
 
             Text("الأحياء الانسب لك")
-                .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                .foregroundColor(.black)
+                .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                .foregroundStyle(.primary)
                 .padding(.top, 30)
                 .padding(.bottom, 20)
 
@@ -90,11 +90,12 @@ struct NeighborhoodResultView: View {
 
             Button(action: { goHome = true }) {
                 Text("تم")
-                    .scaledFont(size: 22, weight: .bold, relativeTo: .title3)                    .foregroundColor(.black)
+                    .scaledFont(size: 22, weight: .bold, relativeTo: .title3)                    .foregroundColor(Color("PageBackground"))
                     .frame(width: 330, height: 65)
-                    .background(Color.white)
-                    .cornerRadius(40)
-                    .cardShadow()
+                    .background(Color("Green2Primary"))
+                    .opacity(0.80)
+                    .cornerRadius(25)
+                    .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 8)
             }
             .padding(.bottom, 30)
         }
@@ -207,7 +208,7 @@ struct ResultCardView: View {
                     // ⭐ Rating on LEFT side (because RTL)
                     HStack(spacing: 4) {
                         Text(String(format: "%.1f", rating))
-                            .foregroundColor(.gray)
+                            .foregroundStyle(.secondary)
                             .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
 
                         ForEach(0..<5) { i in
@@ -220,7 +221,7 @@ struct ResultCardView: View {
                     Spacer()
 
                     Text(neighborhood.name)
-                        .scaledFont(size: 26, weight: .bold, relativeTo: .title2)                        .foregroundColor(.black)
+                        .scaledFont(size: 26, weight: .bold, relativeTo: .title2)                        .foregroundStyle(.primary)
                 }
                 .environment(\.layoutDirection, .leftToRight)
             }
@@ -231,9 +232,10 @@ struct ResultCardView: View {
                 HStack(spacing: 8) {
                     Text("\(Int(compatibility.rounded()))%")
                         .scaledFont(size: 21, weight: .bold, relativeTo: .headline)
-                    
+
                     Text("نسبة التوافق")
-                    .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                }
+                        .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
+                }
                 .foregroundColor(.white)
                 .padding(.top, 16)
                 .environment(\.layoutDirection, .leftToRight)
@@ -245,7 +247,7 @@ struct ResultCardView: View {
             .cornerRadius(22)
             .padding(.top, 15)
 
-            // White Info Box
+            // Info Box
             HStack(spacing: 0) {
                 ForEach(items.indices, id: \.self) { idx in
                     let it = items[idx]
@@ -257,7 +259,7 @@ struct ResultCardView: View {
                 }
             }
             .frame(width: 310, height: 115)
-            .background(Color.white)
+            .background(Color("GreyBackground"))
             .cornerRadius(22)
             .cardShadow()
             .offset(y: -40)
@@ -285,7 +287,7 @@ struct ResultCardView: View {
             Spacer()
         }
         .frame(width: 342, height: 327)
-        .background(Color.white)
+        .background(Color("GreyBackground"))
         .cornerRadius(DS.cardCornerRadius)
         .cardShadow()
     }
@@ -302,8 +304,24 @@ struct ResultInfoItem: View {
                 .foregroundColor(Color("Green2Primary"))
             Text(label)
                 .font(.system(size: 11))
-                .foregroundColor(.gray)
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
     }
+}
+ 
+#Preview {
+    ResultCardView(
+        neighborhood: NeighborhoodData.all.first!,
+        compatibility: 92,
+        items: [
+            ResultInfo(icon: "sparkles", label: "نمط الحياة"),
+            ResultInfo(icon: "tram", label: "وسيلة التنقل"),
+            ResultInfo(icon: "banknote", label: "سعر مناسب")
+        ],
+        isBest: true,
+        rating: 4.6
+    )
+    .padding()
+    
 }

@@ -40,7 +40,7 @@ struct RecommendationOnboardingView: View {
                                 .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                                 .foregroundColor(Color("Green2Primary"))
                                 .frame(width: 52, height: 52)
-                                .background(Color.white)
+                                .background(Color("GreyBackground"))
                                 .clipShape(Circle())
                                 .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
                         }
@@ -72,12 +72,13 @@ struct RecommendationOnboardingView: View {
                         }
                     } label: {
                         Text(page < 1 ? "التالي" : "بدء")
-                            .scaledFont(size: 18, weight: .bold, relativeTo: .headline)                            .foregroundColor(Color("Green2Primary"))
+                            .scaledFont(size: 18, weight: .bold, relativeTo: .headline)                            .foregroundColor(Color("GreyBackground"))
                             .frame(maxWidth: .infinity)
                             .frame(height: 58)
-                            .background(Color.white)
-                            .cornerRadius(32)
-                            .shadow(color: .black.opacity(0.10), radius: 10, x: 0, y: 8)
+                            .background(Color("Green2Primary"))
+                            .opacity(0.80)
+                            .cornerRadius(25)
+                            .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 8)
                     }
                     .padding(.horizontal, sidePadding)
                     .padding(.bottom, 30)
@@ -108,11 +109,11 @@ private extension RecommendationOnboardingView {
                 .frame(width: logoWidth)                .padding(.top, 10)
 
             Text("توصية الحي المناسب لك")
-                .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                .foregroundColor(.black)
+                .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                .foregroundStyle(.primary)
                 .padding(.top, 6)
 
             Text("سيتم طرح مجموعة أسئلة لتحديد تفضيلاتك، بما يشمل:")
-                .scaledFont(size: 15, weight: .regular, relativeTo: .body)                .foregroundStyle(.gray)
+                .scaledFont(size: 15, weight: .regular, relativeTo: .body)                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 30)
                 .lineSpacing(4)
@@ -139,11 +140,11 @@ private extension RecommendationOnboardingView {
             Spacer().frame(height: 6)
 
             Text("نتائج التوصية")
-                .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                .foregroundColor(.black)
+                .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                .foregroundStyle(.primary)
                 .padding(.top, 10)
 
             Text("ستظهر قائمة بالأحياء المقترحة، متضمنة نسبة التوافق وأبرز مبررات الترشيح")
-                .scaledFont(size: 15, weight: .regular, relativeTo: .body)                .foregroundStyle(.gray)
+                .scaledFont(size: 15, weight: .regular, relativeTo: .body)                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 30)
                 .lineSpacing(4)
@@ -171,7 +172,7 @@ private extension RecommendationOnboardingView {
                 .padding(.horizontal, 6)
             }
             .padding(18)
-            .background(Color.white)
+            .background(Color("GreyBackground"))
             .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
             .shadow(color: .black.opacity(0.08), radius: 18, x: 0, y: 12)
             .padding(.horizontal, 26)
@@ -209,7 +210,7 @@ private struct OnboardingInfoCard: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous)
-                .fill(Color.white)
+                .fill(Color("GreyBackground"))
                 .cardShadow()
 
             HStack(spacing: 12) {
@@ -220,7 +221,7 @@ private struct OnboardingInfoCard: View {
 
                 Text(title)
                     .scaledFont(size: 16, weight: .semibold, relativeTo: .headline)
-                    .foregroundColor(.black)
+                    .foregroundStyle(.primary)
                     .multilineTextAlignment(.trailing)
 
                 Spacer(minLength: 0)
@@ -242,7 +243,7 @@ private struct BulletRow: View {
                 .frame(width: 6, height: 6)
 
             Text(text)
-                .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline)                .foregroundStyle(Color.gray)
+                .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline)                .foregroundStyle(.secondary)
 
             Spacer(minLength: 0)
         }

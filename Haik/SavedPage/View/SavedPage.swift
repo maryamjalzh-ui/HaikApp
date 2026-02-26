@@ -26,7 +26,7 @@ struct FavouritePage: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(white: 0.97).ignoresSafeArea()
+                Color("PageBackground").ignoresSafeArea()
                 
                 GeometryReader { geometry in
                     VStack {
@@ -48,7 +48,7 @@ struct FavouritePage: View {
                                 .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                                 .foregroundColor(Color("Green2Primary"))
                                 .frame(width: 52, height: 52)
-                                .background(Color.white)
+                                .background(Color("GreyBackground"))
                                 .clipShape(Circle())
                                 .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
                         }
@@ -68,16 +68,16 @@ struct FavouritePage: View {
                                     
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(viewModel.userName)
-                                            .scaledFont(size: 20, weight: .bold, relativeTo: .headline)                                            .foregroundColor(.black)
+                                            .scaledFont(size: 20, weight: .bold, relativeTo: .headline)                                            .foregroundStyle(.primary)
                                         Text("عرض وتعديل الملف الشخصي")
-                                            .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                                            .foregroundColor(.gray)
+                                            .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                                            .foregroundStyle(.secondary)
                                     }
                                     Spacer()
-                                    Image(systemName: "chevron.left").foregroundColor(.gray)
+                                    Image(systemName: "chevron.left").foregroundStyle(.secondary)
                                 }
                                 .padding(20)
                                 .frame(width: 360)
-                                .background(Color.white)
+                                .background(Color("GreyBackground"))
                                 .cornerRadius(15)
                                 .shadow(color: Color.black.opacity(0.05), radius: 5)
                             }
@@ -88,7 +88,7 @@ struct FavouritePage: View {
                             VStack(spacing: 16) {
                                 if viewModel.savedNeighborhoodNames.isEmpty {
                                     Text("لم تقم بحفظ أي أحياء بعد")
-                                        .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                                        .foregroundColor(.gray)
+                                        .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                                        .foregroundStyle(.secondary)
                                         .padding()
                                 } else {
                                     ForEach(viewModel.savedNeighborhoodNames, id: \.self) { name in
@@ -109,7 +109,7 @@ struct FavouritePage: View {
                             } else {
                                 Text("لا توجد تعليقات منشورة بعد")
                                     .scaledFont(size: 14, weight: .regular, relativeTo: .subheadline)
-                                    .foregroundColor(.gray)
+                                    .foregroundStyle(.secondary)
                                     .padding(.top, 20)
                             }
                         }
@@ -182,7 +182,7 @@ struct EditProfileView: View {
             Form {
                 Section(header: Text("المعلومات الشخصية")) {
                     TextField("الاسم", text: $name)
-                    Text(email).foregroundColor(.gray)
+                    Text(email).foregroundStyle(.secondary)
                 }
                 
                 Section {
@@ -245,13 +245,13 @@ struct CommentCard: View {
                         .foregroundColor(.gray.opacity(0.6))
                     Text(comment.neighborhoodName)
                         .scaledFont(size: 16, weight: .regular, relativeTo: .callout)
-                        .foregroundColor(.black)
+                        .foregroundStyle(.primary)
                 }
                 Spacer()
             }
             Text(comment.text)
                 .scaledFont(size: 14, weight: .regular, relativeTo: .subheadline)
-                .foregroundColor(.black.opacity(0.8))
+                .foregroundStyle(.secondary)
                 .lineLimit(3)
                 .multilineTextAlignment(.trailing)
                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -266,7 +266,7 @@ struct CommentCard: View {
         }
         .padding()
         .frame(width: 300, height: 180)
-        .background(Color.white)
+        .background(Color("GreyBackground"))
         .cornerRadius(20)
         .shadow(color: .black.opacity(0.05), radius: 5)
     }
@@ -278,7 +278,7 @@ struct HeaderSection: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: icon).font(.title2).foregroundColor(Color("GreenPrimary"))
-            Text(title).scaledFont(size: 22, weight: .bold, relativeTo: .title3).foregroundColor(.black)
+            Text(title).scaledFont(size: 22, weight: .bold, relativeTo: .title3).foregroundStyle(.primary)
             Spacer()
         }
     }
@@ -293,16 +293,16 @@ struct NeighborhoodCard: View {
             HStack {
                 Text("حي \(name)").scaledFont(size: 20, weight: .bold, relativeTo: .headline)
                 Spacer()
-                Text("(\(reviewCount))").scaledFont(size: 12, weight: .regular, relativeTo: .caption1).foregroundColor(.gray)
+                Text("(\(reviewCount))").scaledFont(size: 12, weight: .regular, relativeTo: .caption1).foregroundStyle(.secondary)
                 ForEach(0..<5) { _ in Image(systemName: "star.fill").foregroundColor(.yellow).scaledFont(size: 12, weight: .regular, relativeTo: .caption1) }
             }
             Divider()
             Button(action: onMoreInfo) {
                 HStack { Text("عرض الحي"); Image(systemName: "arrow.left") }
-                    .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline).foregroundColor(.black)
+                    .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline).foregroundStyle(.primary)
             }
         }
-        .padding(25).frame(width: 360).background(Color.white).cornerRadius(30).shadow(radius: 5)
+        .padding(25).frame(width: 360).background(Color("GreyBackground")).cornerRadius(30).shadow(radius: 5)
     }
 }
 

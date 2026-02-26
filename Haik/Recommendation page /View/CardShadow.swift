@@ -9,8 +9,18 @@ import SwiftUI
 
 extension View {
     func cardShadow() -> some View {
-        self.shadow(
-            color: Color.black.opacity(DS.shadowOpacity),
+        modifier(CardShadowModifier())
+    }
+}
+
+private struct CardShadowModifier: ViewModifier {
+    @Environment(\.colorScheme) private var scheme
+    
+    func body(content: Content) -> some View {
+        content.shadow(
+            color: scheme == .dark
+                ? Color.black.opacity(DS.shadowOpacity * 1.8)
+                : Color.black.opacity(DS.shadowOpacity),
             radius: DS.shadowRadius,
             x: DS.shadowX,
             y: DS.shadowY
