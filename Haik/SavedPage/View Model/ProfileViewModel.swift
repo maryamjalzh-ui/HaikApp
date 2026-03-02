@@ -48,13 +48,13 @@ class ProfileViewModel: ObservableObject {
         
         db.collection("neighborhood_reviews")
             .whereField("userId", isEqualTo: uid)
-            .addSnapshotListener { snapshot, _ in
+            .getDocuments { [weak self] snapshot, error in
+                guard let self = self else { return }
                 guard let documents = snapshot?.documents else { return }
                 
                 self.userComments = documents.map { doc in
                     let data = doc.data()
                     return UserComment(
-                        id: UUID(),   
                         documentId: doc.documentID,
                         text: data["comment"] as? String ?? "",
                         rating: Double(data["rating"] as? Int ?? 0),
@@ -80,31 +80,27 @@ class ProfileViewModel: ObservableObject {
             }
     }
     func updateComment(_ comment: UserComment, newText: String, newRating: Double) {
-           db.collection("neighborhood_reviews")
-               .document(comment.documentId)
-               .updateData([
-                   "comment": newText,
-                   "rating": Int(newRating)
-               ]) { error in
-                   if let error = error {
-                       print("Error updating comment: \(error.localizedDescription)")
-                   } else {
-                       // تحديث التعليق محلياً فورياً
-                       if let index = self.userComments.firstIndex(where: { $0.id == comment.id }) {
-                           DispatchQueue.main.async {
-                               self.userComments[index].text = newText
-                               self.userComments[index].rating = newRating
-                           }
-                       }
-                   }
-               }
-       }
+        let docRef = db.collection("neighborhood_reviews").document(comment.documentId)
+
+        docRef.updateData([
+            "comment": newText,
+            "rating": Int(newRating)
+        ]) { [weak self] error in
+            if let error = error {
+                print("Error updating comment: \(error.localizedDescription)")
+                return
+            }
+            print("Comment updated successfully in Firebase!")
+        }
+    }
     struct UserComment: Identifiable {
-        let id: UUID
+      //  let id: UUID
+        var id: String { documentId }
         let documentId: String  //للحذف من الفايربيس
         var text: String
         var rating: Double
         var neighborhoodName: String // أضفنا هذا المتغير للاتساق
+        
     }
 }
 

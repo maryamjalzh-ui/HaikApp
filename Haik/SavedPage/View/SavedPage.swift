@@ -137,8 +137,9 @@ struct FavouritePage: View {
     
     private var commentsPagerView: some View {
         List {
-            ForEach(viewModel.userComments) { comment in
-                CommentCard(viewModel: viewModel, comment: comment, userName: viewModel.userName)
+            ForEach($viewModel.userComments) { $comment in
+                CommentCard(viewModel: viewModel, comment: $comment, userName: viewModel.userName)
+
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .swipeActions(edge: .trailing) {
@@ -231,58 +232,48 @@ struct EditProfileView: View {
 
 // MARK: - Supporting Components (باقي الكود كما هو)
 
-import SwiftUI
-
-import SwiftUI
-
 struct CommentCard: View {
     @ObservedObject var viewModel: ProfileViewModel
-    var comment: ProfileViewModel.UserComment
+    @Binding var comment: ProfileViewModel.UserComment
     var userName: String
-    
+
     @State private var isEditing = false
-    @State private var editedText: String = ""
-    @State private var editedRating: Double = 0
     @FocusState private var isFocused: Bool
-    
+
     var body: some View {
         VStack(alignment: .trailing, spacing: 10) {
-            
-            // ===== Header: البروفايل واسم المستخدم + النجوم =====
             HStack {
                 Image(systemName: "person.circle.fill")
                     .resizable()
                     .frame(width: 30, height: 30)
                     .foregroundColor(Color("GreenPrimary"))
-                
+
                 VStack(alignment: .leading) {
                     Text(userName)
                         .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
                         .foregroundColor(.gray.opacity(0.6))
-                    
+
                     Text(comment.neighborhoodName)
                         .scaledFont(size: 16, weight: .regular, relativeTo: .callout)
                         .foregroundStyle(.primary)
                 }
-                
+
                 Spacer()
-                
-                // النجوم
+
                 HStack(spacing: 6) {
                     ForEach(1...5, id: \.self) { i in
                         Image(systemName: "star.fill")
                             .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
-                            .foregroundStyle(i <= (isEditing ? Int(editedRating) : Int(comment.rating)) ? Color.yellow : Color.gray.opacity(0.35))
+                            .foregroundStyle(i <= (isEditing ? Int(comment.rating) : Int(comment.rating)) ? Color.yellow : Color.gray.opacity(0.35))
                             .onTapGesture {
-                                if isEditing { editedRating = Double(i) }
+                                if isEditing { comment.rating = Double(i) }
                             }
                     }
                 }
             }
             .environment(\.layoutDirection, .leftToRight)
-            
-            // ===== التعليق: TextField شفاف inline =====
-            TextField("", text: $editedText)
+
+            TextField("", text: $comment.text)
                 .scaledFont(size: 17, weight: .regular, relativeTo: .body)
                 .foregroundColor(.primary)
                 .multilineTextAlignment(.trailing)
@@ -291,66 +282,40 @@ struct CommentCard: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .disabled(!isEditing)
                 .focused($isFocused)
-                .onAppear {
-                    // نملأ النص دائماً عند ظهور الكارد
-                    if editedText.isEmpty {
-                        editedText = comment.text
-                        editedRating = comment.rating
-                    }
-                }
-            
-            // ===== تاريخ التعليق =====
-         /*   Text(relativeDate(comment.createdAt))
-                .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
-                .foregroundStyle(Color.gray.opacity(0.6))
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .environment(\.layoutDirection, .leftToRight)
-            */
-            // ===== أزرار حفظ / إلغاء أو القلم =====
+
             HStack {
                 if isEditing {
                     Button("إلغاء") {
                         isEditing = false
-                        editedText = comment.text
-                        editedRating = comment.rating
+                        viewModel.fetchUserComments() // استرجاع النص الأصلي من Firebase
                     }
                     .foregroundColor(.gray)
-                    
+
                     Spacer()
-                    
+
                     Button("حفظ") {
-                        viewModel.updateComment(comment, newText: editedText, newRating: editedRating)
                         isEditing = false
+                        viewModel.updateComment(comment, newText: comment.text, newRating: comment.rating)
                     }
                     .foregroundColor(Color("GreenPrimary"))
                 } else {
                     Button {
                         isEditing = true
-                        editedText = comment.text
-                        editedRating = comment.rating
                         isFocused = true
                     } label: {
                         Image(systemName: "pencil")
                             .foregroundColor(Color("GreenPrimary"))
                     }
-                    
                     Spacer()
                 }
             }
-            
+
         }
         .padding(16)
         .background(Color("GreyBackground"))
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 8)
         .animation(.easeInOut, value: isEditing)
-    }
-    
-    // دالة تحويل التاريخ إلى نسبي
-    func relativeDate(_ date: Date) -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .short
-        return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
 struct HeaderSection: View {
