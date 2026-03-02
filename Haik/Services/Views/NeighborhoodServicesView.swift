@@ -352,6 +352,7 @@ private extension NeighborhoodServicesView {
                     .padding(.vertical, 10)
                     .background(primaryColor)
                     .clipShape(Capsule())
+                    .offset(x: -100)
             }
             .environment(\.layoutDirection, .leftToRight)
 
@@ -360,7 +361,7 @@ private extension NeighborhoodServicesView {
                 .multilineTextAlignment(.trailing)
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .environment(\.layoutDirection, .leftToRight)
-                .offset(x: -7)
+                .offset(x: -2)
 
             Text(relativeDate(review.createdAt))
                 .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)                .foregroundStyle(hintGray)

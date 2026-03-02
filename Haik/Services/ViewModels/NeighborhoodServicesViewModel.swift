@@ -72,14 +72,15 @@ final class NeighborhoodServicesViewModel: ObservableObject {
                     let rating = data["rating"] as? Int ?? 0
                     let comment = data["comment"] as? String ?? ""
                     let timestamp = data["createdAt"] as? Timestamp ?? Timestamp()
-                    
                     let category = ReviewCategory(rawValue: categoryRaw) ?? .electricity
-                    
+                    let userName = data["userName"] as? String ?? "مستخدم"
+
                     return NeighborhoodReview(
                         category: category,
                         rating: rating,
                         comment: comment,
-                        createdAt: timestamp.dateValue()
+                        createdAt: timestamp.dateValue(),
+
                     )
                 }
                 
@@ -93,14 +94,16 @@ final class NeighborhoodServicesViewModel: ObservableObject {
         guard !trimmed.isEmpty, (1...5).contains(newRating) else { return }
         
         guard let uid = Auth.auth().currentUser?.uid else { return }
-
+        let userName = Auth.auth().currentUser?.displayName ?? "مستخدم"
         let reviewData: [String: Any] = [
             "userId": uid,
+            "userName": userName,
             "neighborhoodName": self.neighborhoodName,
             "category": selectedCategory.rawValue,
             "rating": newRating,
             "comment": trimmed,
             "createdAt": Timestamp(date: Date())
+            
         ]
         
         db.collection("neighborhood_reviews").addDocument(data: reviewData) { error in

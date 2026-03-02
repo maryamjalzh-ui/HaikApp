@@ -7,10 +7,10 @@
 import Foundation
 
 enum ReviewCategory: String, CaseIterable, Identifiable {
+    case safety = "عام"
     case electricity = "الكهرباء"
     case water = "المياه"
     case internet = "الانترنت"
-    case safety = "الأمان"
     case quiet = "الهدوء"
     case culture = "ثقافة الناس"
 

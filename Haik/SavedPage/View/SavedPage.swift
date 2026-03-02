@@ -15,7 +15,8 @@ struct FavouritePage: View {
     @State private var isEditingProfile: Bool = false
     @State private var showServices = false
     @State private var selectedNeighborhoodName = ""
-    
+    @State private var showDeleteAlert = false
+    @State private var commentToDelete: ProfileViewModel.UserComment?
     @Environment(\.dismiss) private var dismiss
     
     @State private var selectedCommentIndex: Int = 0
@@ -57,7 +58,7 @@ struct FavouritePage: View {
                     .padding(.top, 10)
                     .environment(\.layoutDirection, .leftToRight)
                     
-                    ScrollView {
+                  
                         VStack(alignment: .center, spacing: 25) {
                             Button(action: { isEditingProfile = true }) {
                                 HStack(spacing: 15) {
@@ -116,7 +117,7 @@ struct FavouritePage: View {
                         .padding(.top, 10)
                         .padding(.bottom, 30)
                         .frame(maxWidth: .infinity)
-                    }
+                    
                 }
             }
             .environment(\.layoutDirection, .rightToLeft)
@@ -135,34 +136,35 @@ struct FavouritePage: View {
     }
     
     private var commentsPagerView: some View {
-        HStack(spacing: 15) {
-            Button {
-                if selectedCommentIndex > 0 { withAnimation { selectedCommentIndex -= 1 } }
-            } label: {
-                Image(systemName: "arrow.right")
-                    .foregroundColor(selectedCommentIndex == 0 ? .gray.opacity(0.3) : Color("GreenPrimary"))
-                .scaledFont(size: 20, weight: .bold, relativeTo: .headline)            }
-            .disabled(selectedCommentIndex == 0)
-
-            TabView(selection: $selectedCommentIndex) {
-                ForEach(0..<viewModel.userComments.count, id: \.self) { index in
-                    CommentCard(comment: viewModel.userComments[index], userName: viewModel.userName)
-                        .tag(index)
+        List {
+            ForEach(viewModel.userComments) { comment in
+                CommentCard(viewModel: viewModel, comment: comment, userName: viewModel.userName)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            commentToDelete = comment
+                            showDeleteAlert = true
+                        } label: {
+                            Label("حذف", systemImage: "trash")
+                        }
+                    }
+            }
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.clear)
+        .alert("تأكيد الحذف", isPresented: $showDeleteAlert) {
+            Button("حذف", role: .destructive) {
+                if let comment = commentToDelete {
+                    viewModel.deleteComment(comment)
                 }
             }
-            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-            .frame(width: 300, height: 180)
-
-            Button {
-                if selectedCommentIndex < viewModel.userComments.count - 1 { withAnimation { selectedCommentIndex += 1 } }
-            } label: {
-                Image(systemName: "arrow.left")
-                    .foregroundColor(selectedCommentIndex >= viewModel.userComments.count - 1 ? .gray.opacity(0.3) : Color("GreenPrimary"))
-                .scaledFont(size: 20, weight: .bold, relativeTo: .headline)            }
-            .disabled(selectedCommentIndex >= viewModel.userComments.count - 1)
+            Button("إلغاء", role: .cancel) {}
+        } message: {
+            Text("هل أنت متأكد أنك تريد حذف هذا التعليق؟")
         }
-    }
-}
+    }}
 
 // MARK: - Modified EditProfileView
 
@@ -229,49 +231,128 @@ struct EditProfileView: View {
 
 // MARK: - Supporting Components (باقي الكود كما هو)
 
+import SwiftUI
+
+import SwiftUI
+
 struct CommentCard: View {
+    @ObservedObject var viewModel: ProfileViewModel
     var comment: ProfileViewModel.UserComment
     var userName: String
+    
+    @State private var isEditing = false
+    @State private var editedText: String = ""
+    @State private var editedRating: Double = 0
+    @FocusState private var isFocused: Bool
+    
     var body: some View {
-        VStack(alignment: .trailing, spacing: 8) {
+        VStack(alignment: .trailing, spacing: 10) {
+            
+            // ===== Header: البروفايل واسم المستخدم + النجوم =====
             HStack {
                 Image(systemName: "person.circle.fill")
                     .resizable()
                     .frame(width: 30, height: 30)
                     .foregroundColor(Color("GreenPrimary"))
+                
                 VStack(alignment: .leading) {
-                    Text(userName).scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
-                        
+                    Text(userName)
+                        .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
                         .foregroundColor(.gray.opacity(0.6))
+                    
                     Text(comment.neighborhoodName)
                         .scaledFont(size: 16, weight: .regular, relativeTo: .callout)
                         .foregroundStyle(.primary)
                 }
+                
                 Spacer()
-            }
-            Text(comment.text)
-                .scaledFont(size: 14, weight: .regular, relativeTo: .subheadline)
-                .foregroundStyle(.secondary)
-                .lineLimit(3)
-                .multilineTextAlignment(.trailing)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-            Spacer(minLength: 0)
-            HStack(spacing: 4) {
-                ForEach(1...5, id: \.self) { index in
-                    Image(systemName: index <= Int(comment.rating) ? "star.fill" : "star")
-                        .foregroundColor(.yellow)
-                        .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
+                
+                // النجوم
+                HStack(spacing: 6) {
+                    ForEach(1...5, id: \.self) { i in
+                        Image(systemName: "star.fill")
+                            .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
+                            .foregroundStyle(i <= (isEditing ? Int(editedRating) : Int(comment.rating)) ? Color.yellow : Color.gray.opacity(0.35))
+                            .onTapGesture {
+                                if isEditing { editedRating = Double(i) }
+                            }
+                    }
                 }
             }
+            .environment(\.layoutDirection, .leftToRight)
+            
+            // ===== التعليق: TextField شفاف inline =====
+            TextField("", text: $editedText)
+                .scaledFont(size: 17, weight: .regular, relativeTo: .body)
+                .foregroundColor(.primary)
+                .multilineTextAlignment(.trailing)
+                .textFieldStyle(.plain)
+                .background(Color.clear)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .disabled(!isEditing)
+                .focused($isFocused)
+                .onAppear {
+                    // نملأ النص دائماً عند ظهور الكارد
+                    if editedText.isEmpty {
+                        editedText = comment.text
+                        editedRating = comment.rating
+                    }
+                }
+            
+            // ===== تاريخ التعليق =====
+         /*   Text(relativeDate(comment.createdAt))
+                .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
+                .foregroundStyle(Color.gray.opacity(0.6))
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .environment(\.layoutDirection, .leftToRight)
+            */
+            // ===== أزرار حفظ / إلغاء أو القلم =====
+            HStack {
+                if isEditing {
+                    Button("إلغاء") {
+                        isEditing = false
+                        editedText = comment.text
+                        editedRating = comment.rating
+                    }
+                    .foregroundColor(.gray)
+                    
+                    Spacer()
+                    
+                    Button("حفظ") {
+                        viewModel.updateComment(comment, newText: editedText, newRating: editedRating)
+                        isEditing = false
+                    }
+                    .foregroundColor(Color("GreenPrimary"))
+                } else {
+                    Button {
+                        isEditing = true
+                        editedText = comment.text
+                        editedRating = comment.rating
+                        isFocused = true
+                    } label: {
+                        Image(systemName: "pencil")
+                            .foregroundColor(Color("GreenPrimary"))
+                    }
+                    
+                    Spacer()
+                }
+            }
+            
         }
-        .padding()
-        .frame(width: 300, height: 180)
+        .padding(16)
         .background(Color("GreyBackground"))
-        .cornerRadius(20)
-        .shadow(color: .black.opacity(0.05), radius: 5)
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 8)
+        .animation(.easeInOut, value: isEditing)
+    }
+    
+    // دالة تحويل التاريخ إلى نسبي
+    func relativeDate(_ date: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .short
+        return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
-
 struct HeaderSection: View {
     let title: String
     let icon: String
