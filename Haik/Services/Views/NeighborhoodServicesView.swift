@@ -100,8 +100,6 @@ private extension NeighborhoodServicesView {
 
                     Spacer()
 
-                    // ✅ زر المفضلة في النهاية (trailing)
-                    // في الإنجليزي → يمين | في العربي → يسار (تلقائي)
                     Button {
                         if Auth.auth().currentUser != nil {
                             vm.toggleFavorite()
@@ -135,10 +133,7 @@ private extension NeighborhoodServicesView {
             .padding(.top, -5)
 
             // 4. بطاقة السعر
-            AvgPriceBadgeView(
-                neighborhoodName: vm.neighborhoodName,
-                aliases: []
-            )
+            AvgPriceBadgeView(neighborhoodName: vm.neighborhoodName, aliases: [])
             .padding(.horizontal, 24)
             .padding(.top, 10)
         }
@@ -330,47 +325,39 @@ private extension NeighborhoodServicesView {
     }
 
     func commentCard(_ review: NeighborhoodReview) -> some View {
-        // ✅ إصلاح: alignment: .leading بدل .trailing
-        //    SwiftUI يقلب leading/trailing تلقائياً في RTL
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 10) { // leading هنا تعني "بداية السطر" حسب لغة الجهاز
             HStack {
                 HStack(spacing: 6) {
                     ForEach(1...5, id: \.self) { i in
                         Image(systemName: "star.fill")
-                            .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
+                            .scaledFont(size: 14, weight: .regular, relativeTo: .headline)
                             .foregroundStyle(i <= review.rating ? Color.yellow : Color.gray.opacity(0.35))
                     }
                 }
-                Spacer()
-                // ✅ إصلاح: LocalizedStringKey بدل rawValue مباشرة
+                
+                Spacer() // يدفع التصنيف للجهة المقابلة تلقائياً
+                
                 Text(LocalizedStringKey(review.category.rawValue))
-                    .scaledFont(size: 17, weight: .regular, relativeTo: .body)
+                    .scaledFont(size: 14, weight: .regular, relativeTo: .body)
                     .foregroundStyle(.white)
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
                     .background(primaryColor)
                     .clipShape(Capsule())
-                    .offset(x: -100)
             }
-
+            
             Text(review.comment)
-                .scaledFont(size: 17, weight: .regular, relativeTo: .body)                .foregroundStyle(.primary)
-                .multilineTextAlignment(.trailing)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .environment(\.layoutDirection, .leftToRight)
-                .offset(x: -2)
-
+                .scaledFont(size: 16, weight: .regular, relativeTo: .body)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading) // يتغير حسب اللغة
+            
             Text(relativeDate(review.createdAt))
-                .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
+                .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
                 .foregroundStyle(hintGray)
-                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(16)
         .background(Color("GreyBackground"))
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 8)
     }
 
     func relativeDate(_ date: Date) -> String {
@@ -416,17 +403,3 @@ private extension ServiceCategory {
     }
 }
 
-#Preview {
-    NeighborhoodServicesView(
-        neighborhoodName: "اسم الحي",
-        coordinate: .init(latitude: 0.0, longitude: 0.0)
-    )
-    .environment(\.locale, .init(identifier: "ar"))
-}
-#Preview {
-    NeighborhoodServicesView(
-        neighborhoodName: "Al wrood",
-        coordinate: .init(latitude: 0.0, longitude: 0.0)
-    )
-    .environment(\.locale, .init(identifier: "en"))
-}

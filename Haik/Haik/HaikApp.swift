@@ -23,18 +23,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct HaikApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
-    // تم إزالة متغيرات الحالة التي كانت تجبر المستخدم على تسجيل الدخول
-    // ليفتح التطبيق مباشرة على HomeScreen للجميع (ضيف ومسجل)
-
-    init() {
-        UIView.appearance().semanticContentAttribute = .forceRightToLeft
-    }
+   
 
     var body: some Scene {
         WindowGroup {
             // الدخول مباشرة لصفحة الـ HomeScreen
             HomeScreen()
-                .environment(\.layoutDirection, .rightToLeft)
                 
         }
     }

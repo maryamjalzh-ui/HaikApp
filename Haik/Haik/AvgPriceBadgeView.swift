@@ -17,7 +17,7 @@ struct AvgPriceBadgeView: View {
     private let borderGray = Color(hex: "DBDBDB")
 
     var body: some View {
-        VStack(alignment: .trailing, spacing: 10) {
+        VStack(alignment: .leading, spacing: 10) {
 
             HStack {
                 Text("avg_price_title")
@@ -34,7 +34,7 @@ struct AvgPriceBadgeView: View {
             HStack(spacing: 10) {
                 priceChip(value: avgText)
             }
-            .frame(maxWidth: .infinity, alignment: .trailing)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(14)
         .background(Color("GreyBackground"))   // الخلفية تبقى قراي

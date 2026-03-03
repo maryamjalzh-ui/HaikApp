@@ -96,37 +96,33 @@ struct ServiceListView: View {
 
     // MARK: - Row (نفس الديزاين مع دعم الانعكاس)
     private func placeRow(_ place: Place) -> some View {
-        HStack {
-            // قسم الموقع والاسم
-            HStack(spacing: 8) {
-                Button { openInMaps(place) } label: {
-                    Image(systemName: "location")
-                        .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
-                        .foregroundStyle(blueSecondary)
-                }
-                .buttonStyle(.plain)
-
-                Text(place.name)
-                    .scaledFont(size: 22, weight: .regular, relativeTo: .title3)
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
+        HStack(spacing: 12) {
+            // 1. أيقونة الموقع (ستكون يسار في EN ويمين في AR)
+            Button { openInMaps(place) } label: {
+                Image(systemName: "location")
+                    .font(.system(size: 18))
+                    .foregroundStyle(blueSecondary)
             }
-            // المحاذاة هنا ستتغير تلقائياً: في العربي يمين، في الإنجليزي يسار
-            .frame(maxWidth: .infinity, alignment: .trailing)
-
-            // أيقونة الخدمة
+            .buttonStyle(.plain)
+            
+            // 2. اسم المكان
+            Text(place.name)
+                .scaledFont(size: 20, weight: .regular, relativeTo: .title3)
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+            
+            Spacer() // هذا هو البطل! بيدفع الأيقونة اللي بعده لآخر الشطر حسب اللغة
+            
+            // 3. أيقونة الخدمة (ستكون يمين في EN ويسار في AR)
             Image(systemName: service.fallbackSystemSymbol ?? service.icon.systemName)
-                .scaledFont(size: 34, weight: .regular, relativeTo: .largeTitle)
+                .font(.system(size: 28))
                 .foregroundStyle(serviceIconColor(service))
-                .padding(.leading, 16)
         }
-        // إضافة سمة الانعكاس التلقائي لضمان قلب العناصر بالكامل في الإنجليزية
-        .environment(\.layoutDirection, isArabic() ? .rightToLeft : .leftToRight)
         .padding(.horizontal, 18)
         .frame(width: rowWidth, height: rowHeight)
         .background(Color("GreyBackground"))
         .clipShape(RoundedRectangle(cornerRadius: rowCorner, style: .continuous))
-        .shadow(color: .black.opacity(0.06), radius: 20, x: 0, y: 10)
+        .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 5)
     }
 
     // دالة مساعدة للتأكد من اللغة

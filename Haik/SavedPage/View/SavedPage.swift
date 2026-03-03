@@ -163,7 +163,7 @@ struct FavouritePage: View {
             }
             Button("إلغاء", role: .cancel) {}
         } message: {
-            Text("هل أنت متأكد أنك تريد حذف هذا التعليق؟")
+            Text("delete_comment")
         }
     }}
 
