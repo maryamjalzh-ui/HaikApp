@@ -352,14 +352,15 @@ private extension NeighborhoodServicesView {
                     .padding(.vertical, 10)
                     .background(primaryColor)
                     .clipShape(Capsule())
+                    .offset(x: -100)
             }
 
             Text(review.comment)
-                .scaledFont(size: 17, weight: .regular, relativeTo: .body)
-                .foregroundStyle(.primary)
-                // ✅ إصلاح: حذف .multilineTextAlignment(.trailing) و offset(x: -7)
-                //    SwiftUI يتولى محاذاة النص تلقائياً
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .scaledFont(size: 17, weight: .regular, relativeTo: .body)                .foregroundStyle(.primary)
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .environment(\.layoutDirection, .leftToRight)
+                .offset(x: -2)
 
             Text(relativeDate(review.createdAt))
                 .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
