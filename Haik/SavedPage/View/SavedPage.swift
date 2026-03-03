@@ -24,6 +24,9 @@ struct FavouritePage: View {
     @State private var draftCommentText: String = ""
     @State private var draftRating: Double = 0.0
     
+    // ✅ التعديل المطلوب فقط (ألوان لايت/دارك)
+    @Environment(\.colorScheme) private var colorScheme
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -57,70 +60,78 @@ struct FavouritePage: View {
                     .padding(.horizontal, 26)
                     .padding(.top, 10)
                     
-                  
-                        VStack(alignment: .center, spacing: 25) {
-                            Button(action: { isEditingProfile = true }) {
-                                HStack(spacing: 15) {
-                                    Image(systemName: "person.circle.fill")
-                                        .resizable()
-                                        .frame(width: 50, height: 50)
-                                        .foregroundColor(Color("GreenPrimary"))
+                    VStack(alignment: .center, spacing: 25) {
+                        Button(action: { isEditingProfile = true }) {
+                            HStack(spacing: 15) {
+                                Image(systemName: "person.circle.fill")
+                                    .resizable()
+                                    .frame(width: 50, height: 50)
+                                    .foregroundColor(Color("GreenPrimary"))
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(viewModel.userName)
+                                        .scaledFont(size: 20, weight: .bold, relativeTo: .headline)
+                                        // ✅ لايت: أسود / دارك: أبيض
+                                        .foregroundColor(colorScheme == .light ? .black : .white)
                                     
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(viewModel.userName)
-                                            .scaledFont(size: 20, weight: .bold, relativeTo: .headline)
-                                            .foregroundStyle(.primary)
-                                        Text(String(localized: "view_edit_profile")) // "عرض وتعديل الملف الشخصي"
-                                            .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    Spacer()
-                                    Image(systemName: "chevron.left").foregroundStyle(.secondary)
-                                }
-                                .padding(20)
-                                .frame(width: 360)
-                                .background(Color("GreyBackground"))
-                                .cornerRadius(15)
-                                .shadow(color: Color.black.opacity(0.05), radius: 5)
-                            }
-
-                            HeaderSection(title: String(localized: "saved_neighborhoods_title"), icon: "heart") // "الأحياء المحفوظة:"
-                                .frame(width: 360)
-
-                            VStack(spacing: 16) {
-                                if viewModel.savedNeighborhoodNames.isEmpty {
-                                    Text(String(localized: "no_saved_neighborhoods")) // "لم تقم بحفظ أي أحياء بعد"
+                                    Text(String(localized: "view_edit_profile")) // "عرض وتعديل الملف الشخصي"
                                         .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
-                                        .foregroundStyle(.secondary)
-                                        .padding()
-                                } else {
-                                    ForEach(viewModel.savedNeighborhoodNames, id: \.self) { name in
-                                        NeighborhoodCard(name: name, reviewCount: String(localized: "view_details")) { // "عرض التفاصيل"
-                                            selectedNeighborhoodName = name
-                                            showServices = true
-                                        }
+                                        // ✅ لايت: رصاصي واضح / دارك: ثانوي
+                                        .foregroundColor(colorScheme == .light ? .gray : .secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.left")
+                                    // ✅ نفس المنطق (عشان ما يطلع أبيض باللايت)
+                                    .foregroundColor(colorScheme == .light ? .gray : .secondary)
+                            }
+                            .padding(20)
+                            .frame(width: 360)
+                            .background(Color("GreyBackground"))
+                            .cornerRadius(15)
+                            .shadow(color: Color.black.opacity(0.05), radius: 5)
+                        }
+
+                        HeaderSection(title: String(localized: "saved_neighborhoods_title"), icon: "heart") // "الأحياء المحفوظة:"
+                            .frame(width: 360)
+
+                        VStack(spacing: 16) {
+                            if viewModel.savedNeighborhoodNames.isEmpty {
+                                Text(String(localized: "no_saved_neighborhoods")) // "لم تقم بحفظ أي أحياء بعد"
+                                    .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
+                                    .foregroundStyle(.secondary)
+                                    .padding()
+                            } else {
+                                ForEach(viewModel.savedNeighborhoodNames, id: \.self) { name in
+                                    NeighborhoodCard(
+                                        name: name,
+                                        reviewCount: String(localized: "view_details") // "عرض التفاصيل"
+                                    ) {
+                                        selectedNeighborhoodName = name
+                                        showServices = true
                                     }
                                 }
-                            }
-                            
-                            HeaderSection(title: String(localized: "your_comments_title"), icon: "text.bubble") // "تعليقاتك:"
-                                .frame(width: 360)
-                                .padding(.top, 10)
-
-                            if !viewModel.userComments.isEmpty {
-                                commentsPagerView
-                            } else {
-                                Text(String(localized: "no_comments_yet")) // "لا توجد تعليقات منشورة بعد"
-                                    .scaledFont(size: 14, weight: .regular, relativeTo: .subheadline)
-                                    .foregroundStyle(.secondary)
-                                    .padding(.top, 20)
                             }
                         }
-                        .padding(.top, 10)
-                        .padding(.bottom, 30)
-                        .frame(maxWidth: .infinity)
-                    
+                        
+                        HeaderSection(title: String(localized: "your_comments_title"), icon: "text.bubble") // "تعليقاتك:"
+                            .frame(width: 360)
+                            .padding(.top, 10)
+
+                        if !viewModel.userComments.isEmpty {
+                            commentsPagerView
+                        } else {
+                            Text(String(localized: "no_comments_yet")) // "لا توجد تعليقات منشورة بعد"
+                                .scaledFont(size: 14, weight: .regular, relativeTo: .subheadline)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 20)
+                        }
+                    }
+                    .padding(.top, 10)
+                    .padding(.bottom, 30)
+                    .frame(maxWidth: .infinity)
                 }
+                // ✅ هذا هو الإصلاح الوحيد: منع ZStack من توسيط الصفحة، ورفع كل المحتوى للأعلى
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
             .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)
@@ -165,7 +176,8 @@ struct FavouritePage: View {
         } message: {
             Text("delete_comment")
         }
-    }}
+    }
+}
 
 // MARK: - Components المحدثة للترجمة
 
@@ -173,15 +185,30 @@ struct NeighborhoodCard: View {
     var name: String
     var reviewCount: String
     var onMoreInfo: () -> Void
+    
+    // ✅ التعديل المطلوب فقط (ألوان لايت/دارك)
+    @Environment(\.colorScheme) private var colorScheme
+    
     var body: some View {
         VStack(alignment: .trailing, spacing: 15) {
             HStack {
                 // استخدام الـ Key المتفق عليه لدعم "حي الياسمين" / "Al-Yasmin District"
                 Text("neighborhood_prefix \(name)")
                     .scaledFont(size: 20, weight: .bold, relativeTo: .headline)
+                    // ✅ لايت: أسود / دارك: أبيض
+                    .foregroundColor(colorScheme == .light ? .black : .white)
+                
                 Spacer()
-                Text("(\(reviewCount))").scaledFont(size: 12, weight: .regular, relativeTo: .caption1).foregroundStyle(.secondary)
-                ForEach(0..<5) { _ in Image(systemName: "star.fill").foregroundColor(.yellow).scaledFont(size: 12, weight: .regular, relativeTo: .caption1) }
+                
+                Text("(\(reviewCount))")
+                    .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
+                    .foregroundStyle(.secondary)
+                
+                ForEach(0..<5) { _ in
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.yellow)
+                        .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
+                }
             }
             Divider()
             Button(action: onMoreInfo) {
@@ -189,10 +216,16 @@ struct NeighborhoodCard: View {
                     Text(String(localized: "view_neighborhood_button")) // "عرض الحي"
                     Image(systemName: "arrow.left")
                 }
-                .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline).foregroundStyle(.primary)
+                .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline)
+                // ✅ لايت: أسود / دارك: أبيض (عشان ما يطلع أبيض في اللايت)
+                .foregroundColor(colorScheme == .light ? .black : .white)
             }
         }
-        .padding(25).frame(width: 360).background(Color("GreyBackground")).cornerRadius(30).shadow(radius: 5)
+        .padding(25)
+        .frame(width: 360)
+        .background(Color("GreyBackground"))
+        .cornerRadius(30)
+        .shadow(radius: 5)
     }
 }
 
@@ -437,6 +470,7 @@ struct CommentCard: View {
         .animation(.easeInOut, value: isEditing)
     }
 }
+
 struct HeaderSection: View {
     let title: String
     let icon: String
@@ -448,7 +482,6 @@ struct HeaderSection: View {
         }
     }
 }
-
 
 #Preview {
     FavouritePage()

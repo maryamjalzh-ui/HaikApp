@@ -17,9 +17,11 @@ struct HomeScreen: View {
     @State private var showFavouritePage = false
     @State private var showWelcomeAlert = false
     @State private var showWelcomeSheet = false
-    
+
     // سويفت سيتعرف على اتجاه اللغة تلقائياً من النظام
     @Environment(\.layoutDirection) private var layoutDirection
+
+    @Environment(\.colorScheme) private var colorScheme
 
     // MARK: - Body
     var body: some View {
@@ -43,7 +45,7 @@ struct HomeScreen: View {
                 .onTapGesture {
                     hideKeyboard()
                 }
-                
+
                 // إظهار بطاقة المعلومات تلقائياً
                 if !isKeyboardVisible {
                     if let neighborhood = viewModel.selectedNeighborhood {
@@ -107,7 +109,7 @@ struct HomeScreen: View {
 
 // MARK: - Components Extension
 extension HomeScreen {
-    
+
     private var topSearchBar: some View {
         HStack(spacing: 12) {
             Button {
@@ -133,7 +135,7 @@ extension HomeScreen {
                             viewModel.selectedNeighborhood = nil
                         }
                     }
-                
+
                 if !viewModel.searchText.isEmpty {
                     Button(action: {
                         viewModel.searchText = ""
@@ -148,7 +150,7 @@ extension HomeScreen {
             .background(Color("PageBackground"))
             .cornerRadius(26)
             .shadow(radius: 2)
-            
+
             Button {
                 hideKeyboard()
                 if Auth.auth().currentUser != nil {
@@ -168,7 +170,7 @@ extension HomeScreen {
         }
         .padding(.horizontal)
     }
-    
+
     private var searchResultsList: some View {
         Group {
             if !viewModel.searchText.isEmpty && viewModel.isKeyboardVisible {
@@ -179,12 +181,12 @@ extension HomeScreen {
                                 .font(.system(size: 40))
                                 .foregroundColor(Color.gray.opacity(0.4))
                                 .padding(.top, 20)
-                            
+
                             VStack(spacing: 4) {
                                 Text("no_results_title")
                                     .scaledFont(size: 16, weight: .bold, relativeTo: .body)
                                     .foregroundStyle(.primary)
-                                
+
                                 Text("no_results_subtitle")
                                     .scaledFont(size: 13, weight: .regular, relativeTo: .caption1)
                                     .foregroundStyle(.secondary)
@@ -208,13 +210,13 @@ extension HomeScreen {
                                                 .resizable()
                                                 .scaledToFit()
                                                 .frame(width: 24, height: 24)
-                                            
+
                                             Text(neighborhood.name)
                                                 .scaledFont(size: 16, weight: .medium, relativeTo: .body)
                                                 .foregroundStyle(.primary)
-                                            
+
                                             Spacer()
-                                            
+
                                             Text(neighborhood.region)
                                                 .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
                                                 .foregroundStyle(.secondary)
@@ -223,7 +225,7 @@ extension HomeScreen {
                                         .padding(.horizontal, 16)
                                         .background(Color("PageBackground"))
                                     }
-                                    
+
                                     if neighborhood.id != viewModel.filteredNeighborhoods.last?.id {
                                         Divider().padding(.leading, 52)
                                     }
@@ -247,31 +249,30 @@ extension HomeScreen {
             HStack {
                 Text("neighborhood_prefix \(neighborhood.name)")
                     .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(.primary)
-                
+                    .foregroundColor(colorScheme == .light ? .black : .white)
+
                 Spacer()
-                
+
                 ratingView(neighborhood: neighborhood)
             }
-            
+
             AvgPriceBadgeView(
                 neighborhoodName: neighborhood.name,
                 aliases: neighborhood.aliases
             )
-            
+
             Divider()
-            
+
             Button {
                 viewModel.neighborhoodForServices = neighborhood
                 viewModel.showServices = true
             } label: {
                 HStack {
                     Text("view_neighborhood_button")
-                    // التعديل: سهم ينقلب تلقائياً مع لغة الجهاز
                     Image(systemName: "chevron.forward")
                 }
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.primary)
+                .foregroundColor(colorScheme == .light ? .black : .white)
             }
         }
         .padding(22)
@@ -300,7 +301,7 @@ private func ratingView(neighborhood: Neighborhood) -> some View {
         Text("(\(neighborhood.reviewCount))")
             .font(.system(size: 12))
             .foregroundStyle(.secondary)
-        
+
         ForEach(0..<5) { _ in
             Image(systemName: "star.fill")
                 .foregroundColor(.yellow)
@@ -313,7 +314,9 @@ private func ratingView(neighborhood: Neighborhood) -> some View {
 struct NeighborhoodPin: View {
     let neighborhood: Neighborhood
     let action: () -> Void
-    
+
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 4) {
@@ -323,17 +326,18 @@ struct NeighborhoodPin: View {
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
                     .background(RoundedRectangle(cornerRadius: 6).fill(colorForRating(neighborhood.rating)))
-                
+
                 Text(neighborhood.name)
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(.primary)
+                    // ✅ لايت: أسود / دارك: أبيض
+                    .foregroundColor(colorScheme == .light ? .black : .white)
                     .padding(.horizontal, 4)
                     .background(Color("PageBackground").opacity(0.9))
                     .cornerRadius(4)
             }
         }
     }
-    
+
     private func colorForRating(_ rating: String) -> Color {
         let val = Double(rating) ?? 0.0
         if val >= 4.0 { return .green }

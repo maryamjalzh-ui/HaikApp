@@ -54,7 +54,7 @@ struct NeighborhoodServicesView: View {
                     sectionTitle("reviews_section_title")
                     reviewComposerSection
                     
-                    subsectionHint("comments_list_title")
+                    subsectionHint("comments_list_title").hidden()
                     commentsList
                 }
                 .padding(.bottom, 30)
@@ -146,7 +146,7 @@ private extension NeighborhoodServicesView {
     
     var reviewComposerSection: some View {
         VStack(spacing: 12) {
-            subsectionHint("review_type_hint")
+            subsectionHint("review_type_hint").hidden()
             chipsRow
             reviewInputBox
         }

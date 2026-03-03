@@ -1908,7 +1908,8 @@
             "value" : "Write a review"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "reviews_section_title" : {
       "extractionState" : "manual",
