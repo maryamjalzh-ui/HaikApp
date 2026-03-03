@@ -25,7 +25,6 @@ struct NeighborhoodQuestionView: View {
         return VStack(spacing: DS.cardSpacing) {
 
             HStack {
-                Spacer()
 
                 Button {
                     if vm.currentIndex > 0 {
@@ -34,7 +33,7 @@ struct NeighborhoodQuestionView: View {
                         dismiss()
                     }
                 } label: {
-                    Image(systemName: "chevron.forward")
+                    Image(systemName: "chevron.backward")
                         .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                         .foregroundColor(Color("Green2Primary"))
                         .frame(width: 52, height: 52)
@@ -42,9 +41,10 @@ struct NeighborhoodQuestionView: View {
                         .clipShape(Circle())
                         .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
                 }
+                Spacer()
+
             }
-            .padding(.trailing, 35)
-            .environment(\.layoutDirection, .leftToRight)
+            .padding(.leading)
 
             VStack(spacing: 10) {
                 Text(pageTitle(for: question))
@@ -120,7 +120,6 @@ struct NeighborhoodQuestionView: View {
                                         }
                                     }
                                 )
-                                .environment(\.layoutDirection, .leftToRight)
                                 .frame(width: contentWidth)
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .id(option.id)
@@ -186,12 +185,11 @@ struct NeighborhoodQuestionView: View {
 
             if question.id == "q2" {
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text("- يمكنك اختيار خيارين كحد أقصى ")
+                    Text("q2_instruction_max_selection")
                         .frame(maxWidth: .infinity, alignment: .trailing)
-                    Text("- اختيارك الأول يحدد أولويتك")
+                    Text("q2_instruction_priority")
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }
-                .environment(\.layoutDirection, .leftToRight)
 
                 .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.trailing)
@@ -202,7 +200,6 @@ struct NeighborhoodQuestionView: View {
             }
 
         }
-        .environment(\.layoutDirection, .rightToLeft)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
         .background(Color("GreyBackground"))
         .onChange(of: vm.currentIndex) { _, _ in
@@ -215,11 +212,11 @@ struct NeighborhoodQuestionView: View {
 
     private func pageTitle(for question: Questions) -> String {
         switch question.id {
-        case "q1": return "نمط حياتك"
-        case "q2": return "أولوياتك في اختيار الحي"
-        case "q3": return "التنقل اليومي"
-        case "q4": return "نطاق ميزانيتك"
-        default: return "توصية الحي"
+        case "q1": return String(localized: "title_lifestyle")
+        case "q2": return String(localized: "title_priorities")
+        case "q3": return String(localized: "title_commute")
+        case "q4": return String(localized: "title_budget")
+        default: return String(localized: "title_recommendation")
         }
     }
 
@@ -371,7 +368,7 @@ struct ExpandableNeighborhoodOptionCard: View {
                             query = ""
                         }
                     } label: {
-                        Text("تأكيد الاختيار")
+                        Text("confirm_selection_btn")
                             .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)                            .foregroundColor(Color("Green2Primary"))
                             .frame(width: 220, height: 46)
                             .background(Color("Green2Primary").opacity(0.14))
@@ -408,10 +405,9 @@ struct NeighborhoodSearchField: View {
     var body: some View {
         HStack(spacing: 10) {
 
-            TextField("ابحث عن الحي", text: $text)
+            TextField("search_neighborhood_placeholder", text: $text)
                 .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline)                .multilineTextAlignment(.trailing)
                 .frame(maxWidth: .infinity, alignment: .trailing)
-                .environment(\.layoutDirection, .leftToRight)
                 .foregroundStyle(.primary)
 
             Image(systemName: "magnifyingglass")
@@ -459,3 +455,4 @@ struct NeighborhoodRow: View {
         isPresented: .constant(true)
     )
 }
+

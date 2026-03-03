@@ -15,7 +15,6 @@ final class NeighborhoodServicesViewModel: ObservableObject {
     @Published var isFavorite: Bool = false
 
     // MARK: - Firebase Properties
-    // 1. مرجع لقاعدة البيانات
     private let db = Firestore.firestore()
 
     // 2. المصفوفة التي ستعرض التعليقات الحقيقية القادمة من Firebase
@@ -53,8 +52,6 @@ final class NeighborhoodServicesViewModel: ObservableObject {
 
     // MARK: - Firebase Functions (جلب وحفظ)
     
-    // دالة جلب التعليقات من Firestore
-    // دالة جلب التعليقات مع مراقب التحديثات اللحظي
     func fetchReviews() {
         db.collection("neighborhood_reviews")
             .whereField("neighborhoodName", isEqualTo: self.neighborhoodName)

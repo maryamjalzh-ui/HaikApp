@@ -20,7 +20,7 @@ struct AvgPriceBadgeView: View {
         VStack(alignment: .trailing, spacing: 10) {
 
             HStack {
-                Text("متوسط سعر المتر")
+                Text("avg_price_title")
                     .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
                     .foregroundStyle(.secondary)
 
@@ -50,8 +50,7 @@ struct AvgPriceBadgeView: View {
         let service = RiyadhAvgPriceService.shared
 
         guard let avg = service.avgPricePerMeter(for: neighborhoodName, aliases: aliases) else {
-            return "غير متوفر"
-        }
+            return String(localized: "price_not_available")        }
 
         return format(avg)
     }
@@ -63,7 +62,7 @@ struct AvgPriceBadgeView: View {
                 .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)
                 .foregroundStyle(.primary)   // أبيض في الدارك / أسود في اللايت
 
-            Text("ر.س / م²")
+            Text("currency_per_meter")
                 .scaledFont(size: 13, weight: .regular, relativeTo: .caption1)
                 .foregroundStyle(.secondary) // رمادي مناسب للنظام
         }
@@ -75,7 +74,7 @@ struct AvgPriceBadgeView: View {
 
     private func format(_ value: Double) -> String {
         let nf = NumberFormatter()
-        nf.locale = Locale(identifier: "ar_SA")
+        nf.locale = Locale.current
         nf.numberStyle = .decimal
         nf.maximumFractionDigits = 0
         nf.minimumFractionDigits = 0

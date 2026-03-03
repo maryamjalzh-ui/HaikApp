@@ -72,20 +72,19 @@ final class RiyadhAvgPriceService {
     }
 
     private func normalize(_ input: String) -> String {
-        var s = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        // توحيد الحالة وتنظيف المسافات
+        var s = input.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
 
+        // تنظيف الحروف العربية
         s = s.replacingOccurrences(of: "أ", with: "ا")
         s = s.replacingOccurrences(of: "إ", with: "ا")
         s = s.replacingOccurrences(of: "آ", with: "ا")
         s = s.replacingOccurrences(of: "ى", with: "ي")
         s = s.replacingOccurrences(of: "ة", with: "ه")
-
+        
+        // حذف كلمة حي
         s = s.replacingOccurrences(of: "حي ", with: "")
         s = s.replacingOccurrences(of: "حي", with: "")
-
-        s = s.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        s = s.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }.joined(separator: " ")
 
         return s
     }

@@ -8,19 +8,19 @@
 import Foundation
 
 enum ServiceCategory: String, CaseIterable, Identifiable {
-    case hospitals = "مستشفيات"
-    case groceries = "تموينات"
-    case schools = "مدارس"
-    case gasStations = "محطات بنزين"
-    case cinema = "السينما"
-    case cafes = "مقاهي"
-    case restaurants = "المطاعم"
-    case supermarkets = "سوبرماركت"
-    case mall = "مركز تجاري"
-    case parks = "الحدائق"
-    case libraries = "المكتبات"
-    case metro = "مترو"
-
+    case hospitals = "hospitals"
+    case groceries = "groceries"
+    case schools = "schools"
+    case gasStations = "gas_stations"
+    case cinema = "cinema"
+    case cafes = "cafes"
+    case restaurants = "restaurants"
+    case supermarkets = "supermarkets"
+    case mall = "mall"
+    case parks = "parks"
+    case libraries = "libraries"
+    case metro = "metro"
+    
     var id: String { rawValue }
 
     var icon: HaikIcon {

@@ -23,29 +23,30 @@ struct LogInPage: View {
             VStack(spacing: 40) {
                 // هيدر يحتوي على زر العودة جهة اليمين
                 HStack {
-                    Spacer()
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "chevron.forward")
+                        Image(systemName: "chevron.backward")
                             .scaledFont(size: 18, weight: .bold, relativeTo: .headline)                            .foregroundColor(Color("GreenPrimary"))
                             .frame(width: 45, height: 45)
                             .background(Color("GreyBackground"))
                             .clipShape(Circle())
                             .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 4)
                     }
+                    Spacer()
+
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 10)
 
-                Text("مرحبًا بك في حيّك")
+                Text(String(localized: "welcome_title"))
                     .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                    .padding(.top, 20)
                     .foregroundStyle(.primary)
                 
-                VStack(alignment: .trailing, spacing: 25) {
+                VStack(alignment: .leading, spacing: 25) {
                     // حقل الإيميل
-                    VStack(alignment: .trailing, spacing: 8) {
-                        Text("البريد الإلكتروني")
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(String(localized: "email_label"))
                             .foregroundColor(.secondary)
                             .scaledFont(size: 16, weight: .regular, relativeTo: .callout)
                             
@@ -59,8 +60,8 @@ struct LogInPage: View {
                     }
                     
                     // حقل كلمة المرور
-                    VStack(alignment: .trailing, spacing: 8) {
-                        Text("كلمة المرور")
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(String(localized: "password_label"))
                             .foregroundColor(.secondary)
                             .scaledFont(size: 16, weight: .regular, relativeTo: .callout)
                         HStack {
@@ -71,7 +72,7 @@ struct LogInPage: View {
                             if viewModel.isPasswordVisible {
                                 TextField("", text: $viewModel.loginPassword).multilineTextAlignment(.trailing)
                             } else {
-                                SecureField("", text: $viewModel.loginPassword).multilineTextAlignment(.trailing)
+                                SecureField("******", text: $viewModel.loginPassword).multilineTextAlignment(.trailing)
                             }
                         }
                         .padding().background(Color("GreyBackground")).cornerRadius(25)
@@ -87,7 +88,7 @@ struct LogInPage: View {
                 Spacer()
                 
                 Button(action: viewModel.login) {
-                    Text("تسجيل الدخول")
+                    Text(String(localized: "login_button"))
                         .scaledFont(size: 18, weight: .bold, relativeTo: .headline)
                         .foregroundColor(Color("PageBackground"))
                         .frame(maxWidth: .infinity)

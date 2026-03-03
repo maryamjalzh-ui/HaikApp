@@ -8,12 +8,13 @@
 import SwiftUI
 
 struct WelcomeView: View {
-    // إضافة متغير الإغلاق للتمكن من العودة عند الضغط على "تخطي"
+    // متغير الإغلاق للعودة عند الضغط على "تخطي"
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
-             ZStack {                 Color("GreenPrimary")
+            ZStack {
+                Color("GreenPrimary")
                     .ignoresSafeArea()
                     .opacity(0.90)
                 
@@ -22,14 +23,17 @@ struct WelcomeView: View {
                     Image("Building")
                         .resizable()
                         .scaledToFit()
+                        .frame(maxWidth: .infinity)
                 }
                 .ignoresSafeArea()
 
                 VStack(spacing: 70) {
                     Spacer()
                     
-                    Text("مرحبًا بك في حيّك")
-                        .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                        .foregroundColor(.white)
+                    // استخدام مفتاح الترجمة للعنوان
+                    Text(String(localized: "welcome_title"))
+                        .scaledFont(size: 28, weight: .bold, relativeTo: .title1)
+                        .foregroundColor(.white)
                     
                     Image("FirstPageLogo")
                         .resizable()
@@ -43,8 +47,9 @@ struct WelcomeView: View {
                     VStack(spacing: 16) {
                         // الانتقال لصفحة إنشاء حساب
                         NavigationLink(destination: SignupView()) {
-                            Text("انشاء حساب جديد")
-                                .scaledFont(size: 17, weight: .semibold, relativeTo: .headline)                                .foregroundColor(.black)
+                            Text(String(localized: "signup_button"))
+                                .scaledFont(size: 17, weight: .semibold, relativeTo: .headline)
+                                .foregroundColor(.black)
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .background(Color.white)
@@ -53,8 +58,9 @@ struct WelcomeView: View {
 
                         // الانتقال لصفحة تسجيل الدخول
                         NavigationLink(destination: LogInPage()) {
-                            Text("تسجيل الدخول")
-                                .scaledFont(size: 17, weight: .semibold, relativeTo: .headline)                                .foregroundColor(.white)
+                            Text(String(localized: "login_button"))
+                                .scaledFont(size: 17, weight: .semibold, relativeTo: .headline)
+                                .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .overlay(
@@ -63,11 +69,12 @@ struct WelcomeView: View {
                                 )
                         }
 
-                        // زر التخطي (ليس الآن) للعودة للاستكشاف
+                        // زر التخطي (ليس الآن)
                         Button(action: {
-                            dismiss() // يغلق الصفحة ويعيد المستخدم للخريطة أو تفاصيل الحي
+                            dismiss()
                         }) {
-Text("ليس الآن")                                .scaledFont(size: 16, weight: .medium, relativeTo: .body)
+                            Text(String(localized: "not_now_button"))
+                                .scaledFont(size: 16, weight: .medium, relativeTo: .body)
                                 .foregroundColor(.white.opacity(0.9))
                                 .padding(.top, 8)
                         }

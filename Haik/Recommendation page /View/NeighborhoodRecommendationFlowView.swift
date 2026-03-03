@@ -19,7 +19,7 @@ struct NeighborhoodRecommendationFlowView: View {
                 NeighborhoodQuestionView(vm: vm, isPresented: $isPresented)
             }
         }
-        .environment(\.layoutDirection, .rightToLeft)
+      //  .environment(\.layoutDirection, .rightToLeft)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
     }

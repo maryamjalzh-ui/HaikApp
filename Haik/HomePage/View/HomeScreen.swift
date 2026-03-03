@@ -17,6 +17,9 @@ struct HomeScreen: View {
     @State private var showFavouritePage = false
     @State private var showWelcomeAlert = false
     @State private var showWelcomeSheet = false
+    
+    // سويفت سيتعرف على اتجاه اللغة تلقائياً من النظام
+    @Environment(\.layoutDirection) private var layoutDirection
 
     // MARK: - Body
     var body: some View {
@@ -37,12 +40,11 @@ struct HomeScreen: View {
                     }
                 }
                 .ignoresSafeArea()
-                // ميزة إضافية: عند لمس الخريطة يتم إغلاق الكيبورد
                 .onTapGesture {
                     hideKeyboard()
                 }
                 
-                // إظهار بطاقة المعلومات فقط إذا لم يكن المستخدم يكتب حالياً
+                // إظهار بطاقة المعلومات تلقائياً
                 if !isKeyboardVisible {
                     if let neighborhood = viewModel.selectedNeighborhood {
                         bottomInfoCard(neighborhood: neighborhood)
@@ -70,7 +72,6 @@ struct HomeScreen: View {
             )) { visible in
                 withAnimation { isKeyboardVisible = visible }
             }
-            .environment(\.layoutDirection, .rightToLeft)
             .navigationDestination(isPresented: $viewModel.showServices) {
                 if let n = viewModel.neighborhoodForServices {
                     NeighborhoodServicesView(neighborhoodName: n.name, coordinate: n.coordinate)
@@ -85,7 +86,7 @@ struct HomeScreen: View {
             .overlay {
                 if showRecommendation {
                     RecommendationOnboardingView(isPresented: $showRecommendation)
-                        .transition(.move(edge: .trailing))
+                        .transition(.move(edge: .leading))
                         .zIndex(1)
                 }
             }
@@ -109,7 +110,6 @@ extension HomeScreen {
     
     private var topSearchBar: some View {
         HStack(spacing: 12) {
-            // زر التوصيات الذكية
             Button {
                 hideKeyboard()
                 showRecommendation = true
@@ -123,14 +123,12 @@ extension HomeScreen {
                     .shadow(radius: 2)
             }
 
-            // حقل البحث
             HStack {
                 Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                TextField("ابحث عن حي...", text: $viewModel.searchText)
+                TextField("search_placeholder", text: $viewModel.searchText)
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled()
                     .onChange(of: viewModel.searchText) { newValue in
-                        // بمجرد أن يبدأ المستخدم بالكتابة، نصفر الاختيار القديم لإظهار القائمة مجدداً
                         if !newValue.isEmpty {
                             viewModel.selectedNeighborhood = nil
                         }
@@ -151,7 +149,6 @@ extension HomeScreen {
             .cornerRadius(26)
             .shadow(radius: 2)
             
-            // زر الملف الشخصي
             Button {
                 hideKeyboard()
                 if Auth.auth().currentUser != nil {
@@ -174,23 +171,21 @@ extension HomeScreen {
     
     private var searchResultsList: some View {
         Group {
-            // نستخدم الفلترة الذكية الجاهزة من الفيو مودل
             if !viewModel.searchText.isEmpty && viewModel.isKeyboardVisible {
                 VStack(spacing: 0) {
                     if viewModel.filteredNeighborhoods.isEmpty {
-                        // التصميم الجديد لحالة "لا توجد نتائج"
                         VStack(spacing: 12) {
-                            Image(systemName: "mappin.slash.circle") // أيقونة تعبر عن عدم العثور على موقع
+                            Image(systemName: "mappin.slash.circle")
                                 .font(.system(size: 40))
                                 .foregroundColor(Color.gray.opacity(0.4))
                                 .padding(.top, 20)
                             
                             VStack(spacing: 4) {
-                                Text("لم نجد هذا الحي")
+                                Text("no_results_title")
                                     .scaledFont(size: 16, weight: .bold, relativeTo: .body)
                                     .foregroundStyle(.primary)
                                 
-                                Text("تأكد من كتابة الاسم بشكل صحيح أو ابحث عن حي آخر بالرياض")
+                                Text("no_results_subtitle")
                                     .scaledFont(size: 13, weight: .regular, relativeTo: .caption1)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
@@ -205,10 +200,7 @@ extension HomeScreen {
                             VStack(spacing: 0) {
                                 ForEach(viewModel.filteredNeighborhoods) { neighborhood in
                                     Button(action: {
-                                        // 1. إغلاق الكيبورد فوراً
                                         hideKeyboard()
-                                        
-                                        // 2. اختيار الحي (الفيو مودل سيهتم بالباقي)
                                         viewModel.selectNeighborhood(neighborhood)
                                     }) {
                                         HStack(spacing: 12) {
@@ -229,17 +221,16 @@ extension HomeScreen {
                                         }
                                         .padding(.vertical, 14)
                                         .padding(.horizontal, 16)
-                                        .background(Color("PageBackground")) // لضمان استجابة السطر كامل للضغط
+                                        .background(Color("PageBackground"))
                                     }
                                     
-                                    // إضافة خط فاصل بين العناصر
                                     if neighborhood.id != viewModel.filteredNeighborhoods.last?.id {
                                         Divider().padding(.leading, 52)
                                     }
                                 }
                             }
                         }
-                        .frame(maxHeight: 250) // حد أقصى لطول القائمة
+                        .frame(maxHeight: 250)
                     }
                 }
                 .background(Color("PageBackground"))
@@ -249,30 +240,35 @@ extension HomeScreen {
             }
         }
     }
-    
+
     private func bottomInfoCard(neighborhood: Neighborhood) -> some View {
-        VStack(alignment: .trailing, spacing: 14) {
+        VStack(spacing: 14) {
+            // هنا تم التعديل: HStack بسيط، سويفت يقلبه تلقائياً
             HStack {
-                Text("حي \(neighborhood.name)")
+                Text("neighborhood_prefix \(neighborhood.name)")
                     .font(.system(size: 20, weight: .bold))
                     .foregroundStyle(.primary)
+                
                 Spacer()
-                Text("(\(neighborhood.reviewCount))")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                ForEach(0..<5) { _ in
-                    Image(systemName: "star.fill").foregroundColor(.yellow).font(.system(size: 10))
-                }
+                
+                ratingView(neighborhood: neighborhood)
             }
-            AvgPriceBadgeView(neighborhoodName: neighborhood.name, aliases: neighborhood.aliases)
+            
+            AvgPriceBadgeView(
+                neighborhoodName: neighborhood.name,
+                aliases: neighborhood.aliases
+            )
+            
             Divider()
+            
             Button {
                 viewModel.neighborhoodForServices = neighborhood
                 viewModel.showServices = true
             } label: {
                 HStack {
-                    Text("عرض الحي")
-                    Image(systemName: "arrow.left")
+                    Text("view_neighborhood_button")
+                    // التعديل: سهم ينقلب تلقائياً مع لغة الجهاز
+                    Image(systemName: "chevron.forward")
                 }
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(.primary)
@@ -285,9 +281,9 @@ extension HomeScreen {
         .shadow(radius: 10)
         .padding(.bottom, 30)
     }
-    
+
     private var hintCard: some View {
-        Text("اضغط على الخريطة لاستكشاف بيانات الحي")
+        Text("map_hint_text")
             .font(.system(size: 14))
             .foregroundStyle(.primary)
             .padding()
@@ -298,14 +294,22 @@ extension HomeScreen {
     }
 }
 
-// MARK: - Helper Extension
-extension View {
-    func hideKeyboard() {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+// MARK: - Helper Views
+private func ratingView(neighborhood: Neighborhood) -> some View {
+    HStack(spacing: 4) {
+        Text("(\(neighborhood.reviewCount))")
+            .font(.system(size: 12))
+            .foregroundStyle(.secondary)
+        
+        ForEach(0..<5) { _ in
+            Image(systemName: "star.fill")
+                .foregroundColor(.yellow)
+                .font(.system(size: 10))
+        }
     }
 }
 
-// MARK: - NeighborhoodPin (كود الـ Pin كما هو مع تحسين بسيط)
+// MARK: - NeighborhoodPin
 struct NeighborhoodPin: View {
     let neighborhood: Neighborhood
     let action: () -> Void
@@ -339,6 +343,20 @@ struct NeighborhoodPin: View {
     }
 }
 
-#Preview {
+// MARK: - Extensions
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+
+// MARK: - Previews
+#Preview("Arabic") {
     HomeScreen()
+        .environment(\.locale, .init(identifier: "ar"))
+}
+
+#Preview("English") {
+    HomeScreen()
+        .environment(\.locale, .init(identifier: "en"))
 }

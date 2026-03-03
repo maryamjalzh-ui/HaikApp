@@ -1,3 +1,4 @@
+
 //
 //  NeighborhoodResultView.swift
 //  Haik
@@ -30,15 +31,15 @@ struct NeighborhoodResultView: View {
         VStack(spacing: 0) {
 
             HStack {
-                Spacer()
+                //Spacer()
 
                 Button {
                     withAnimation(.easeInOut(duration: 0.18)) {
                         vm.isShowingResults = false
                     }
                 } label: {
-                    Image(systemName: "chevron.forward")
-                        .environment(\.layoutDirection, .leftToRight) // ✅ فقط للأيقونة
+                    Image(systemName: "chevron.backward")
+//                        .environment(\.layoutDirection, .leftToRight) // ✅ فقط للأيقونة
                         .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                         .foregroundColor(Color("Green2Primary"))
                         .frame(width: 52, height: 52)
@@ -47,23 +48,23 @@ struct NeighborhoodResultView: View {
                         .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
                 }
                 .buttonStyle(.plain)
+                Spacer()
             }
             .padding(.horizontal, sidePadding)
             .padding(.top, 10)
-            .environment(\.layoutDirection, .leftToRight)
 
             DashedProgressBar(total: vm.totalSteps, current: vm.currentStep)
                 .padding(.horizontal, sidePadding)
                 .padding(.top, 25)
 
-            Text("الأحياء الانسب لك")
+            Text(String(localized: "suitable_neighborhoods_title"))
                 .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                .foregroundStyle(.primary)
                 .padding(.top, 30)
                 .padding(.bottom, 20)
 
             if neighborhoods.isEmpty {
                 Spacer()
-                ProgressView("جاري تحميل النتائج…")
+                ProgressView(String(localized: "loading_results"))
                     .padding(.top, 30)
                 Spacer()
             } else {
@@ -89,7 +90,7 @@ struct NeighborhoodResultView: View {
             Spacer()
 
             Button(action: { goHome = true }) {
-                Text("تم")
+                Text(String(localized: "done_button"))
                     .scaledFont(size: 22, weight: .bold, relativeTo: .title3)                    .foregroundColor(Color("PageBackground"))
                     .frame(width: 330, height: 65)
                     .background(Color("Green2Primary"))
@@ -101,7 +102,6 @@ struct NeighborhoodResultView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color("GreyBackground"))
-        .environment(\.layoutDirection, .rightToLeft)
         .onAppear {
             cardOrder = Array(neighborhoods.indices)
         }
@@ -188,19 +188,20 @@ struct ResultCardView: View {
     var body: some View {
         VStack(spacing: 0) {
 
-            VStack(alignment: .trailing, spacing: 10) {
+            VStack(alignment: .leading, spacing: 10) {
 
                 HStack {
-                    Spacer()
 
                     if isBest {
-                        Text("الأفضل لك")
+                        Text(String(localized: "best_for_you_badge"))
                             .scaledFont(size: 11, weight: .bold, relativeTo: .caption2)                            .foregroundColor(.white)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                             .background(Color(red: 0.6, green: 0.35, blue: 0.9))
                             .cornerRadius(6)
                     }
+                    Spacer()
+                    
                 }
 
                 HStack(alignment: .center) {
@@ -223,7 +224,6 @@ struct ResultCardView: View {
                     Text(neighborhood.name)
                         .scaledFont(size: 26, weight: .bold, relativeTo: .title2)                        .foregroundStyle(.primary)
                 }
-                .environment(\.layoutDirection, .leftToRight)
             }
             .padding([.horizontal, .top], 20)
 
@@ -233,12 +233,11 @@ struct ResultCardView: View {
                     Text("\(Int(compatibility.rounded()))%")
                         .scaledFont(size: 21, weight: .bold, relativeTo: .headline)
 
-                    Text("نسبة التوافق")
+                    Text(String(localized: "compatibility_rate"))
                         .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
                 }
                 .foregroundColor(.white)
                 .padding(.top, 16)
-                .environment(\.layoutDirection, .leftToRight)
 
                 Spacer()
             }
@@ -271,15 +270,14 @@ struct ResultCardView: View {
                 )
             } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: "arrow.left")
+                    Image(systemName: "chevron.forward")
                         .scaledFont(size: 14, weight: .bold, relativeTo: .caption1)
-                    Text("عرض الحي")
+                    Text(String(localized: "view_neighborhood_button"))
                         .scaledFont(size: 16, weight: .medium, relativeTo: .body)
                 }
                 .foregroundColor(Color("Green2Primary"))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 25)
-                .environment(\.layoutDirection, .leftToRight)
             }
             .buttonStyle(.plain)
             .offset(y: -20)
@@ -315,9 +313,9 @@ struct ResultInfoItem: View {
         neighborhood: NeighborhoodData.all.first!,
         compatibility: 92,
         items: [
-            ResultInfo(icon: "sparkles", label: "نمط الحياة"),
-            ResultInfo(icon: "tram", label: "وسيلة التنقل"),
-            ResultInfo(icon: "banknote", label: "سعر مناسب")
+            ResultInfo(icon: "sparkles", label: String(localized: "lifestyle")),
+            ResultInfo(icon: "tram", label: String(localized: "transportation")),
+            ResultInfo(icon: "banknote", label: String(localized: "affordable_price"))
         ],
         isBest: true,
         rating: 4.6
@@ -325,3 +323,4 @@ struct ResultInfoItem: View {
     .padding()
     
 }
+

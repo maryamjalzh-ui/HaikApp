@@ -104,7 +104,6 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         currentIndex -= 1
     }
 
-
     private func neededCategories() -> Set<ServiceCategory> {
         let q2 = selectedOptionIDs(for: "q2")
         let q3 = selectedOptionIDs(for: "q3").first
@@ -446,9 +445,9 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
 
         case "q2_e":
             let match = priceScore(for: neighborhood)
-            if match >= 0.9 { return ResultInfo(icon: "banknote", label: "سعر مناسب جدًا") }
-            if match >= 0.4 { return ResultInfo(icon: "banknote", label: "سعر مناسب") }
-            return ResultInfo(icon: "banknote", label: "سعر مرتفع لميزانيتك")
+            if match >= 0.9 { return ResultInfo(icon: "banknote", label: String(localized: "price_match_very_good")) }
+            if match >= 0.4 { return ResultInfo(icon: "banknote", label: String(localized: "price_match_good")) }
+            return ResultInfo(icon: "banknote", label: String(localized: "price_match_high"))
 
         case "q2_f":
             let v = count(for: neighborhood, .cafes)
@@ -458,7 +457,7 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
             return ResultInfo(icon: "popcorn", label: entertainmentLabel(v))
 
         default:
-            return ResultInfo(icon: "star", label: "أولوية")
+            return ResultInfo(icon: "star", label: String(localized: "priority_default"))
         }
     }
 
@@ -471,9 +470,9 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
             let m = count(for: neighborhood, .metro)
             return ResultInfo(icon: "tram", label: metroLabelSometimes(m))
         case "q3_c":
-            return ResultInfo(icon: "car", label: "مناسب للسيارة")
+            return ResultInfo(icon: "car", label: String(localized: "transport_car"))
         default:
-            return ResultInfo(icon: "car", label: "تنقل مرن")
+            return ResultInfo(icon: "car", label: String(localized: "transport_flexible"))
         }
     }
 
@@ -481,104 +480,93 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         guard
             let picked = pickedNeighborhoodByOptionID[anchorOptionID],
             let anchorN = NeighborhoodData.all.first(where: { $0.name == picked })
-        else { return "قريب" }
+        else { return String(localized: "near_default") }
 
         let dKm = distanceMeters(neighborhood.coordinate, anchorN.coordinate) / 1000.0
 
-        if dKm <= 3 { return "قريب جدًا" }
-        if dKm <= 8 { return "قريب" }
-        if dKm <= 15 { return "متوسط القرب" }
-        return "بعيد نسبيًا"
+        if dKm <= 3 { return String(localized: "near_very_close") }
+        if dKm <= 8 { return String(localized: "near_close") }
+        if dKm <= 15 { return String(localized: "near_medium") }
+        return String(localized: "near_far")
     }
 
     private func servicesLabel(_ v: Int) -> String {
-        if v >= 35 { return "خدمات كثيرة" }
-        if v >= 18 { return "خدمات جيدة" }
-        return "خدمات محدودة"
+        if v >= 35 { return String(localized: "services_plenty") }
+        if v >= 18 { return String(localized: "services_good") }
+        return String(localized: "services_limited")
     }
 
     private func schoolsLabel(_ v: Int) -> String {
-        if v >= 12 { return "مدارس كثيرة" }
-        if v >= 5 { return "مدارس متوفرة" }
-        return "مدارس قليلة"
+        if v >= 12 { return String(localized: "schools_plenty") }
+        if v >= 5 { return String(localized: "schools_available") }
+        return String(localized: "schools_limited")
     }
 
     private func entertainmentLabel(_ v: Int) -> String {
-        if v >= 35 { return "ترفيه كثير" }
-        if v >= 18 { return "ترفيه متوفر" }
-        return "ترفيه قليل"
+        if v >= 35 { return String(localized: "ent_plenty") }
+        if v >= 18 { return String(localized: "ent_available") }
+        return String(localized: "ent_limited")
     }
 
     private func metroLabelPrimary(_ m: Int) -> String {
-        if m >= 2 { return "مترو مناسب" }
-        if m == 1 { return "مترو محدود" }
-        return "بدون مترو قريب"
+        if m >= 2 { return String(localized: "metro_primary_suitable") }
+        if m == 1 { return String(localized: "metro_primary_limited") }
+        return String(localized: "metro_none")
     }
 
     private func metroLabelSometimes(_ m: Int) -> String {
-        if m >= 1 { return "مترو متوفر" }
-        return "بدون مترو قريب"
+        if m >= 1 { return String(localized: "metro_sometimes_available") }
+        return String(localized: "metro_none")
     }
-
 
     private static func buildQuestions() -> [Questions] {
         [
             Questions(
                 id: "q1",
-                title: "أي نمط حياة تفضل؟",
+                title: String(localized: "q1_title"),
                 options: [
-                    RecommendationOption(id: "q1_a", title: "حي هادئ", icon: .calm, showsNeighborhoodPicker: false),
-                    RecommendationOption(id: "q1_b", title: "حي نشط وحيوي", icon: .active, showsNeighborhoodPicker: false),
-                    RecommendationOption(id: "q1_c", title: "حي متكامل الخدمات", icon: .fullServices, showsNeighborhoodPicker: false)
+                    RecommendationOption(id: "q1_a", title: String(localized: "q1_option_a"), icon: .calm, showsNeighborhoodPicker: false),
+                    RecommendationOption(id: "q1_b", title: String(localized: "q1_option_b"), icon: .active, showsNeighborhoodPicker: false),
+                    RecommendationOption(id: "q1_c", title: String(localized: "q1_option_c"), icon: .fullServices, showsNeighborhoodPicker: false)
                 ],
                 selectionMode: .single
             ),
 
             Questions(
                 id: "q2",
-                title: "ما الأولوية الأهم لك عند اختيار الحي؟",
+                title: String(localized: "q2_title"),
                 options: [
-                    RecommendationOption(id: "q2_a", title: "القرب من مقر العمل", icon: .nearWork, showsNeighborhoodPicker: true)
-                    ,
-                    RecommendationOption(id: "q2_b", title: "القرب من منزل العائلة أو الأقارب", icon: .nearFamily, showsNeighborhoodPicker: true),
-                    RecommendationOption(id: "q2_c", title: "توفر الخدمات", icon: .services, showsNeighborhoodPicker: false),
-                    RecommendationOption(id: "q2_d", title: "توفر المدارس", icon: .schools, showsNeighborhoodPicker: false),
-                    RecommendationOption(id: "q2_e", title: "سعر المتر المناسب", icon: .price, showsNeighborhoodPicker: false),
-                    RecommendationOption(id: "q2_f", title: "توفر المرافق الترفيهية", icon: .entertainment, showsNeighborhoodPicker: false)
+                    RecommendationOption(id: "q2_a", title: String(localized: "q2_option_a"), icon: .nearWork, showsNeighborhoodPicker: true),
+                    RecommendationOption(id: "q2_b", title: String(localized: "q2_option_b"), icon: .nearFamily, showsNeighborhoodPicker: true),
+                    RecommendationOption(id: "q2_c", title: String(localized: "q2_option_c"), icon: .services, showsNeighborhoodPicker: false),
+                    RecommendationOption(id: "q2_d", title: String(localized: "q2_option_d"), icon: .schools, showsNeighborhoodPicker: false),
+                    RecommendationOption(id: "q2_e", title: String(localized: "q2_option_e"), icon: .price, showsNeighborhoodPicker: false),
+                    RecommendationOption(id: "q2_f", title: String(localized: "q2_option_f"), icon: .entertainment, showsNeighborhoodPicker: false)
                 ],
                 selectionMode: .multi(max: 2)
-                
             ),
 
             Questions(
                 id: "q3",
-                title: "كيف تفضل نمط تنقلك اليومي؟",
+                title: String(localized: "q3_title"),
                 options: [
-                    RecommendationOption(id: "q3_a", title: "أعتمد على المترو بشكل أساسي", icon: .metroPrimary, showsNeighborhoodPicker: false),
-                    RecommendationOption(id: "q3_b", title: "أستخدم المترو أحيانًا", icon: .metroSometimes, showsNeighborhoodPicker: false),
-                    RecommendationOption(id: "q3_c", title: "أعتمد على السيارة", icon: .car, showsNeighborhoodPicker: false)
+                    RecommendationOption(id: "q3_a", title: String(localized: "q3_option_a"), icon: .metroPrimary, showsNeighborhoodPicker: false),
+                    RecommendationOption(id: "q3_b", title: String(localized: "q3_option_b"), icon: .metroSometimes, showsNeighborhoodPicker: false),
+                    RecommendationOption(id: "q3_c", title: String(localized: "q3_option_c"), icon: .car, showsNeighborhoodPicker: false)
                 ],
                 selectionMode: .single
             ),
 
             Questions(
                 id: "q4",
-                title: "ما ميزانيتك التقريبية لسعر المتر في الحي؟",
+                title: String(localized: "q4_title"),
                 options: [
-                    RecommendationOption(id: "q4_low", title: "منخفض (مثال: 3,500 ر.س/م²)", icon: .price, showsNeighborhoodPicker: false),
-                    RecommendationOption(id: "q4_mid", title: "متوسط (مثال: 6,500 ر.س/م²)", icon: .price, showsNeighborhoodPicker: false),
-                    RecommendationOption(id: "q4_high", title: "مرتفع (مثال: 11,000 ر.س/م²)", icon: .price, showsNeighborhoodPicker: false)
+                    RecommendationOption(id: "q4_low", title: String(localized: "q4_option_low"), icon: .price, showsNeighborhoodPicker: false),
+                    RecommendationOption(id: "q4_mid", title: String(localized: "q4_option_mid"), icon: .price, showsNeighborhoodPicker: false),
+                    RecommendationOption(id: "q4_high", title: String(localized: "q4_option_high"), icon: .price, showsNeighborhoodPicker: false)
                 ],
                 selectionMode: .single
             )
         ]
     }
-    
-}
-#Preview {
-    NeighborhoodQuestionView(
-        vm: NeighborhoodRecommendationViewModel(),
-        isPresented: .constant(true)
-    )
-    .environment(\.layoutDirection, .rightToLeft)
 }

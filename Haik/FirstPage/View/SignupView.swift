@@ -27,7 +27,7 @@ struct SignupView: View {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "chevron.forward")
+                        Image(systemName: "chevron.backward")
                             .scaledFont(size: 18, weight: .bold, relativeTo: .headline)                            .foregroundColor(Color("GreenPrimary"))
                             .frame(width: 45, height: 45)
                             .background(Color("GreyBackground"))
@@ -38,27 +38,26 @@ struct SignupView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 10)
 
-                Text("مرحبًا بك في حيّك")
+                Text(String(localized: "welcome_title"))
                     .scaledFont(size: 28, weight: .bold, relativeTo: .title1)
                     .foregroundStyle(.primary)
-                VStack(alignment: .trailing, spacing: 20) {
+                VStack(alignment: .leading, spacing: 20) {
                     // حقل الاسم
-                    VStack(alignment: .trailing, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 8) {
                         
-                        Text("الاسم")
+                        Text(String(localized: "name_label"))
                             .foregroundColor(.secondary)
                             .scaledFont(size: 16, weight: .regular, relativeTo: .callout)
 
                         
-                        TextField("اكتب اسمك هنا", text: $viewModel.name)
+                        TextField(String(localized: "name_placeholder"), text: $viewModel.name)
                             .padding().background(Color("GreyBackground")).cornerRadius(25)
                             .foregroundStyle(.primary)
                     }
 
                     // حقل البريد
-                    VStack(alignment: .trailing, spacing: 8) {
-                        Text("كلمة المرور")
-                            .foregroundColor(.secondary)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(String(localized: "email_label"))                           .foregroundColor(.secondary)
                             .scaledFont(size: 16, weight: .regular, relativeTo: .callout)
                         TextField("user @gmail.com", text: $viewModel.email)
                             .padding().background(Color("GreyBackground")).cornerRadius(25)
@@ -67,8 +66,9 @@ struct SignupView: View {
                     }
                     
                     // حقل كلمة المرور
-                    VStack(alignment: .trailing, spacing: 8) {
-                        Text("كلمة المرور").foregroundColor(.secondary)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(String(localized: "password_label")) // استخدمي مفتاح كلمة المرور هنا
+                            .foregroundColor(.secondary)
                         HStack {
                             Button(action: { viewModel.isPasswordVisible.toggle() }) {
                                 Image(systemName: viewModel.isPasswordVisible ? "eye" : "eye.slash").foregroundColor(.secondary)
@@ -85,15 +85,15 @@ struct SignupView: View {
                     }
                     
                     // حقل تأكيد كلمة المرور
-                    VStack(alignment: .trailing, spacing: 8) {
-                        Text("تأكيد كلمة المرور")
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(String(localized: "confirm_password_label"))
                             .foregroundColor(.secondary)
                             .scaledFont(size: 16, weight: .regular, relativeTo: .callout)
                         HStack {
                             Button(action: { viewModel.isConfirmPasswordVisible.toggle() }) {
                                 Image(systemName: viewModel.isConfirmPasswordVisible ? "eye" : "eye.slash").foregroundColor(.secondary)
                             }
-                            Spacer()
+                             Spacer()
                             if viewModel.isConfirmPasswordVisible {
                                 TextField("", text: $viewModel.confirmPassword).multilineTextAlignment(.trailing)
                             } else {
@@ -105,7 +105,7 @@ struct SignupView: View {
                     }
                     
                     if !viewModel.confirmPassword.isEmpty && !viewModel.isPasswordMatching {
-                        Text("كلمات المرور غير متطابقة")
+                        Text(String(localized: "passwords_dont_match"))
                             .scaledFont(size: 13, weight: .regular, relativeTo: .caption1)                            .foregroundColor(.red)
                             .padding(.trailing, 10)
                     }
@@ -119,7 +119,7 @@ struct SignupView: View {
                 Spacer()
                 
                 Button(action: viewModel.signUp) {
-                    Text("انشاء حساب جديد")
+                    Text(String(localized: "signup_button"))
                         .scaledFont(size: 18, weight: .bold, relativeTo: .headline)
                         .foregroundColor(Color("PageBackground"))
                         .frame(maxWidth: .infinity)

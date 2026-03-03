@@ -5,15 +5,24 @@
 //  Created by layan Alturki on 09/02/2026.
 //
 import Foundation
+//
+//enum ReviewCategory: String, CaseIterable, Identifiable {
+//    case electricity = "الكهرباء"
+//    case water = "المياه"
+//    case internet = "الانترنت"
+//    case safety = "الأمان"
+//    case quiet = "الهدوء"
+//    case culture = "ثقافة الناس"
 
 enum ReviewCategory: String, CaseIterable, Identifiable {
-    case electricity = "الكهرباء"
-    case water = "المياه"
-    case internet = "الانترنت"
-    case safety = "الأمان"
-    case quiet = "الهدوء"
-    case culture = "ثقافة الناس"
+    case electricity = "electricity"
+    case water = "water"
+    case internet = "internet"
+    case safety = "safety"
+    case quiet = "quiet"
+    case culture = "culture"
 
+  
     var id: String { rawValue }
 }
 

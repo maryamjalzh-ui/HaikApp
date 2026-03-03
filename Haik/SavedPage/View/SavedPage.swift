@@ -42,9 +42,8 @@ struct FavouritePage: View {
                 
                 VStack(spacing: 0) {
                     HStack {
-                        Spacer()
                         Button { dismiss() } label: {
-                            Image(systemName: "chevron.forward")
+                            Image(systemName: "chevron.backward")
                                 .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                                 .foregroundColor(Color("Green2Primary"))
                                 .frame(width: 52, height: 52)
@@ -52,10 +51,10 @@ struct FavouritePage: View {
                                 .clipShape(Circle())
                                 .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
                         }
+                        Spacer()
                     }
                     .padding(.horizontal, 26)
                     .padding(.top, 10)
-                    .environment(\.layoutDirection, .leftToRight)
                     
                     ScrollView {
                         VStack(alignment: .center, spacing: 25) {
@@ -68,9 +67,11 @@ struct FavouritePage: View {
                                     
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(viewModel.userName)
-                                            .scaledFont(size: 20, weight: .bold, relativeTo: .headline)                                            .foregroundStyle(.primary)
-                                        Text("عرض وتعديل الملف الشخصي")
-                                            .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                                            .foregroundStyle(.secondary)
+                                            .scaledFont(size: 20, weight: .bold, relativeTo: .headline)
+                                            .foregroundStyle(.primary)
+                                        Text(String(localized: "view_edit_profile")) // "عرض وتعديل الملف الشخصي"
+                                            .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
+                                            .foregroundStyle(.secondary)
                                     }
                                     Spacer()
                                     Image(systemName: "chevron.left").foregroundStyle(.secondary)
@@ -82,17 +83,18 @@ struct FavouritePage: View {
                                 .shadow(color: Color.black.opacity(0.05), radius: 5)
                             }
 
-                            HeaderSection(title: "الأحياء المحفوظة:", icon: "heart")
+                            HeaderSection(title: String(localized: "saved_neighborhoods_title"), icon: "heart") // "الأحياء المحفوظة:"
                                 .frame(width: 360)
 
                             VStack(spacing: 16) {
                                 if viewModel.savedNeighborhoodNames.isEmpty {
-                                    Text("لم تقم بحفظ أي أحياء بعد")
-                                        .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                                        .foregroundStyle(.secondary)
+                                    Text(String(localized: "no_saved_neighborhoods")) // "لم تقم بحفظ أي أحياء بعد"
+                                        .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
+                                        .foregroundStyle(.secondary)
                                         .padding()
                                 } else {
                                     ForEach(viewModel.savedNeighborhoodNames, id: \.self) { name in
-                                        NeighborhoodCard(name: name, reviewCount: "عرض التفاصيل") {
+                                        NeighborhoodCard(name: name, reviewCount: String(localized: "view_details")) { // "عرض التفاصيل"
                                             selectedNeighborhoodName = name
                                             showServices = true
                                         }
@@ -100,14 +102,14 @@ struct FavouritePage: View {
                                 }
                             }
                             
-                            HeaderSection(title: "تعليقاتك:", icon: "text.bubble")
+                            HeaderSection(title: String(localized: "your_comments_title"), icon: "text.bubble") // "تعليقاتك:"
                                 .frame(width: 360)
                                 .padding(.top, 10)
 
                             if !viewModel.userComments.isEmpty {
                                 commentsPagerView
                             } else {
-                                Text("لا توجد تعليقات منشورة بعد")
+                                Text(String(localized: "no_comments_yet")) // "لا توجد تعليقات منشورة بعد"
                                     .scaledFont(size: 14, weight: .regular, relativeTo: .subheadline)
                                     .foregroundStyle(.secondary)
                                     .padding(.top, 20)
@@ -119,21 +121,19 @@ struct FavouritePage: View {
                     }
                 }
             }
-            .environment(\.layoutDirection, .rightToLeft)
             .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(isPresented: $showServices) {
                 NeighborhoodServicesView(neighborhoodName: selectedNeighborhoodName, coordinate: .init(latitude: 24.7136, longitude: 46.6753))
             }
             .sheet(isPresented: $isEditingProfile) {
-                // مررنا dismiss التابع لـ FavouritePage لكي يتم استدعاؤه عند تسجيل الخروج
                 EditProfileView(name: $viewModel.userName, email: viewModel.userEmail) {
                     self.dismiss()
                 }
             }
         }
     }
-    
+    // ... باقي الـ pagerView كما هو ...
     private var commentsPagerView: some View {
         HStack(spacing: 15) {
             Button {
@@ -164,14 +164,39 @@ struct FavouritePage: View {
     }
 }
 
-// MARK: - Modified EditProfileView
+// MARK: - Components المحدثة للترجمة
+
+struct NeighborhoodCard: View {
+    var name: String
+    var reviewCount: String
+    var onMoreInfo: () -> Void
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 15) {
+            HStack {
+                // استخدام الـ Key المتفق عليه لدعم "حي الياسمين" / "Al-Yasmin District"
+                Text("neighborhood_prefix \(name)")
+                    .scaledFont(size: 20, weight: .bold, relativeTo: .headline)
+                Spacer()
+                Text("(\(reviewCount))").scaledFont(size: 12, weight: .regular, relativeTo: .caption1).foregroundStyle(.secondary)
+                ForEach(0..<5) { _ in Image(systemName: "star.fill").foregroundColor(.yellow).scaledFont(size: 12, weight: .regular, relativeTo: .caption1) }
+            }
+            Divider()
+            Button(action: onMoreInfo) {
+                HStack {
+                    Text(String(localized: "view_neighborhood_button")) // "عرض الحي"
+                    Image(systemName: "arrow.left")
+                }
+                .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline).foregroundStyle(.primary)
+            }
+        }
+        .padding(25).frame(width: 360).background(Color("GreyBackground")).cornerRadius(30).shadow(radius: 5)
+    }
+}
 
 struct EditProfileView: View {
     @Binding var name: String
     var email: String
     @Environment(\.dismiss) var dismiss
-    
-    // إضافة هاندلر لإغلاق الصفحة الرئيسية
     var onSignOut: () -> Void
     
     @State private var showSignOutError = false
@@ -180,8 +205,8 @@ struct EditProfileView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text("المعلومات الشخصية")) {
-                    TextField("الاسم", text: $name)
+                Section(header: Text(String(localized: "personal_info_header"))) { // "المعلومات الشخصية"
+                    TextField(String(localized: "name_placeholder"), text: $name) // "الاسم"
                     Text(email).foregroundStyle(.secondary)
                 }
                 
@@ -191,7 +216,7 @@ struct EditProfileView: View {
                     } label: {
                         HStack {
                             Spacer()
-                            Text("تسجيل الخروج")
+                            Text(String(localized: "sign_out_button")) // "تسجيل الخروج"
                                 .fontWeight(.bold)
                             Image(systemName: "log.out.fill")
                             Spacer()
@@ -199,27 +224,26 @@ struct EditProfileView: View {
                     }
                 }
             }
-            .navigationTitle("تعديل الحساب")
+            .navigationTitle(String(localized: "edit_profile_title")) // "تعديل الحساب"
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("تم") { dismiss() }
+                    Button(String(localized: "done_button")) { dismiss() } // "تم"
                 }
             }
-            .alert("تنبيه", isPresented: $showSignOutError) {
-                Button("موافق", role: .cancel) { }
+            .alert(String(localized: "alert_error_title"), isPresented: $showSignOutError) { // "تنبيه"
+                Button(String(localized: "ok_button"), role: .cancel) { } // "موافق"
             } message: {
                 Text(errorMessage)
             }
         }
-        .environment(\.layoutDirection, .rightToLeft)
     }
     
     private func signOut() {
         do {
             try Auth.auth().signOut()
-            dismiss()      // يغلق الشيت
-            onSignOut()    // يغلق صفحة FavouritePage ويرجعك للهوم
+            dismiss()
+            onSignOut()
         } catch let error {
             errorMessage = error.localizedDescription
             showSignOutError = true
@@ -284,27 +308,6 @@ struct HeaderSection: View {
     }
 }
 
-struct NeighborhoodCard: View {
-    var name: String
-    var reviewCount: String
-    var onMoreInfo: () -> Void
-    var body: some View {
-        VStack(alignment: .trailing, spacing: 15) {
-            HStack {
-                Text("حي \(name)").scaledFont(size: 20, weight: .bold, relativeTo: .headline)
-                Spacer()
-                Text("(\(reviewCount))").scaledFont(size: 12, weight: .regular, relativeTo: .caption1).foregroundStyle(.secondary)
-                ForEach(0..<5) { _ in Image(systemName: "star.fill").foregroundColor(.yellow).scaledFont(size: 12, weight: .regular, relativeTo: .caption1) }
-            }
-            Divider()
-            Button(action: onMoreInfo) {
-                HStack { Text("عرض الحي"); Image(systemName: "arrow.left") }
-                    .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline).foregroundStyle(.primary)
-            }
-        }
-        .padding(25).frame(width: 360).background(Color("GreyBackground")).cornerRadius(30).shadow(radius: 5)
-    }
-}
 
 #Preview {
     FavouritePage()

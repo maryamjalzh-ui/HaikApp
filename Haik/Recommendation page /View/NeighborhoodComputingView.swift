@@ -61,12 +61,13 @@ struct NeighborhoodComputingView: View {
             }
             .padding(.bottom, 10)
 
-            Text("جاري حساب أفضل الأحياء لك…")
+            Text("computing_neighborhoods_title")
                 .scaledFont(size: 20, weight: .bold, relativeTo: .headline)                .multilineTextAlignment(.center)
                 .foregroundStyle(.primary)
 
             Text("\(Int(progress * 100))%")
-                .scaledFont(size: 18, weight: .medium, relativeTo: .body)                .foregroundStyle(.secondary)
+                .scaledFont(size: 18, weight: .medium, relativeTo: .body)
+                .foregroundStyle(.secondary)
 
             Spacer()
         }
