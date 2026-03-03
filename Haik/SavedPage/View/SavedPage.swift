@@ -204,6 +204,11 @@ struct EditProfileView: View {
     
     @State private var showSignOutError = false
     @State private var errorMessage = ""
+    
+    // ✅ NEW (only for new delete-account UI)
+    @State private var showDeleteAccountConfirm = false
+    @State private var showDeleteAccountError = false
+    @State private var deleteAccountErrorMessage = ""
 
     var body: some View {
         NavigationStack {
@@ -225,6 +230,19 @@ struct EditProfileView: View {
                             Spacer()
                         }
                     }
+                    
+                    // ✅ NEW: Delete Account button (localized keys are NEW)
+                    Button(role: .destructive) {
+                        showDeleteAccountConfirm = true
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Text(String(localized: "delete_account_button"))
+                                .fontWeight(.bold)
+                            Image(systemName: "person.fill.xmark")
+                            Spacer()
+                        }
+                    }
                 }
             }
             .navigationTitle(String(localized: "edit_profile_title")) // "تعديل الحساب"
@@ -239,6 +257,23 @@ struct EditProfileView: View {
             } message: {
                 Text(errorMessage)
             }
+            
+            // ✅ NEW: Confirm delete (localized)
+            .alert(String(localized: "delete_account_confirm_title"), isPresented: $showDeleteAccountConfirm) {
+                Button(String(localized: "delete_account_confirm_delete_button"), role: .destructive) {
+                    deleteAccount()
+                }
+                Button(String(localized: "delete_account_confirm_cancel_button"), role: .cancel) {}
+            } message: {
+                Text(String(localized: "delete_account_confirm_message"))
+            }
+            
+            // ✅ NEW: Delete error (localized title + ok)
+            .alert(String(localized: "delete_account_error_title"), isPresented: $showDeleteAccountError) {
+                Button(String(localized: "delete_account_error_ok_button"), role: .cancel) {}
+            } message: {
+                Text(deleteAccountErrorMessage)
+            }
         }
     }
     
@@ -251,6 +286,66 @@ struct EditProfileView: View {
             errorMessage = error.localizedDescription
             showSignOutError = true
         }
+    }
+    
+    // ✅ NEW: Delete user data + auth account (uses your existing Firestore structure)
+    private func deleteAccount() {
+        guard let user = Auth.auth().currentUser else {
+            deleteAccountErrorMessage = String(localized: "delete_account_no_user_error")
+            showDeleteAccountError = true
+            return
+        }
+        
+        let uid = user.uid
+        let db = Firestore.firestore()
+        
+        // 1) delete all neighborhood_reviews for this user (batch)
+        db.collection("neighborhood_reviews")
+            .whereField("userId", isEqualTo: uid)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    deleteAccountErrorMessage = error.localizedDescription
+                    showDeleteAccountError = true
+                    return
+                }
+                
+                let docs = snapshot?.documents ?? []
+                let batch = db.batch()
+                docs.forEach { batch.deleteDocument($0.reference) }
+                
+                batch.commit { err in
+                    if let err = err {
+                        deleteAccountErrorMessage = err.localizedDescription
+                        showDeleteAccountError = true
+                        return
+                    }
+                    
+                    // 2) delete users/{uid}
+                    db.collection("users").document(uid).delete { err2 in
+                        if let err2 = err2 {
+                            deleteAccountErrorMessage = err2.localizedDescription
+                            showDeleteAccountError = true
+                            return
+                        }
+                        
+                        // 3) delete auth user
+                        user.delete { err3 in
+                            if let err3 = err3 as NSError? {
+                                if err3.code == AuthErrorCode.requiresRecentLogin.rawValue {
+                                    deleteAccountErrorMessage = String(localized: "delete_account_requires_recent_login")
+                                } else {
+                                    deleteAccountErrorMessage = err3.localizedDescription
+                                }
+                                showDeleteAccountError = true
+                                return
+                            }
+                            
+                            dismiss()
+                            onSignOut()
+                        }
+                    }
+                }
+            }
     }
 }
 

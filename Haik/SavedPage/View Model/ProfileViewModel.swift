@@ -63,6 +63,7 @@ class ProfileViewModel: ObservableObject {
                 }
             }
     }
+
     func deleteComment(_ comment: UserComment) {
         guard let userId = Auth.auth().currentUser?.uid else { return }
 
@@ -79,6 +80,7 @@ class ProfileViewModel: ObservableObject {
                 }
             }
     }
+
     func updateComment(_ comment: UserComment, newText: String, newRating: Double) {
         let docRef = db.collection("neighborhood_reviews").document(comment.documentId)
 
@@ -93,6 +95,69 @@ class ProfileViewModel: ObservableObject {
             print("Comment updated successfully in Firebase!")
         }
     }
+
+    //  حذف حساب المستخدم + بياناته من Firestore
+    func deleteAccount(completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let user = Auth.auth().currentUser else {
+            completion(.failure(NSError(
+                domain: "Auth",
+                code: -1,
+                userInfo: [NSLocalizedDescriptionKey: "No signed-in user."]
+            )))
+            return
+        }
+
+        let uid = user.uid
+
+        // 1) حذف كل neighborhood_reviews للمستخدم (Batch)
+        db.collection("neighborhood_reviews")
+            .whereField("userId", isEqualTo: uid)
+            .getDocuments { [weak self] snapshot, error in
+                guard let self = self else { return }
+
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+
+                let docs = snapshot?.documents ?? []
+                let batch = self.db.batch()
+                docs.forEach { batch.deleteDocument($0.reference) }
+
+                batch.commit { err in
+                    if let err = err {
+                        completion(.failure(err))
+                        return
+                    }
+
+                    // 2) حذف مستند المستخدم users/{uid}
+                    self.db.collection("users").document(uid).delete { err2 in
+                        if let err2 = err2 {
+                            completion(.failure(err2))
+                            return
+                        }
+
+                        // 3) حذف حساب Firebase Auth
+                        user.delete { err3 in
+                            if let err3 = err3 {
+                                completion(.failure(err3))
+                                return
+                            }
+
+                            DispatchQueue.main.async {
+                                self.userName = ""
+                                self.userEmail = ""
+                                self.userComments = []
+                                self.savedNeighborhoodNames = []
+                            }
+
+                            completion(.success(()))
+                        }
+                    }
+                }
+            }
+    }
+
     struct UserComment: Identifiable {
       //  let id: UUID
         var id: String { documentId }
@@ -103,4 +168,3 @@ class ProfileViewModel: ObservableObject {
         
     }
 }
-
