@@ -30,16 +30,22 @@ struct NeighborhoodServicesView: View {
     
     // متغير للتحكم بظهور صفحة الترحيب (تسجيل الدخول)
     @State private var showLoginSheet = false
-
-    init(neighborhoodName: String, coordinate: CLLocationCoordinate2D) {
+    private let neighborhoodName: String
+        private let aliases: [String] // السطر الجديد
+        private let coordinate: CLLocationCoordinate2D
+    
+    init(neighborhoodName: String, aliases: [String] = [], coordinate: CLLocationCoordinate2D) {
+        self.neighborhoodName = neighborhoodName
+        self.aliases = aliases
+        self.coordinate = coordinate
+        
         _vm = StateObject(
             wrappedValue: NeighborhoodServicesViewModel(
-                neighborhoodName: neighborhoodName,
+                neighborhoodName: neighborhoodName, // تأكدي أن هذا هو الاسم الثابت (العربي غالباً) في Firebase
                 coordinate: coordinate
             )
         )
     }
-
     // MARK: - View
     var body: some View {
         NavigationStack {
@@ -75,7 +81,7 @@ private extension NeighborhoodServicesView {
     var header: some View {
         VStack(spacing: 4) {
             ZStack {
-                Text(vm.neighborhoodName)
+                Text(LocalizedStringKey(vm.neighborhoodName))
                     .scaledFont(size: 34, weight: .regular, relativeTo: .largeTitle)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
@@ -88,7 +94,6 @@ private extension NeighborhoodServicesView {
                             dismiss()
                         }
                     } label: {
-                        // chevron.backward يغير اتجاهه تلقائياً حسب اللغة
                         Image(systemName: "chevron.backward")
                             .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                             .foregroundColor(Color("Green2Primary"))
@@ -119,28 +124,30 @@ private extension NeighborhoodServicesView {
                 .padding(.horizontal, 20)
             }
 
+            // التعديل هنا: جعل النجوم في الهيدر تعتمد على متوسط التقييم الحقيقي
             HStack(spacing: 4) {
                 Text("(\(vm.reviewsCount))")
                     .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
                     .foregroundColor(.secondary)
 
-                ForEach(0..<5) { _ in
+                // التعديل: نستخدم vm.averageRating (تأكدي أن هذا المتغير موجود في الـ ViewModel)
+                // إذا لم يكن موجوداً، نستخدم التقييم المحسوب من متوسط التعليقات
+                ForEach(1...5, id: \.self) { i in
                     Image(systemName: "star.fill")
                         .font(.system(size: 10))
-                        .foregroundColor(.yellow)
+                        // هنا نلون النجوم بناءً على متوسط تقييم الحي
+                        .foregroundColor(i <= Int(vm.averageRating) ? .yellow : .gray.opacity(0.3))
                 }
             }
             .padding(.top, -5)
 
-            // 4. بطاقة السعر
-            AvgPriceBadgeView(neighborhoodName: vm.neighborhoodName, aliases: [])
-            .padding(.horizontal, 24)
-            .padding(.top, 10)
+            AvgPriceBadgeView(neighborhoodName: vm.neighborhoodName, aliases: aliases)
+                .padding(.horizontal, 24)
+                .padding(.top, 10)
         }
         .padding(.top, 10)
     }
 }
-
 // MARK: - Helper Sections
 private extension NeighborhoodServicesView {
     
@@ -305,6 +312,7 @@ private extension NeighborhoodServicesView {
             if Auth.auth().currentUser != nil {
                 isCommentFocused = true
             } else {
+                isCommentFocused = false // تأكدي أنها مغلقة
                 showLoginSheet = true
             }
         }

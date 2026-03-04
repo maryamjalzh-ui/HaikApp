@@ -29,13 +29,37 @@ class HomeViewModel: ObservableObject {
     
     // MARK: - المحرك الذكي للبحث (Efficient Search)
     var filteredNeighborhoods: [Neighborhood] {
-        let query = searchText.normalizedArabic()
+        let query = searchText.normalizedArabic().lowercased()
         
         if query.isEmpty { return [] }
         
         return neighborhoods.filter { neighborhood in
-            neighborhood.name.normalizedArabic().contains(query)
+            let nameArMatch = neighborhood.nameAr.normalizedArabic().contains(query)
+            
+            // 2. البحث في الاسم الإنجليزي
+            let nameEnMatch = neighborhood.nameEn.lowercased().contains(query)
+            
+            // 3. البحث في الاتجاهات (Keys)
+            let regionMatch = isMatch(query: query, region: neighborhood.region)
+            
+            return nameArMatch || nameEnMatch || regionMatch
         }
+    }
+    
+    private func isMatch(query: String, region: String) -> Bool {
+        let mapping: [String: [String]] = [
+            "شمال": ["شمال", "north", "shmal"],
+            "جنوب": ["جنوب", "south", "janoub"],
+            "شرق":  ["شرق", "east", "sharq"],
+            "غرب":  ["غرب", "west", "gharb"],
+            "وسط":  ["وسط", "center", "central", "wasa"]
+        ]
+        
+        if let keywords = mapping[region] {
+            return keywords.contains { $0.contains(query) }
+        }
+        
+        return false
     }
     
     func selectNeighborhood(_ neighborhood: Neighborhood) {
@@ -65,7 +89,11 @@ class HomeViewModel: ObservableObject {
             DispatchQueue.main.async {
                 self.neighborhoods = NeighborhoodData.all.map { neighborhood in
                     var updated = neighborhood
-                    if let ratings = ratingsMap[neighborhood.name], !ratings.isEmpty {
+                    
+                    // التعديل الجوهري هنا:
+                    // نقارن الاسم الموجود في Firebase بـ neighborhood.nameAr الثابت
+                    // وليس neighborhood.name المتغير حسب اللغة
+                    if let ratings = ratingsMap[neighborhood.nameAr], !ratings.isEmpty {
                         let avg = Double(ratings.reduce(0, +)) / Double(ratings.count)
                         updated.rating = String(format: "%.1f", avg)
                         updated.reviewCount = "\(ratings.count)"

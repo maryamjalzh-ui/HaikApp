@@ -32,6 +32,13 @@ final class NeighborhoodServicesViewModel: ObservableObject {
     @Published private(set) var placesByService: [ServiceCategory: [Place]] = [:]
     @Published private(set) var isLoadingByService: Set<ServiceCategory> = []
 
+    // 5. حساب متوسط التقييم بناءً على التعليقات الموجودة
+    var averageRating: Double {
+        guard !reviews.isEmpty else { return 0.0 }
+        let total = reviews.reduce(0) { $0 + $1.rating }
+        return Double(total) / Double(reviews.count)
+    }
+    
     // MARK: - Init
     init(
         neighborhoodName: String,
@@ -51,37 +58,34 @@ final class NeighborhoodServicesViewModel: ObservableObject {
     }
 
     // MARK: - Firebase Functions (جلب وحفظ)
-    
     func fetchReviews() {
         db.collection("neighborhood_reviews")
             .whereField("neighborhoodName", isEqualTo: self.neighborhoodName)
             .order(by: "createdAt", descending: true)
             .addSnapshotListener { querySnapshot, error in
-                guard let documents = querySnapshot?.documents else {
-                    print("Error fetching: \(error?.localizedDescription ?? "")")
-                    return
-                }
+                guard let documents = querySnapshot?.documents else { return }
                 
-                // تحويل البيانات من Firebase إلى موديل NeighborhoodReview
                 self.reviews = documents.compactMap { doc -> NeighborhoodReview? in
                     let data = doc.data()
                     let categoryRaw = data["category"] as? String ?? ""
-                    let rating = data["rating"] as? Int ?? 0
-                    let comment = data["comment"] as? String ?? ""
-                    let timestamp = data["createdAt"] as? Timestamp ?? Timestamp()
-                    let category = ReviewCategory(rawValue: categoryRaw) ?? .electricity
-                    let userName = data["userName"] as? String ?? "مستخدم"
+                    let category: ReviewCategory
+                    switch categoryRaw {
+                    case "الكهرباء", "electricity": category = .electricity
+                    case "المياه", "water":       category = .water
+                    case "الانترنت", "internet":    category = .internet
+                    case "الأمان", "safety":      category = .safety
+                    case "الهدوء", "quiet":       category = .quiet
+                    case "ثقافة الناس", "culture": category = .culture
+                    default:                      category = .electricity
+                    }
 
                     return NeighborhoodReview(
                         category: category,
-                        rating: rating,
-                        comment: comment,
-                        createdAt: timestamp.dateValue(),
-
+                        rating: data["rating"] as? Int ?? 0,
+                        comment: data["comment"] as? String ?? "",
+                        createdAt: (data["createdAt"] as? Timestamp)?.dateValue() ?? Date()
                     )
                 }
-                
-                // تحديث العداد الحقيقي بناءً على عدد المستندات في فايربيس
                 self.reviewsCount = self.reviews.count
             }
     }

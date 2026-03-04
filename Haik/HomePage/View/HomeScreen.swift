@@ -76,10 +76,13 @@ struct HomeScreen: View {
             }
             .navigationDestination(isPresented: $viewModel.showServices) {
                 if let n = viewModel.neighborhoodForServices {
-                    NeighborhoodServicesView(neighborhoodName: n.name, coordinate: n.coordinate)
+                    NeighborhoodServicesView(
+                        neighborhoodName: n.nameAr, // تأكدي أنها nameAr وليست name
+                        aliases: n.aliases,
+                        coordinate: n.coordinate
+                    )
                 }
-            }
-            .navigationDestination(isPresented: $showFavouritePage) {
+            }            .navigationDestination(isPresented: $showFavouritePage) {
                 FavouritePage()
             }
             .fullScreenCover(isPresented: $showWelcomeSheet) {
@@ -217,7 +220,7 @@ extension HomeScreen {
 
                                             Spacer()
 
-                                            Text(neighborhood.region)
+                                            Text(neighborhood.regionLocalized) // بدلاً من neighborhood.region
                                                 .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
                                                 .foregroundStyle(.secondary)
                                         }
@@ -297,14 +300,21 @@ extension HomeScreen {
 
 // MARK: - Helper Views
 private func ratingView(neighborhood: Neighborhood) -> some View {
-    HStack(spacing: 4) {
+    // نحول النص (String) لرقم (Double) ثم لعدد صحيح (Int) عشان نعرف كم نجمة نلون
+    let ratingValue = Int(Double(neighborhood.rating) ?? 0.0)
+    
+    return HStack(spacing: 4) {
+        // عرض عدد المراجعات بين قوسين
         Text("(\(neighborhood.reviewCount))")
             .font(.system(size: 12))
             .foregroundStyle(.secondary)
-
-        ForEach(0..<5) { _ in
+        
+        // تكرار النجوم من 1 إلى 5
+        ForEach(1...5, id: \.self) { i in
             Image(systemName: "star.fill")
-                .foregroundColor(.yellow)
+            // إذا كان رقم النجمة (i) أقل من أو يساوي التقييم، نلونها بالأصفر
+            // وإلا نلونها برمادي شفاف (نجمة طافية)
+                .foregroundColor(i <= ratingValue ? .yellow : .gray.opacity(0.3))
                 .font(.system(size: 10))
         }
     }

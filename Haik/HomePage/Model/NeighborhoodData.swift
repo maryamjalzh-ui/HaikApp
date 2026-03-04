@@ -27,6 +27,21 @@ struct Neighborhood: Identifiable {
         let currentLang = Locale.current.language.languageCode?.identifier ?? "ar"
         return currentLang == "en" ? nameEn : nameAr
     }
+    
+    var regionLocalized: String {
+        let currentLang = Locale.current.language.languageCode?.identifier ?? "ar"
+        if currentLang == "en" {
+            let mapping = [
+                "شمال": "North",
+                "جنوب": "South",
+                "شرق": "East",
+                "غرب": "West",
+                "وسط": "Center"
+            ]
+            return mapping[region] ?? region
+        }
+        return region
+    }
 }
 
 struct NeighborhoodData {
