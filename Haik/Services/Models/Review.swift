@@ -15,10 +15,10 @@ import Foundation
 //    case culture = "ثقافة الناس"
 
 enum ReviewCategory: String, CaseIterable, Identifiable {
+    case general = "general"
     case electricity = "electricity"
     case water = "water"
     case internet = "internet"
-    case safety = "safety"
     case quiet = "quiet"
     case culture = "culture"
 
@@ -27,17 +27,29 @@ enum ReviewCategory: String, CaseIterable, Identifiable {
 }
 
 struct NeighborhoodReview: Identifiable, Hashable {
-    let id: UUID
+    let id: String                 // Firestore documentId
     let category: ReviewCategory
     let rating: Int
     let comment: String
     let createdAt: Date
+    let userId: String?
+    let userName: String?
 
-    init(id: UUID = UUID(), category: ReviewCategory, rating: Int, comment: String, createdAt: Date = Date()) {
+    init(
+        id: String,
+        category: ReviewCategory,
+        rating: Int,
+        comment: String,
+        createdAt: Date,
+        userId: String? = nil,
+        userName: String? = nil
+    ) {
         self.id = id
         self.category = category
         self.rating = rating
         self.comment = comment
         self.createdAt = createdAt
+        self.userId = userId
+        self.userName = userName
     }
 }

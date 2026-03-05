@@ -39,6 +39,8 @@ final class NeighborhoodServicesViewModel: ObservableObject {
         return Double(total) / Double(reviews.count)
     }
     
+    private var reviewsListener: ListenerRegistration?
+
     // MARK: - Init
     init(
         neighborhoodName: String,
@@ -64,37 +66,55 @@ final class NeighborhoodServicesViewModel: ObservableObject {
             .order(by: "createdAt", descending: true)
             .addSnapshotListener { querySnapshot, error in
                 guard let documents = querySnapshot?.documents else { return }
-                
-                self.reviews = documents.compactMap { doc -> NeighborhoodReview? in
+
+                let mapped: [NeighborhoodReview] = documents.compactMap { doc in
                     let data = doc.data()
+
                     let categoryRaw = data["category"] as? String ?? ""
                     let category: ReviewCategory
                     switch categoryRaw {
                     case "الكهرباء", "electricity": category = .electricity
-                    case "المياه", "water":       category = .water
-                    case "الانترنت", "internet":    category = .internet
-                    case "الأمان", "safety":      category = .safety
-                    case "الهدوء", "quiet":       category = .quiet
+                    case "المياه", "water":        category = .water
+                    case "الانترنت", "internet":   category = .internet
+                    case "عام", "general":         category = .general
+                    case "الهدوء", "quiet":        category = .quiet
                     case "ثقافة الناس", "culture": category = .culture
-                    default:                      category = .electricity
+                    default:                       category = .electricity
                     }
 
                     return NeighborhoodReview(
+                        id: doc.documentID,
                         category: category,
                         rating: data["rating"] as? Int ?? 0,
                         comment: data["comment"] as? String ?? "",
                         createdAt: (data["createdAt"] as? Timestamp)?.dateValue() ?? Date()
                     )
                 }
-                self.reviewsCount = self.reviews.count
+
+                DispatchQueue.main.async {
+                    self.reviews = mapped
+                    self.reviewsCount = mapped.count
+                }
             }
-    }
-    // دالة إضافة تعليق جديد (تم تنظيفها لتكون متسقة)
+    } // دالة إضافة تعليق جديد (تم تنظيفها لتكون متسقة)
     func addReview() {
         let trimmed = newComment.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, (1...5).contains(newRating) else { return }
-        
+
         guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        let tempId = "local-\(UUID().uuidString)"
+        let local = NeighborhoodReview(
+            id: tempId,
+            category: selectedCategory,
+            rating: newRating,
+            comment: trimmed,
+            createdAt: Date()
+        )
+
+        reviews.insert(local, at: 0)
+        reviewsCount = reviews.count
+
         let userName = Auth.auth().currentUser?.displayName ?? "مستخدم"
         let reviewData: [String: Any] = [
             "userId": uid,
@@ -104,13 +124,31 @@ final class NeighborhoodServicesViewModel: ObservableObject {
             "rating": newRating,
             "comment": trimmed,
             "createdAt": Timestamp(date: Date())
-            
         ]
-        
-        db.collection("neighborhood_reviews").addDocument(data: reviewData) { error in
-            if error == nil {
-                // التصفيير يتم تلقائياً بعد النجاح
+
+        var ref: DocumentReference? = nil
+        ref = db.collection("neighborhood_reviews").addDocument(data: reviewData) { error in
+            if let error = error {
+                print("addReview error: \(error.localizedDescription)")
                 DispatchQueue.main.async {
+                    self.reviews.removeAll { $0.id == tempId }
+                    self.reviewsCount = self.reviews.count
+                }
+                return
+            }
+
+            if let docId = ref?.documentID {
+                DispatchQueue.main.async {
+                    if let idx = self.reviews.firstIndex(where: { $0.id == tempId }) {
+                        self.reviews[idx] = NeighborhoodReview(
+                            id: docId,
+                            category: local.category,
+                            rating: local.rating,
+                            comment: local.comment,
+                            createdAt: local.createdAt
+                        )
+                    }
+
                     self.newRating = 0
                     self.newComment = ""
                     self.selectedCategory = .electricity
@@ -186,6 +224,9 @@ final class NeighborhoodServicesViewModel: ObservableObject {
         } catch {
             placesByService[service] = []
         }
+    }
+    deinit {
+        reviewsListener?.remove()
     }
 }
 

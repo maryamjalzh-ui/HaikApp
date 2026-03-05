@@ -653,6 +653,23 @@
         }
       }
     },
+    "general" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عام"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "general"
+          }
+        }
+      }
+    },
     "groceries" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1976,23 +1993,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reviews"
-          }
-        }
-      }
-    },
-    "safety" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "الأمان"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Safety"
           }
         }
       }
