@@ -28,12 +28,12 @@ struct OptionCardButton: View {
                 Text(title)
                     .scaledFont(size: 16, weight: .semibold, relativeTo: .headline)
                     .foregroundStyle(.primary)
-                    .multilineTextAlignment(.trailing)
+                    .multilineTextAlignment(.leading)
 
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 18)
-            .frame(maxWidth: .infinity, alignment: .trailing)
+            .frame(maxWidth: .infinity)
         }
         .frame(height: DS.cardHeight)
         .contentShape(RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous))

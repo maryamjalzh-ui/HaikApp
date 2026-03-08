@@ -168,7 +168,6 @@ struct NeighborhoodQuestionView: View {
                                 )
                                 .frame(width: contentWidth)
                                 .frame(maxWidth: .infinity, alignment: .center)
-                                .environment(\.layoutDirection, (question.id == "q2" && (option.id == "q2_a" || option.id == "q2_b")) ? .leftToRight : .rightToLeft)
                                 .id(option.id)
                             }
                         }
@@ -186,9 +185,9 @@ struct NeighborhoodQuestionView: View {
             if question.id == "q2" {
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("q2_instruction_max_selection")
-                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     Text("q2_instruction_priority")
-                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
                 .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                .foregroundStyle(.secondary)
@@ -265,6 +264,7 @@ struct ExpandableNeighborhoodOptionCard: View {
 
     @State private var query: String = ""
     @State private var tempPicked: String? = nil
+    @Environment(\.layoutDirection) private var layoutDirection
 
     private var neighborhoodsSorted: [Neighborhood] {
         NeighborhoodData.all.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
@@ -302,36 +302,65 @@ struct ExpandableNeighborhoodOptionCard: View {
 
             Button(action: onTapHeader) {
                 HStack(spacing: 12) {
+                    if layoutDirection == .rightToLeft {
+                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(.secondary)
 
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                        Spacer(minLength: 0)
 
-                    Spacer(minLength: 0)
-
-                    VStack(alignment: .trailing, spacing: 6) {
-                        Text(option.title)
-                            .scaledFont(size: 16, weight: .semibold, relativeTo: .headline)
-                            .foregroundStyle(.primary)
-                            .multilineTextAlignment(.trailing)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-
-                        if let name = effectivePicked {
-                            Text(name)
-                                .scaledFont(size: 13, weight: .medium, relativeTo: .caption1)                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
+                        VStack(alignment: .trailing, spacing: 6) {
+                            Text(option.title)
+                                .scaledFont(size: 16, weight: .semibold, relativeTo: .headline)
+                                .foregroundStyle(.primary)
                                 .multilineTextAlignment(.trailing)
                                 .frame(maxWidth: .infinity, alignment: .trailing)
-                        }
-                    }
 
-                    Image(systemName: option.icon.systemName)
-                        .font(.system(size: DS.iconSize, weight: DS.iconWeight))
-                        .foregroundColor(DS.iconColor)
+                            if let name = effectivePicked {
+                                Text(name)
+                                    .scaledFont(size: 13, weight: .medium, relativeTo: .caption1)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                                    .multilineTextAlignment(.trailing)
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                            }
+                        }
+
+                        Image(systemName: option.icon.systemName)
+                            .font(.system(size: DS.iconSize, weight: DS.iconWeight))
+                            .foregroundColor(DS.iconColor)
+                    } else {
+                        Image(systemName: option.icon.systemName)
+                            .font(.system(size: DS.iconSize, weight: DS.iconWeight))
+                            .foregroundColor(DS.iconColor)
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(option.title)
+                                .scaledFont(size: 16, weight: .semibold, relativeTo: .headline)
+                                .foregroundStyle(.primary)
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                            if let name = effectivePicked {
+                                Text(name)
+                                    .scaledFont(size: 13, weight: .medium, relativeTo: .caption1)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                                    .multilineTextAlignment(.leading)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+
+                        Spacer(minLength: 0)
+
+                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 .padding(.horizontal, 18)
                 .frame(height: DS.cardHeight)
-                .frame(maxWidth: .infinity, alignment: .trailing)
+                .frame(maxWidth: .infinity)
             }
             .buttonStyle(.plain)
 
@@ -392,7 +421,7 @@ struct ExpandableNeighborhoodOptionCard: View {
         .frame(minHeight: isExpanded ? expandedCardMinHeight : DS.cardHeight, alignment: .top)
         .background(
             RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous)
-                .fill(isSelected ? Color("Green2Primary").opacity(0.14) : Color("GreyBackground"))
+                .fill(isSelected ? Color("Green2Primary").opacity(0.14) : Color("PageBackground"))
         )
         .cardShadow()
         .clipShape(RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous))
@@ -401,13 +430,14 @@ struct ExpandableNeighborhoodOptionCard: View {
 
 struct NeighborhoodSearchField: View {
     @Binding var text: String
-
+    @Environment(\.layoutDirection) private var layoutDirection
     var body: some View {
         HStack(spacing: 10) {
 
             TextField("search_neighborhood_placeholder", text: $text)
-                .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline)                .multilineTextAlignment(.trailing)
-                .frame(maxWidth: .infinity, alignment: .trailing)
+                .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline)
+                .multilineTextAlignment(layoutDirection == .rightToLeft ? .trailing : .leading)
+                .frame(maxWidth: .infinity, alignment: layoutDirection == .rightToLeft ? .trailing : .leading)
                 .foregroundStyle(.primary)
 
             Image(systemName: "magnifyingglass")
@@ -415,7 +445,7 @@ struct NeighborhoodSearchField: View {
         }
         .padding(.horizontal, 14)
         .frame(height: 44)
-        .frame(maxWidth: .infinity, alignment: .trailing)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color("GreyBackground"))
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
@@ -424,31 +454,42 @@ struct NeighborhoodSearchField: View {
 struct NeighborhoodRow: View {
     let title: String
     let isChosen: Bool
-
+    @Environment(\.layoutDirection) private var layoutDirection
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(isChosen ? Color("Green2Primary").opacity(0.12) : Color("GreyBackground"))
-
+            
             HStack(spacing: 10) {
-
-                Text(title)
-                    .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)                    .foregroundStyle(.primary)
-                    .multilineTextAlignment(.trailing)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-
-                Image("NHIcon")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 18, height: 18)
+                if layoutDirection == .rightToLeft {
+                    Text(title)
+                        .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)
+                        .foregroundStyle(.primary)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                    
+                    Image("NHIcon")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                } else {
+                    Image("NHIcon")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                    
+                    Text(title)
+                        .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)
+                        .foregroundStyle(.primary)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
             .padding(.horizontal, 14)
-            .frame(maxWidth: .infinity, alignment: .trailing)
+            .frame(maxWidth: .infinity)
         }
         .frame(height: 48)
     }
 }
-
 #Preview {
     NeighborhoodQuestionView(
         vm: NeighborhoodRecommendationViewModel(),

@@ -13,17 +13,14 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
     @Published var isShowingResults: Bool = false
     @Published var recommendations: [RecommendedNeighborhood] = []
     @Published var isLoadingResults: Bool = false
-    @Environment(\.dismiss) private var dismiss
 
     let totalSteps: Int = 5
 
     @Published var isComputingResults = false
     @Published var progress: Double = 0
-
     @Published var computeProgress: Double = 0.0
 
     private let metricsService = NeighborhoodMetricsService()
-
     private var countsCache: [UUID: [ServiceCategory: Int]] = [:]
 
     init() {
@@ -112,16 +109,16 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
 
         for opt in q2 {
             switch opt {
-            case "q2_c": // services
+            case "q2_c":
                 set.insert(.groceries)
                 set.insert(.supermarkets)
                 set.insert(.hospitals)
                 set.insert(.gasStations)
 
-            case "q2_d": // schools
+            case "q2_d":
                 set.insert(.schools)
 
-            case "q2_f": // entertainment
+            case "q2_f":
                 set.insert(.cafes)
                 set.insert(.restaurants)
                 set.insert(.cinema)
@@ -139,12 +136,13 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         return set
     }
 
-
     private func count(for neighborhood: Neighborhood, _ category: ServiceCategory) -> Int {
         countsCache[neighborhood.id]?[category] ?? 0
     }
 
-    private func clamp01(_ x: Double) -> Double { min(1, max(0, x)) }
+    private func clamp01(_ x: Double) -> Double {
+        min(1, max(0, x))
+    }
 
     private func cappedScore(_ value: Int, cap: Int) -> Double {
         guard cap > 0 else { return 0 }
@@ -206,7 +204,7 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
     private func priceScore(for neighborhood: Neighborhood) -> Double {
         let pref = selectedOptionIDs(for: "q4").first ?? ""
 
-        guard let price = RiyadhAvgPriceService.shared.avgPricePerMeter(for: neighborhood.name, aliases: []) else {
+        guard let price = RiyadhAvgPriceService.shared.avgPricePerMeter(for: neighborhood.name, aliases: neighborhood.aliases) else {
             return 0.5
         }
 
@@ -219,9 +217,13 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         let t2 = prices[max(0, min(i2, prices.count - 1))]
 
         let tier: Int
-        if price <= t1 { tier = 0 }
-        else if price <= t2 { tier = 1 }
-        else { tier = 2 }
+        if price <= t1 {
+            tier = 0
+        } else if price <= t2 {
+            tier = 1
+        } else {
+            tier = 2
+        }
 
         switch pref {
         case "q4_low":
@@ -255,7 +257,6 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
 
         func scoreForPriority(_ pid: String) -> Double {
             switch pid {
-
             case "q2_a":
                 guard let anchor = anchorCoordinateFromQ2() else { return 0 }
                 let d = distanceMeters(neighborhood.coordinate, anchor)
@@ -268,9 +269,9 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
 
             case "q2_c":
                 let v = count(for: neighborhood, .groceries)
-                      + count(for: neighborhood, .supermarkets)
-                      + count(for: neighborhood, .hospitals)
-                      + count(for: neighborhood, .gasStations)
+                    + count(for: neighborhood, .supermarkets)
+                    + count(for: neighborhood, .hospitals)
+                    + count(for: neighborhood, .gasStations)
                 return cappedScore(v, cap: 35)
 
             case "q2_d":
@@ -282,9 +283,9 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
 
             case "q2_f":
                 let v = count(for: neighborhood, .cafes)
-                      + count(for: neighborhood, .restaurants)
-                      + count(for: neighborhood, .cinema)
-                      + count(for: neighborhood, .parks)
+                    + count(for: neighborhood, .restaurants)
+                    + count(for: neighborhood, .cinema)
+                    + count(for: neighborhood, .parks)
                 return cappedScore(v, cap: 35)
 
             default:
@@ -300,10 +301,12 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
            let n = NeighborhoodData.all.first(where: { $0.name == picked }) {
             return n.coordinate
         }
+
         if let picked = pickedNeighborhoodByOptionID["q2_b"],
            let n = NeighborhoodData.all.first(where: { $0.name == picked }) {
             return n.coordinate
         }
+
         return nil
     }
 
@@ -311,6 +314,11 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         let la = CLLocation(latitude: a.latitude, longitude: a.longitude)
         let lb = CLLocation(latitude: b.latitude, longitude: b.longitude)
         return la.distance(from: lb)
+    }
+
+    private func distanceFromAnchorMeters(for neighborhood: Neighborhood) -> Double? {
+        guard let anchor = anchorCoordinateFromQ2() else { return nil }
+        return distanceMeters(neighborhood.coordinate, anchor)
     }
 
     private func neighborhoodsToEvaluate() -> [Neighborhood] {
@@ -333,7 +341,6 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         neighborhoods: [Neighborhood],
         categories: Set<ServiceCategory>
     ) async -> [UUID: [ServiceCategory: Int]] {
-
         var out: [UUID: [ServiceCategory: Int]] = [:]
         let totalWork = max(1, neighborhoods.count * max(1, categories.count))
         var done = 0
@@ -362,7 +369,72 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
         return out
     }
 
+    private func appLocaleCode() -> String {
+        let code = Locale.current.language.languageCode?.identifier ?? "ar"
+        return code == "en" ? "en" : "ar"
+    }
+
+    private func makeQuestionsDTO() -> [AIQuestionDTO] {
+        questions.map { question in
+            AIQuestionDTO(
+                id: question.id,
+                title: question.title,
+                options: question.options.map {
+                    AIOptionDTO(id: $0.id, title: $0.title)
+                }
+            )
+        }
+    }
+
+    private func makeCandidatesDTO(from neighborhoods: [Neighborhood]) -> [AICandidateDTO] {
+        neighborhoods.map { neighborhood in
+            let lifestyle = lifestyleScore(for: neighborhood)
+            let priority = priorityScore(for: neighborhood)
+            let transport = transportScore(for: neighborhood)
+            let price = priceScore(for: neighborhood)
+
+            let servicesCount =
+                count(for: neighborhood, .groceries) +
+                count(for: neighborhood, .supermarkets) +
+                count(for: neighborhood, .hospitals) +
+                count(for: neighborhood, .gasStations)
+
+            let entertainmentCount =
+                count(for: neighborhood, .cafes) +
+                count(for: neighborhood, .restaurants) +
+                count(for: neighborhood, .cinema) +
+                count(for: neighborhood, .parks)
+
+            let schoolsCount = count(for: neighborhood, .schools)
+            let metroCount = count(for: neighborhood, .metro)
+
+            let avgPrice = RiyadhAvgPriceService.shared.avgPricePerMeter(
+                for: neighborhood.name,
+                aliases: neighborhood.aliases
+            )
+
+            let baseCompatibility = ((0.15 * lifestyle) + (0.55 * priority) + (0.15 * transport) + (0.15 * price)) * 100.0
+
+            return AICandidateDTO(
+                name: neighborhood.name,
+                region: neighborhood.regionLocalized,
+                avgPricePerMeter: avgPrice,
+                metroCount: metroCount,
+                servicesCount: servicesCount,
+                entertainmentCount: entertainmentCount,
+                schoolsCount: schoolsCount,
+                distanceFromAnchorMeters: distanceFromAnchorMeters(for: neighborhood),
+                lifestyleMatchScore: lifestyle * 100.0,
+                priorityMatchScore: priority * 100.0,
+                transportMatchScore: transport * 100.0,
+                priceMatchScore: price * 100.0,
+                baseCompatibilityScore: baseCompatibility
+            )
+        }
+    }
+
     private func computeAndShowResults() async {
+        print("COMPUTE STARTED")
         isComputingResults = true
         computeProgress = 0
 
@@ -371,39 +443,114 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
 
         _ = await fetchCounts(neighborhoods: neighborhoods, categories: categories)
 
-        let wLifestyle = 0.15
-        let wPriority  = 0.55
-        let wTransport = 0.15
-        let wPrice     = 0.15
+        let localSupport: [String: (lifestyle: Double, priority: Double, transport: Double, price: Double)] =
+            Dictionary(uniqueKeysWithValues: neighborhoods.map { n in
+                (
+                    n.name,
+                    (
+                        lifestyleScore(for: n),
+                        priorityScore(for: n),
+                        transportScore(for: n),
+                        priceScore(for: n)
+                    )
+                )
+            })
 
-        let scored: [RecommendedNeighborhood] = neighborhoods.map { n in
-            let life = lifestyleScore(for: n)   // 0..1
-            let pri  = priorityScore(for: n)    // 0..1
-            let tr   = transportScore(for: n)   // 0..1
-            let prc  = priceScore(for: n)       // 0..1  ✅ always from q4
+        let candidates = makeCandidatesDTO(from: neighborhoods)
 
-            let total01 = (wLifestyle * life) + (wPriority * pri) + (wTransport * tr) + (wPrice * prc)
-            let total100 = total01 * 100.0
+        let request = AIRecommendRequest(
+            appLocale: appLocaleCode(),
+            userAnswers: answers,
+            pickedNeighborhoodByOptionID: pickedNeighborhoodByOptionID,
+            questions: makeQuestionsDTO(),
+            candidates: candidates,
+            maxResults: 3
+        )
 
-            return RecommendedNeighborhood(
-                name: n.name,
-                coordinate: n.coordinate,
-                compatibilityScore: total100,
-                lifestyleScore: life * 100.0,
-                priorityScore: pri * 100.0,
-                transportScore: tr * 100.0,
-                rating: 0
-            )
+        print("LOCAL CANDIDATES ORDER:", candidates.map { $0.name })
+
+        do {
+            let aiResponse = try await HaikAIService.shared.recommend(request: request)
+
+            print("AI SCORED NAMES:", aiResponse.scoredNeighborhoods.map { "\($0.name):\($0.score)" })
+
+            let aiTop3 = aiResponse.scoredNeighborhoods
+                .sorted { $0.score > $1.score }
+                .prefix(3)
+
+            recommendations = aiTop3.compactMap { item in
+                guard
+                    let neighborhood = neighborhoods.first(where: { $0.name == item.name }),
+                    let support = localSupport[item.name]
+                else {
+                    return nil
+                }
+
+                return RecommendedNeighborhood(
+                    name: neighborhood.name,
+                    coordinate: neighborhood.coordinate,
+                    compatibilityScore: item.score,
+                    lifestyleScore: support.lifestyle * 100.0,
+                    priorityScore: support.priority * 100.0,
+                    transportScore: support.transport * 100.0,
+                    rating: 0
+                )
+            }
+
+            if recommendations.isEmpty {
+                let fallback = candidates
+                    .sorted { $0.baseCompatibilityScore > $1.baseCompatibilityScore }
+                    .prefix(3)
+
+                recommendations = fallback.compactMap { item in
+                    guard
+                        let neighborhood = neighborhoods.first(where: { $0.name == item.name }),
+                        let support = localSupport[item.name]
+                    else {
+                        return nil
+                    }
+
+                    return RecommendedNeighborhood(
+                        name: neighborhood.name,
+                        coordinate: neighborhood.coordinate,
+                        compatibilityScore: item.baseCompatibilityScore,
+                        lifestyleScore: support.lifestyle * 100.0,
+                        priorityScore: support.priority * 100.0,
+                        transportScore: support.transport * 100.0,
+                        rating: 0
+                    )
+                }
+            }
+        } catch {
+            print("AI FAILED, USING FALLBACK")
+
+            let fallback = candidates
+                .sorted { $0.baseCompatibilityScore > $1.baseCompatibilityScore }
+                .prefix(3)
+
+            recommendations = fallback.compactMap { item in
+                guard
+                    let neighborhood = neighborhoods.first(where: { $0.name == item.name }),
+                    let support = localSupport[item.name]
+                else {
+                    return nil
+                }
+
+                return RecommendedNeighborhood(
+                    name: neighborhood.name,
+                    coordinate: neighborhood.coordinate,
+                    compatibilityScore: item.baseCompatibilityScore,
+                    lifestyleScore: support.lifestyle * 100.0,
+                    priorityScore: support.priority * 100.0,
+                    transportScore: support.transport * 100.0,
+                    rating: 0
+                )
+            }
         }
-        .sorted { $0.compatibilityScore > $1.compatibilityScore }
-
-        recommendations = Array(scored.prefix(3))
 
         isComputingResults = false
         isShowingResults = true
     }
-
-    // MARK: - Result info items
 
     func resultInfoItems(for neighborhood: Neighborhood) -> [ResultInfo] {
         let q2 = selectedOptionIDs(for: "q2")
@@ -423,7 +570,6 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
 
     private func infoItem(for priorityID: String, neighborhood: Neighborhood) -> ResultInfo {
         switch priorityID {
-
         case "q2_a":
             let label = nearLabel(anchorOptionID: "q2_a", neighborhood: neighborhood)
             return ResultInfo(icon: "briefcase", label: label)
@@ -434,9 +580,9 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
 
         case "q2_c":
             let v = count(for: neighborhood, .groceries)
-                  + count(for: neighborhood, .supermarkets)
-                  + count(for: neighborhood, .hospitals)
-                  + count(for: neighborhood, .gasStations)
+                + count(for: neighborhood, .supermarkets)
+                + count(for: neighborhood, .hospitals)
+                + count(for: neighborhood, .gasStations)
             return ResultInfo(icon: "cart", label: servicesLabel(v))
 
         case "q2_d":
@@ -451,9 +597,9 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
 
         case "q2_f":
             let v = count(for: neighborhood, .cafes)
-                  + count(for: neighborhood, .restaurants)
-                  + count(for: neighborhood, .cinema)
-                  + count(for: neighborhood, .parks)
+                + count(for: neighborhood, .restaurants)
+                + count(for: neighborhood, .cinema)
+                + count(for: neighborhood, .parks)
             return ResultInfo(icon: "popcorn", label: entertainmentLabel(v))
 
         default:
@@ -531,7 +677,6 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
                 ],
                 selectionMode: .single
             ),
-
             Questions(
                 id: "q2",
                 title: String(localized: "q2_title"),
@@ -545,7 +690,6 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
                 ],
                 selectionMode: .multi(max: 2)
             ),
-
             Questions(
                 id: "q3",
                 title: String(localized: "q3_title"),
@@ -556,7 +700,6 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
                 ],
                 selectionMode: .single
             ),
-
             Questions(
                 id: "q4",
                 title: String(localized: "q4_title"),

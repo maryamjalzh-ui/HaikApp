@@ -184,74 +184,108 @@ struct ResultCardView: View {
     let items: [ResultInfo]
     let isBest: Bool
     let rating: Double
-
+    @Environment(\.layoutDirection) private var layoutDirection
+    
     var body: some View {
         VStack(spacing: 0) {
-
-            VStack(alignment: .leading, spacing: 10) {
-
+            
+            VStack(alignment: layoutDirection == .rightToLeft ? .trailing : .leading, spacing: 10) {
+                
                 HStack {
-
-                    if isBest {
-                        Text(String(localized: "best_for_you_badge"))
-                            .scaledFont(size: 11, weight: .bold, relativeTo: .caption2)                            .foregroundColor(.white)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(Color(red: 0.6, green: 0.35, blue: 0.9))
-                            .cornerRadius(6)
+                    if layoutDirection == .rightToLeft {
+                        Spacer()
+                        
+                        if isBest {
+                            Text(String(localized: "best_for_you_badge"))
+                                .scaledFont(size: 11, weight: .bold, relativeTo: .caption2)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color(red: 0.6, green: 0.35, blue: 0.9))
+                                .cornerRadius(6)
+                        }
+                    } else {
+                        if isBest {
+                            Text(String(localized: "best_for_you_badge"))
+                                .scaledFont(size: 11, weight: .bold, relativeTo: .caption2)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color(red: 0.6, green: 0.35, blue: 0.9))
+                                .cornerRadius(6)
+                        }
+                        
+                        Spacer()
                     }
-                    Spacer()
-                    
                 }
-
+                
                 HStack(alignment: .center) {
-
-                    // ⭐ Rating on LEFT side (because RTL)
-                    HStack(spacing: 4) {
-                        Text(String(format: "%.1f", rating))
-                            .foregroundStyle(.secondary)
-                            .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
-
-                        ForEach(0..<5) { i in
-                            Image(systemName: i < Int(rating.rounded()) ? "star.fill" : "star")
-                                .font(.system(size: 16))
-                                .foregroundColor(.yellow)
+                    if layoutDirection == .rightToLeft {
+                        HStack(spacing: 4) {
+                            Text(String(format: "%.1f", rating))
+                                .foregroundStyle(.secondary)
+                                .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
+                            
+                            ForEach(0..<5) { i in
+                                Image(systemName: i < Int(rating.rounded()) ? "star.fill" : "star")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.yellow)
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        Text(neighborhood.name)
+                            .scaledFont(size: 26, weight: .bold, relativeTo: .title2)
+                            .foregroundStyle(.primary)
+                            .multilineTextAlignment(.trailing)
+                    } else {
+                        Text(neighborhood.name)
+                            .scaledFont(size: 26, weight: .bold, relativeTo: .title2)
+                            .foregroundStyle(.primary)
+                            .multilineTextAlignment(.leading)
+                        
+                        Spacer()
+                        
+                        HStack(spacing: 4) {
+                            ForEach(0..<5) { i in
+                                Image(systemName: i < Int(rating.rounded()) ? "star.fill" : "star")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.yellow)
+                            }
+                            
+                            Text(String(format: "%.1f", rating))
+                                .foregroundStyle(.secondary)
+                                .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
                         }
                     }
-
-                    Spacer()
-
-                    Text(neighborhood.name)
-                        .scaledFont(size: 26, weight: .bold, relativeTo: .title2)                        .foregroundStyle(.primary)
                 }
             }
             .padding([.horizontal, .top], 20)
-
-            // Green Box (Compatibility %)
+            
             VStack {
                 HStack(spacing: 8) {
-                    Text("\(Int(compatibility.rounded()))%")
-                        .scaledFont(size: 21, weight: .bold, relativeTo: .headline)
-
                     Text(String(localized: "compatibility_rate"))
                         .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
+
+                    Text("\(Int(compatibility.rounded()))%")
+                        .scaledFont(size: 21, weight: .bold, relativeTo: .headline)
                 }
                 .foregroundColor(.white)
                 .padding(.top, 16)
-
+                
                 Spacer()
             }
             .frame(width: 300, height: 100)
             .background(Color("Green2Primary"))
             .cornerRadius(22)
             .padding(.top, 15)
-
-            // Info Box
+            
             HStack(spacing: 0) {
                 ForEach(items.indices, id: \.self) { idx in
                     let it = items[idx]
                     ResultInfoItem(icon: it.icon, label: it.label)
-
+                    
                     if idx != items.count - 1 {
                         Divider().frame(height: 40).background(Color.gray.opacity(0.1))
                     }
@@ -262,26 +296,42 @@ struct ResultCardView: View {
             .cornerRadius(22)
             .cardShadow()
             .offset(y: -40)
-
+            
             NavigationLink {
                 NeighborhoodServicesView(
-                    neighborhoodName: neighborhood.name,
+                    neighborhoodName: neighborhood.nameAr,
+                    aliases: neighborhood.aliases,
                     coordinate: neighborhood.coordinate
                 )
             } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "chevron.forward")
-                        .scaledFont(size: 14, weight: .bold, relativeTo: .caption1)
-                    Text(String(localized: "view_neighborhood_button"))
-                        .scaledFont(size: 16, weight: .medium, relativeTo: .body)
+                HStack {
+                    if layoutDirection == .rightToLeft {
+                        HStack(spacing: 8) {
+                            Image(systemName: "chevron.backward")
+                                .scaledFont(size: 14, weight: .bold, relativeTo: .caption1)
+
+                            Text(String(localized: "view_neighborhood_button"))
+                                .scaledFont(size: 16, weight: .medium, relativeTo: .body)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                    } else {
+                        HStack(spacing: 8) {
+                            Text(String(localized: "view_neighborhood_button"))
+                                .scaledFont(size: 16, weight: .medium, relativeTo: .body)
+
+                            Image(systemName: "chevron.forward")
+                                .scaledFont(size: 14, weight: .bold, relativeTo: .caption1)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
                 .foregroundColor(Color("Green2Primary"))
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity)
                 .padding(.horizontal, 25)
             }
             .buttonStyle(.plain)
             .offset(y: -20)
-
+            
             Spacer()
         }
         .frame(width: 342, height: 327)

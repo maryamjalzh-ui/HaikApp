@@ -431,7 +431,7 @@ struct CommentCard: View {
                 .multilineTextAlignment(.trailing)
                 .textFieldStyle(.plain)
                 .background(Color.clear)
-                .frame(maxWidth: .infinity, alignment: .trailing)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .disabled(!isEditing)
                 .focused($isFocused)
 
