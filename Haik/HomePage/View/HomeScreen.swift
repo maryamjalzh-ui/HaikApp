@@ -59,7 +59,6 @@ struct HomeScreen: View {
             }
             .onAppear {
                 checkFirstTimeLogin()
-                viewModel.updateNeighborhoodRatings()
             }
             .safeAreaInset(edge: .top) {
                 VStack(spacing: 8) {

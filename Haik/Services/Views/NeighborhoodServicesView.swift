@@ -1,10 +1,9 @@
 import SwiftUI
 import CoreLocation
-import FirebaseAuth // إضافة المكتبة للتحقق من حالة المستخدم
+import FirebaseAuth
 
 struct NeighborhoodServicesView: View {
 
-    // MARK: - Colors
     private let greenPrimary = Color("GreenPrimary")
     private let primaryColor = Color("Green2Primary")
     private let pageBackground = Color("PageBackground")
@@ -12,7 +11,6 @@ struct NeighborhoodServicesView: View {
     private let hintGray = Color(.secondary)
     private let yellowHex = Color(hex: "E7CB62")
 
-    // MARK: - Layout
     private let grid = [
         GridItem(.flexible(), spacing: 18),
         GridItem(.flexible(), spacing: 18),
@@ -23,44 +21,38 @@ struct NeighborhoodServicesView: View {
     private let tileIconSize: CGFloat = 30
     private let tileTextSize: CGFloat = 14
 
-    // MARK: - State
     @Environment(\.dismiss) private var dismiss
     @StateObject private var vm: NeighborhoodServicesViewModel
     @FocusState private var isCommentFocused: Bool
-    
-    // متغير للتحكم بظهور صفحة الترحيب (تسجيل الدخول)
+
     @State private var showLoginSheet = false
     private let neighborhoodName: String
-        private let aliases: [String] // السطر الجديد
-        private let coordinate: CLLocationCoordinate2D
-    
+    private let aliases: [String]
+    private let coordinate: CLLocationCoordinate2D
+
     init(neighborhoodName: String, aliases: [String] = [], coordinate: CLLocationCoordinate2D) {
         self.neighborhoodName = neighborhoodName
         self.aliases = aliases
         self.coordinate = coordinate
-        
+
         _vm = StateObject(
             wrappedValue: NeighborhoodServicesViewModel(
-                neighborhoodName: neighborhoodName, // تأكدي أن هذا هو الاسم الثابت (العربي غالباً) في Firebase
+                neighborhoodName: neighborhoodName,
                 coordinate: coordinate
             )
         )
     }
-    // MARK: - View
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 18) {
-
                     header
-
                     sectionTitle("services_section_title")
                     servicesGrid
-
                     sectionTitle("reviews_section_title")
                     reviewComposerSection
-                    
-                    subsectionHint("comments_list_title").hidden()
+                    subsectionHint("comments_list_title")
                     commentsList
                 }
                 .padding(.bottom, 30)
@@ -75,9 +67,8 @@ struct NeighborhoodServicesView: View {
     }
 }
 
-// MARK: - Header
 private extension NeighborhoodServicesView {
-    
+
     var header: some View {
         VStack(spacing: 4) {
             ZStack {
@@ -124,18 +115,14 @@ private extension NeighborhoodServicesView {
                 .padding(.horizontal, 20)
             }
 
-            // التعديل هنا: جعل النجوم في الهيدر تعتمد على متوسط التقييم الحقيقي
             HStack(spacing: 4) {
                 Text("(\(vm.reviewsCount))")
                     .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
                     .foregroundColor(.secondary)
 
-                // التعديل: نستخدم vm.averageRating (تأكدي أن هذا المتغير موجود في الـ ViewModel)
-                // إذا لم يكن موجوداً، نستخدم التقييم المحسوب من متوسط التعليقات
                 ForEach(1...5, id: \.self) { i in
                     Image(systemName: "star.fill")
                         .font(.system(size: 10))
-                        // هنا نلون النجوم بناءً على متوسط تقييم الحي
                         .foregroundColor(i <= Int(vm.averageRating) ? .yellow : .gray.opacity(0.3))
                 }
             }
@@ -148,17 +135,17 @@ private extension NeighborhoodServicesView {
         .padding(.top, 10)
     }
 }
-// MARK: - Helper Sections
+
 private extension NeighborhoodServicesView {
-    
+
     var reviewComposerSection: some View {
         VStack(spacing: 12) {
-            subsectionHint("review_type_hint").hidden()
+            subsectionHint("comment_type")
             chipsRow
             reviewInputBox
         }
     }
-    
+
     func sectionTitle(_ text: String) -> some View {
         Text(LocalizedStringKey(text))
             .scaledFont(size: 22, weight: .regular, relativeTo: .title3)
@@ -166,17 +153,16 @@ private extension NeighborhoodServicesView {
             .padding(.horizontal, 24)
             .foregroundStyle(.primary)
     }
-    
+
     func subsectionHint(_ text: String) -> some View {
         Text(LocalizedStringKey(text))
             .scaledFont(size: 17, weight: .regular, relativeTo: .body)
-            .foregroundStyle(hintGray)
+            .foregroundColor(.gray)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 24)
     }
 }
 
-// MARK: - Services Grid
 private extension NeighborhoodServicesView {
 
     var servicesGrid: some View {
@@ -212,7 +198,6 @@ private extension NeighborhoodServicesView {
     }
 }
 
-// MARK: - Review Composer Logic
 private extension NeighborhoodServicesView {
 
     var chipsRow: some View {
@@ -252,8 +237,7 @@ private extension NeighborhoodServicesView {
                     if vm.newComment.isEmpty {
                         Text("comment_placeholder")
                             .scaledFont(size: 17, weight: .regular, relativeTo: .body)
-                            .foregroundStyle(hintGray)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .foregroundColor(.gray)                            .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.top, 5)
                     } else {
                         Spacer(minLength: 0)
@@ -312,14 +296,13 @@ private extension NeighborhoodServicesView {
             if Auth.auth().currentUser != nil {
                 isCommentFocused = true
             } else {
-                isCommentFocused = false // تأكدي أنها مغلقة
+                isCommentFocused = false
                 showLoginSheet = true
             }
         }
     }
 }
 
-// MARK: - Comments List
 private extension NeighborhoodServicesView {
 
     var commentsList: some View {
@@ -333,7 +316,7 @@ private extension NeighborhoodServicesView {
     }
 
     func commentCard(_ review: NeighborhoodReview) -> some View {
-        VStack(alignment: .leading, spacing: 10) { // leading هنا تعني "بداية السطر" حسب لغة الجهاز
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
                 HStack(spacing: 6) {
                     ForEach(1...5, id: \.self) { i in
@@ -342,9 +325,9 @@ private extension NeighborhoodServicesView {
                             .foregroundStyle(i <= review.rating ? Color.yellow : Color.gray.opacity(0.35))
                     }
                 }
-                
-                Spacer() // يدفع التصنيف للجهة المقابلة تلقائياً
-                
+
+                Spacer()
+
                 Text(LocalizedStringKey(review.category.rawValue))
                     .scaledFont(size: 14, weight: .regular, relativeTo: .body)
                     .foregroundStyle(.white)
@@ -353,15 +336,15 @@ private extension NeighborhoodServicesView {
                     .background(primaryColor)
                     .clipShape(Capsule())
             }
-            
+
             Text(review.comment)
                 .scaledFont(size: 16, weight: .regular, relativeTo: .body)
                 .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading) // يتغير حسب اللغة
-            
+                .frame(maxWidth: .infinity, alignment: .leading)
+
             Text(relativeDate(review.createdAt))
                 .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
-                .foregroundStyle(hintGray)
+            .foregroundColor(.gray)
         }
         .padding(16)
         .background(Color("GreyBackground"))
@@ -370,8 +353,6 @@ private extension NeighborhoodServicesView {
 
     func relativeDate(_ date: Date) -> String {
         let f = RelativeDateTimeFormatter()
-        // ✅ إصلاح: .current بدل Locale(identifier: "ar") الثابت
-        //    يتبع لغة الجهاز تلقائياً
         f.locale = .current
         f.unitsStyle = .full
         return f.localizedString(for: date, relativeTo: Date())
@@ -410,4 +391,3 @@ private extension ServiceCategory {
         }
     }
 }
-

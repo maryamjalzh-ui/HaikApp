@@ -1,13 +1,11 @@
 import SwiftUI
 
 struct NeighborhoodQuestionView: View {
-
     @ObservedObject var vm: NeighborhoodRecommendationViewModel
     @Binding var isPresented: Bool
     @Environment(\.dismiss) private var dismiss
 
     private let sidePadding: CGFloat = 26
-
     @State private var expandedOptionID: String? = nil
     @State private var q2SelectionOrder: [String] = []
 
@@ -18,14 +16,11 @@ struct NeighborhoodQuestionView: View {
     }
 
     var body: some View {
-
         let question = vm.currentQuestion
         let options = orderedOptions(for: question)
 
         return VStack(spacing: DS.cardSpacing) {
-
             HStack {
-
                 Button {
                     if vm.currentIndex > 0 {
                         vm.goBack()
@@ -42,13 +37,13 @@ struct NeighborhoodQuestionView: View {
                         .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
                 }
                 Spacer()
-
             }
             .padding(.leading)
 
             VStack(spacing: 10) {
                 Text(pageTitle(for: question))
-                    .scaledFont(size: 18, weight: .bold, relativeTo: .headline)                    .foregroundStyle(.primary)
+                    .scaledFont(size: 18, weight: .bold, relativeTo: .headline)
+                    .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
                     .frame(width: contentWidth, alignment: .center)
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -60,7 +55,8 @@ struct NeighborhoodQuestionView: View {
             }
 
             Text(question.title)
-                .scaledFont(size: 17, weight: .semibold, relativeTo: .headline)                .foregroundStyle(.primary)
+                .scaledFont(size: 17, weight: .semibold, relativeTo: .headline)
+                .foregroundStyle(.primary)
                 .padding(.top, 2)
                 .multilineTextAlignment(.center)
                 .frame(width: contentWidth, alignment: .center)
@@ -70,10 +66,8 @@ struct NeighborhoodQuestionView: View {
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
-
                         ForEach(options, id: \.id) { option in
                             if question.id == "q2", option.showsNeighborhoodPicker {
-
                                 ExpandableNeighborhoodOptionCard(
                                     option: option,
                                     isSelected: vm.isSelected(optionID: option.id, for: question.id),
@@ -81,11 +75,9 @@ struct NeighborhoodQuestionView: View {
                                     pickedNeighborhoodName: vm.pickedNeighborhoodName(for: option.id),
                                     onTapHeader: {
                                         let willExpand = expandedOptionID != option.id
-
                                         withAnimation(.easeInOut(duration: DS.expandCollapseAnimationDuration)) {
                                             expandedOptionID = willExpand ? option.id : nil
                                         }
-
                                         if willExpand {
                                             DispatchQueue.main.asyncAfter(deadline: .now() + DS.scrollToExpandedDelay) {
                                                 withAnimation(.easeInOut(duration: DS.scrollAnimationDuration)) {
@@ -99,19 +91,15 @@ struct NeighborhoodQuestionView: View {
                                             vm.toggle(option: option, for: question)
                                             q2TrackSelection(optionID: option.id, questionID: question.id)
                                         }
-
                                         vm.setPickedNeighborhood(chosenName, for: option.id)
-
                                         withAnimation(.easeInOut(duration: DS.expandCollapseAnimationDuration)) {
                                             expandedOptionID = nil
                                         }
-
                                         if question.id == "q2" {
                                             withAnimation(.easeInOut(duration: 0.18)) {
                                                 proxy.scrollTo(q2SelectionOrder.first ?? option.id, anchor: .top)
                                             }
                                         }
-
                                         if vm.canGoNext() {
                                             Task {
                                                 try? await Task.sleep(nanoseconds: DS.autoNextDelaySingle)
@@ -123,34 +111,26 @@ struct NeighborhoodQuestionView: View {
                                 .frame(width: contentWidth)
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .id(option.id)
-
                             } else {
-
                                 OptionCardButton(
                                     title: option.title,
                                     icon: option.icon,
                                     isSelected: vm.isSelected(optionID: option.id, for: question.id),
                                     onTap: {
                                         withAnimation(.easeInOut(duration: DS.selectionAnimationDuration)) {
-
                                             vm.toggle(option: option, for: question)
-
                                             if question.id == "q2" {
                                                 q2TrackSelection(optionID: option.id, questionID: question.id)
-
                                                 if expandedOptionID == option.id { expandedOptionID = nil }
-
                                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
                                                     withAnimation(.easeInOut(duration: 0.18)) {
                                                         proxy.scrollTo(q2SelectionOrder.first ?? option.id, anchor: .top)
                                                     }
                                                 }
-
                                             } else {
                                                 if expandedOptionID == option.id { expandedOptionID = nil }
                                             }
                                         }
-
                                         if question.id != "q2" {
                                             Task {
                                                 try? await Task.sleep(nanoseconds: DS.autoNextDelaySingle)
@@ -189,15 +169,14 @@ struct NeighborhoodQuestionView: View {
                     Text("q2_instruction_priority")
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-
-                .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)                .foregroundStyle(.secondary)
+                .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.trailing)
                 .frame(width: contentWidth, alignment: .trailing)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.leading, sidePadding + 2)
                 .padding(.top, 4)
             }
-
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
         .background(Color("GreyBackground"))
@@ -221,24 +200,19 @@ struct NeighborhoodQuestionView: View {
 
     private func orderedOptions(for question: Questions) -> [RecommendationOption] {
         guard question.id == "q2" else { return question.options }
-
         let selected = question.options.filter { vm.isSelected(optionID: $0.id, for: question.id) }
         let unselected = question.options.filter { !vm.isSelected(optionID: $0.id, for: question.id) }
-
         let selectedSorted = selected.sorted { a, b in
             let ia = q2SelectionOrder.firstIndex(of: a.id) ?? Int.max
             let ib = q2SelectionOrder.firstIndex(of: b.id) ?? Int.max
             return ia < ib
         }
-
         return selectedSorted + unselected
     }
 
     private func q2TrackSelection(optionID: String, questionID: String) {
         guard questionID == "q2" else { return }
-
         let isNowSelected = vm.isSelected(optionID: optionID, for: questionID)
-
         if isNowSelected {
             if !q2SelectionOrder.contains(optionID) {
                 q2SelectionOrder.append(optionID)
@@ -246,7 +220,6 @@ struct NeighborhoodQuestionView: View {
         } else {
             q2SelectionOrder.removeAll { $0 == optionID }
         }
-
         if q2SelectionOrder.count > 2 {
             q2SelectionOrder = Array(q2SelectionOrder.prefix(2))
         }
@@ -254,7 +227,6 @@ struct NeighborhoodQuestionView: View {
 }
 
 struct ExpandableNeighborhoodOptionCard: View {
-
     let option: RecommendationOption
     let isSelected: Bool
     let isExpanded: Bool
@@ -264,7 +236,7 @@ struct ExpandableNeighborhoodOptionCard: View {
 
     @State private var query: String = ""
     @State private var tempPicked: String? = nil
-    @Environment(\.layoutDirection) private var layoutDirection
+    @Environment(\.locale) private var locale
 
     private var neighborhoodsSorted: [Neighborhood] {
         NeighborhoodData.all.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
@@ -290,73 +262,29 @@ struct ExpandableNeighborhoodOptionCard: View {
         let spacing: CGFloat = 8
         let padding: CGFloat = 12
         let minFor4 = (rowH * 4) + (spacing * 3) + padding
-
         let h = UIScreen.main.bounds.height
         let desired = h * 0.36
-
         return max(minFor4, desired)
     }
 
     var body: some View {
         VStack(spacing: 0) {
-
             Button(action: onTapHeader) {
                 HStack(spacing: 12) {
-                    if layoutDirection == .rightToLeft {
-                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(.secondary)
+                    Image(systemName: option.icon.systemName)
+                        .font(.system(size: DS.iconSize, weight: DS.iconWeight))
+                        .foregroundColor(DS.iconColor)
 
-                        Spacer(minLength: 0)
+                    Text(option.title)
+                        .scaledFont(size: 16, weight: .semibold, relativeTo: .headline)
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
 
-                        VStack(alignment: .trailing, spacing: 6) {
-                            Text(option.title)
-                                .scaledFont(size: 16, weight: .semibold, relativeTo: .headline)
-                                .foregroundStyle(.primary)
-                                .multilineTextAlignment(.trailing)
-                                .frame(maxWidth: .infinity, alignment: .trailing)
+                    Spacer(minLength: 0)
 
-                            if let name = effectivePicked {
-                                Text(name)
-                                    .scaledFont(size: 13, weight: .medium, relativeTo: .caption1)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                                    .multilineTextAlignment(.trailing)
-                                    .frame(maxWidth: .infinity, alignment: .trailing)
-                            }
-                        }
-
-                        Image(systemName: option.icon.systemName)
-                            .font(.system(size: DS.iconSize, weight: DS.iconWeight))
-                            .foregroundColor(DS.iconColor)
-                    } else {
-                        Image(systemName: option.icon.systemName)
-                            .font(.system(size: DS.iconSize, weight: DS.iconWeight))
-                            .foregroundColor(DS.iconColor)
-
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(option.title)
-                                .scaledFont(size: 16, weight: .semibold, relativeTo: .headline)
-                                .foregroundStyle(.primary)
-                                .multilineTextAlignment(.leading)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-
-                            if let name = effectivePicked {
-                                Text(name)
-                                    .scaledFont(size: 13, weight: .medium, relativeTo: .caption1)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                                    .multilineTextAlignment(.leading)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                        }
-
-                        Spacer(minLength: 0)
-
-                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                    }
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.secondary)
                 }
                 .padding(.horizontal, 18)
                 .frame(height: DS.cardHeight)
@@ -370,9 +298,7 @@ struct ExpandableNeighborhoodOptionCard: View {
                     .padding(.horizontal, 18)
 
                 VStack(spacing: 12) {
-
                     NeighborhoodSearchField(text: $query)
-
                     ScrollView(showsIndicators: false) {
                         LazyVStack(spacing: 8) {
                             ForEach(filteredNeighborhoods, id: \.id) { n in
@@ -398,7 +324,8 @@ struct ExpandableNeighborhoodOptionCard: View {
                         }
                     } label: {
                         Text("confirm_selection_btn")
-                            .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)                            .foregroundColor(Color("Green2Primary"))
+                            .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)
+                            .foregroundColor(Color("Green2Primary"))
                             .frame(width: 220, height: 46)
                             .background(Color("Green2Primary").opacity(0.14))
                             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -421,52 +348,111 @@ struct ExpandableNeighborhoodOptionCard: View {
         .frame(minHeight: isExpanded ? expandedCardMinHeight : DS.cardHeight, alignment: .top)
         .background(
             RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous)
-                .fill(isSelected ? Color("Green2Primary").opacity(0.14) : Color("PageBackground"))
-        )
-        .cardShadow()
+                .fill(isSelected ? Color("Green2Primary").opacity(0.15) : Color.white)
+                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4))
         .clipShape(RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous))
+    }
+}
+
+struct OptionCardButton: View {
+    let title: String
+    let icon: HaikIcon
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous)
+                .fill(isSelected ? Color("Green2Primary").opacity(0.15) : Color.white)
+                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+
+            HStack(spacing: 12) {
+                Image(systemName: icon.systemName)
+                    .font(.system(size: DS.iconSize, weight: DS.iconWeight))
+                    .foregroundColor(DS.iconColor)
+
+                Text(title)
+                    .scaledFont(size: 16, weight: .semibold, relativeTo: .headline)
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.leading)
+
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 18)
+            .frame(maxWidth: .infinity)
+        }
+        .frame(height: DS.cardHeight)
+        .contentShape(RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous))
+        .onTapGesture {
+            onTap()
+        }
     }
 }
 
 struct NeighborhoodSearchField: View {
     @Binding var text: String
-    @Environment(\.layoutDirection) private var layoutDirection
+    @Environment(\.locale) private var locale
+
+    private var isArabic: Bool {
+        locale.language.languageCode?.identifier == "ar"
+    }
+
     var body: some View {
         HStack(spacing: 10) {
+            if isArabic {
+                TextField("search_neighborhood_placeholder", text: $text)
+                    .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .foregroundStyle(.primary)
 
-            TextField("search_neighborhood_placeholder", text: $text)
-                .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline)
-                .multilineTextAlignment(layoutDirection == .rightToLeft ? .trailing : .leading)
-                .frame(maxWidth: .infinity, alignment: layoutDirection == .rightToLeft ? .trailing : .leading)
-                .foregroundStyle(.primary)
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(.secondary)
+            } else {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(.secondary)
 
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.secondary)
+                TextField("search_neighborhood_placeholder", text: $text)
+                    .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundStyle(.primary)
+            }
         }
         .padding(.horizontal, 14)
         .frame(height: 44)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity)
         .background(Color("GreyBackground"))
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .environment(\.layoutDirection, .leftToRight)
     }
 }
 
 struct NeighborhoodRow: View {
     let title: String
     let isChosen: Bool
-    @Environment(\.layoutDirection) private var layoutDirection
+    @Environment(\.locale) private var locale
+
+    private var isArabic: Bool {
+        locale.language.languageCode?.identifier == "ar"
+    }
+
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(isChosen ? Color("Green2Primary").opacity(0.12) : Color("GreyBackground"))
-            
+                .fill(isChosen ? Color("Green2Primary").opacity(0.15) : Color.white)
+                .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+
             HStack(spacing: 10) {
-                if layoutDirection == .rightToLeft {
+                if isArabic {
+                    Spacer(minLength: 0)
+
                     Text(title)
                         .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)
                         .foregroundStyle(.primary)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                    
+                        .multilineTextAlignment(.trailing)
+                        .lineLimit(1)
+
                     Image("NHIcon")
                         .resizable()
                         .scaledToFit()
@@ -476,16 +462,19 @@ struct NeighborhoodRow: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 18, height: 18)
-                    
+
                     Text(title)
                         .scaledFont(size: 15, weight: .semibold, relativeTo: .callout)
                         .foregroundStyle(.primary)
                         .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .lineLimit(1)
+
+                    Spacer(minLength: 0)
                 }
             }
             .padding(.horizontal, 14)
             .frame(maxWidth: .infinity)
+            .environment(\.layoutDirection, .leftToRight)
         }
         .frame(height: 48)
     }
@@ -496,4 +485,3 @@ struct NeighborhoodRow: View {
         isPresented: .constant(true)
     )
 }
-

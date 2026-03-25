@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import CoreLocation
+import FirebaseFirestore
 
 @MainActor
 final class NeighborhoodRecommendationViewModel: ObservableObject {
@@ -23,8 +24,17 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
     private let metricsService = NeighborhoodMetricsService()
     private var countsCache: [UUID: [ServiceCategory: Int]] = [:]
 
+    private let db = Firestore.firestore()
+    private var reviewsListener: ListenerRegistration?
+    private var ratingsByNeighborhood: [String: Double] = [:]
+
     init() {
         questions = Self.buildQuestions()
+        fetchNeighborhoodRatings()
+    }
+
+    deinit {
+        reviewsListener?.remove()
     }
 
     var currentQuestion: Questions {
@@ -99,6 +109,75 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
     func goBack() {
         guard currentIndex > 0 else { return }
         currentIndex -= 1
+    }
+
+    private func fetchNeighborhoodRatings() {
+        reviewsListener?.remove()
+
+        reviewsListener = db.collection("neighborhood_reviews")
+            .addSnapshotListener { [weak self] querySnapshot, error in
+                guard let self = self else { return }
+                guard let documents = querySnapshot?.documents else { return }
+
+                var ratingsMap: [String: [Int]] = [:]
+
+                for doc in documents {
+                    let data = doc.data()
+                    guard let rawName = data["neighborhoodName"] as? String,
+                          let rating = data["rating"] as? Int else { continue }
+
+                    let normalizedName = self.normalizeNeighborhoodName(rawName)
+                    ratingsMap[normalizedName, default: []].append(rating)
+                }
+
+                var avgMap: [String: Double] = [:]
+                for neighborhood in NeighborhoodData.all {
+                    let keys = Set(([neighborhood.nameAr, neighborhood.nameEn, "حي \(neighborhood.nameAr)"] + neighborhood.aliases).map {
+                        self.normalizeNeighborhoodName($0)
+                    })
+
+                    let allRatings = keys.flatMap { ratingsMap[$0] ?? [] }
+                    if !allRatings.isEmpty {
+                        let avg = Double(allRatings.reduce(0, +)) / Double(allRatings.count)
+                        avgMap[self.normalizeNeighborhoodName(neighborhood.nameAr)] = avg
+                        avgMap[self.normalizeNeighborhoodName(neighborhood.nameEn)] = avg
+                    }
+                }
+
+                DispatchQueue.main.async {
+                    self.ratingsByNeighborhood = avgMap
+                }
+            }
+    }
+
+    private func normalizeNeighborhoodName(_ input: String) -> String {
+        var s = input.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        s = s.replacingOccurrences(of: "أ", with: "ا")
+        s = s.replacingOccurrences(of: "إ", with: "ا")
+        s = s.replacingOccurrences(of: "آ", with: "ا")
+        s = s.replacingOccurrences(of: "ى", with: "ي")
+        s = s.replacingOccurrences(of: "ة", with: "ه")
+        s = s.replacingOccurrences(of: "حي ", with: "")
+        s = s.replacingOccurrences(of: "حي", with: "")
+        s = s.components(separatedBy: .whitespacesAndNewlines)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        return s
+    }
+
+    private func liveRating(for neighborhood: Neighborhood) -> Double {
+        let keys = [
+            normalizeNeighborhoodName(neighborhood.nameAr),
+            normalizeNeighborhoodName(neighborhood.nameEn)
+        ]
+
+        for key in keys {
+            if let value = ratingsByNeighborhood[key] {
+                return value
+            }
+        }
+
+        return Double(neighborhood.rating) ?? 0.0
     }
 
     private func neededCategories() -> Set<ServiceCategory> {
@@ -434,7 +513,6 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
     }
 
     private func computeAndShowResults() async {
-        print("COMPUTE STARTED")
         isComputingResults = true
         computeProgress = 0
 
@@ -467,12 +545,8 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
             maxResults: 3
         )
 
-        print("LOCAL CANDIDATES ORDER:", candidates.map { $0.name })
-
         do {
             let aiResponse = try await HaikAIService.shared.recommend(request: request)
-
-            print("AI SCORED NAMES:", aiResponse.scoredNeighborhoods.map { "\($0.name):\($0.score)" })
 
             let aiTop3 = aiResponse.scoredNeighborhoods
                 .sorted { $0.score > $1.score }
@@ -493,7 +567,7 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
                     lifestyleScore: support.lifestyle * 100.0,
                     priorityScore: support.priority * 100.0,
                     transportScore: support.transport * 100.0,
-                    rating: 0
+                    rating: liveRating(for: neighborhood)
                 )
             }
 
@@ -517,13 +591,11 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
                         lifestyleScore: support.lifestyle * 100.0,
                         priorityScore: support.priority * 100.0,
                         transportScore: support.transport * 100.0,
-                        rating: 0
+                        rating: liveRating(for: neighborhood)
                     )
                 }
             }
         } catch {
-            print("AI FAILED, USING FALLBACK")
-
             let fallback = candidates
                 .sorted { $0.baseCompatibilityScore > $1.baseCompatibilityScore }
                 .prefix(3)
@@ -543,7 +615,7 @@ final class NeighborhoodRecommendationViewModel: ObservableObject {
                     lifestyleScore: support.lifestyle * 100.0,
                     priorityScore: support.priority * 100.0,
                     transportScore: support.transport * 100.0,
-                    rating: 0
+                    rating: liveRating(for: neighborhood)
                 )
             }
         }

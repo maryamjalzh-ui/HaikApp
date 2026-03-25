@@ -1,4 +1,3 @@
-
 //
 //  NeighborhoodResultView.swift
 //  Haik
@@ -31,15 +30,12 @@ struct NeighborhoodResultView: View {
         VStack(spacing: 0) {
 
             HStack {
-                //Spacer()
-
                 Button {
                     withAnimation(.easeInOut(duration: 0.18)) {
                         vm.isShowingResults = false
                     }
                 } label: {
                     Image(systemName: "chevron.backward")
-//                        .environment(\.layoutDirection, .leftToRight) // ✅ فقط للأيقونة
                         .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
                         .foregroundColor(Color("Green2Primary"))
                         .frame(width: 52, height: 52)
@@ -58,7 +54,8 @@ struct NeighborhoodResultView: View {
                 .padding(.top, 25)
 
             Text(String(localized: "suitable_neighborhoods_title"))
-                .scaledFont(size: 28, weight: .bold, relativeTo: .title1)                .foregroundStyle(.primary)
+                .scaledFont(size: 28, weight: .bold, relativeTo: .title1)
+                .foregroundStyle(.primary)
                 .padding(.top, 30)
                 .padding(.bottom, 20)
 
@@ -91,7 +88,8 @@ struct NeighborhoodResultView: View {
 
             Button(action: { goHome = true }) {
                 Text(String(localized: "done_button"))
-                    .scaledFont(size: 22, weight: .bold, relativeTo: .title3)                    .foregroundColor(Color("PageBackground"))
+                    .scaledFont(size: 22, weight: .bold, relativeTo: .title3)
+                    .foregroundColor(Color("PageBackground"))
                     .frame(width: 330, height: 65)
                     .background(Color("Green2Primary"))
                     .opacity(0.80)
@@ -192,53 +190,39 @@ struct ResultCardView: View {
             VStack(alignment: layoutDirection == .rightToLeft ? .trailing : .leading, spacing: 10) {
                 
                 HStack {
-                    if layoutDirection == .rightToLeft {
-                        Spacer()
-                        
-                        if isBest {
-                            Text(String(localized: "best_for_you_badge"))
-                                .scaledFont(size: 11, weight: .bold, relativeTo: .caption2)
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(Color(red: 0.6, green: 0.35, blue: 0.9))
-                                .cornerRadius(6)
-                        }
-                    } else {
-                        if isBest {
-                            Text(String(localized: "best_for_you_badge"))
-                                .scaledFont(size: 11, weight: .bold, relativeTo: .caption2)
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(Color(red: 0.6, green: 0.35, blue: 0.9))
-                                .cornerRadius(6)
-                        }
-                        
-                        Spacer()
+                    Spacer()
+                    
+                    if isBest {
+                        Text(String(localized: "best_for_you_badge"))
+                            .scaledFont(size: 11, weight: .bold, relativeTo: .caption2)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Color(red: 0.6, green: 0.35, blue: 0.9))
+                            .cornerRadius(6)
                     }
                 }
                 
                 HStack(alignment: .center) {
                     if layoutDirection == .rightToLeft {
+                        Text(neighborhood.name)
+                            .scaledFont(size: 26, weight: .bold, relativeTo: .title2)
+                            .foregroundStyle(.primary)
+                            .multilineTextAlignment(.trailing)
+                        
+                        Spacer()
+                        
                         HStack(spacing: 4) {
-                            Text(String(format: "%.1f", rating))
-                                .foregroundStyle(.secondary)
-                                .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
-                            
                             ForEach(0..<5) { i in
                                 Image(systemName: i < Int(rating.rounded()) ? "star.fill" : "star")
                                     .font(.system(size: 16))
                                     .foregroundColor(.yellow)
                             }
+                            
+                            Text(String(format: "%.1f", rating))
+                                .foregroundStyle(.secondary)
+                                .scaledFont(size: 14, weight: .regular, relativeTo: .caption1)
                         }
-                        
-                        Spacer()
-                        
-                        Text(neighborhood.name)
-                            .scaledFont(size: 26, weight: .bold, relativeTo: .title2)
-                            .foregroundStyle(.primary)
-                            .multilineTextAlignment(.trailing)
                     } else {
                         Text(neighborhood.name)
                             .scaledFont(size: 26, weight: .bold, relativeTo: .title2)
@@ -305,25 +289,16 @@ struct ResultCardView: View {
                 )
             } label: {
                 HStack {
-                    if layoutDirection == .rightToLeft {
-                        HStack(spacing: 8) {
-                            Image(systemName: "chevron.backward")
-                                .scaledFont(size: 14, weight: .bold, relativeTo: .caption1)
+                    Spacer()
+                    
+                    HStack(spacing: 8) {
+                        Text(String(localized: "view_neighborhood_button"))
+                            .scaledFont(size: 16, weight: .medium, relativeTo: .body)
 
-                            Text(String(localized: "view_neighborhood_button"))
-                                .scaledFont(size: 16, weight: .medium, relativeTo: .body)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                    } else {
-                        HStack(spacing: 8) {
-                            Text(String(localized: "view_neighborhood_button"))
-                                .scaledFont(size: 16, weight: .medium, relativeTo: .body)
-
-                            Image(systemName: "chevron.forward")
-                                .scaledFont(size: 14, weight: .bold, relativeTo: .caption1)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        Image(systemName: "chevron.forward")
+                            .scaledFont(size: 14, weight: .bold, relativeTo: .caption1)
                     }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 .foregroundColor(Color("Green2Primary"))
                 .frame(maxWidth: .infinity)
@@ -371,6 +346,4 @@ struct ResultInfoItem: View {
         rating: 4.6
     )
     .padding()
-    
 }
-
