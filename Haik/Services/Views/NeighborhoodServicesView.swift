@@ -27,11 +27,14 @@ struct NeighborhoodServicesView: View {
 
     @State private var showLoginSheet = false
     private let neighborhoodName: String
+    private let displayName: String
     private let aliases: [String]
     private let coordinate: CLLocationCoordinate2D
 
-    init(neighborhoodName: String, aliases: [String] = [], coordinate: CLLocationCoordinate2D) {
+    // MARK: - Init
+    init(neighborhoodName: String, displayName: String, aliases: [String] = [], coordinate: CLLocationCoordinate2D) {
         self.neighborhoodName = neighborhoodName
+        self.displayName = displayName
         self.aliases = aliases
         self.coordinate = coordinate
 
@@ -72,7 +75,7 @@ private extension NeighborhoodServicesView {
     var header: some View {
         VStack(spacing: 4) {
             ZStack {
-                Text(LocalizedStringKey(vm.neighborhoodName))
+                Text(displayName) // هنا يظهر الاسم باللغة الصحيحة (Hittin/حطين)
                     .scaledFont(size: 34, weight: .regular, relativeTo: .largeTitle)
                     .foregroundStyle(.primary)
                     .lineLimit(1)

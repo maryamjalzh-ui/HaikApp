@@ -136,7 +136,14 @@ struct FavouritePage: View {
             .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(isPresented: $showServices) {
-                NeighborhoodServicesView(neighborhoodName: selectedNeighborhoodName, coordinate: .init(latitude: 24.7136, longitude: 46.6753))
+                // 1. نبحث عن الحي بالاسم المختار
+                if let neighborhood = NeighborhoodData.all.first(where: { $0.nameAr == selectedNeighborhoodName }) {
+                    NeighborhoodServicesView(
+                        neighborhoodName: neighborhood.nameAr, // الهوية الثابتة للـ Database
+                        displayName: neighborhood.name,        // لغة العرض للـ UI (تتغير حسب الجهاز)
+                        coordinate: neighborhood.coordinate
+                    )
+                }
             }
             .sheet(isPresented: $isEditingProfile) {
                 EditProfileView(name: $viewModel.userName, email: viewModel.userEmail) {

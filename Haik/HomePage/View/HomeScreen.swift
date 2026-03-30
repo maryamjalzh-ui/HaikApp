@@ -76,12 +76,14 @@ struct HomeScreen: View {
             .navigationDestination(isPresented: $viewModel.showServices) {
                 if let n = viewModel.neighborhoodForServices {
                     NeighborhoodServicesView(
-                        neighborhoodName: n.nameAr, // تأكدي أنها nameAr وليست name
+                        neighborhoodName: n.nameAr, // الهوية الثابتة للـ Database
+                        displayName: n.name,        // لغة العرض للـ UI
                         aliases: n.aliases,
                         coordinate: n.coordinate
                     )
                 }
-            }            .navigationDestination(isPresented: $showFavouritePage) {
+            }
+            .navigationDestination(isPresented: $showFavouritePage) {
                 FavouritePage()
             }
             .fullScreenCover(isPresented: $showWelcomeSheet) {

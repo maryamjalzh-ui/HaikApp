@@ -283,7 +283,8 @@ struct ResultCardView: View {
             
             NavigationLink {
                 NeighborhoodServicesView(
-                    neighborhoodName: neighborhood.nameAr,
+                    neighborhoodName: neighborhood.nameAr, // الاسم العربي الثابت لجلب التقييمات
+                    displayName: neighborhood.name,        // ✅ السطر المضاف: لغة العرض (عربي/إنجليزي)
                     aliases: neighborhood.aliases,
                     coordinate: neighborhood.coordinate
                 )
@@ -294,7 +295,7 @@ struct ResultCardView: View {
                     HStack(spacing: 8) {
                         Text(String(localized: "view_neighborhood_button"))
                             .scaledFont(size: 16, weight: .medium, relativeTo: .body)
-
+                        
                         Image(systemName: "chevron.forward")
                             .scaledFont(size: 14, weight: .bold, relativeTo: .caption1)
                     }
