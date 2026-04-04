@@ -19,12 +19,11 @@ struct FavouritePage: View {
     @State private var commentToDelete: ProfileViewModel.UserComment?
     @Environment(\.dismiss) private var dismiss
     
-    @State private var selectedCommentIndex: Int = 0
-    @State private var isManagingComment: Bool = false
-    @State private var draftCommentText: String = ""
-    @State private var draftRating: Double = 0.0
-    
-    // ✅ التعديل المطلوب فقط (ألوان لايت/دارك)
+    // دالة لجلب بيانات الحي كاملة (الاسم المترجم وعدد التقييمات)
+    func getNeighborhood(for nameAr: String) -> Neighborhood? {
+        return NeighborhoodData.all.first(where: { $0.nameAr == nameAr })
+    }
+
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
@@ -45,83 +44,94 @@ struct FavouritePage: View {
                 .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
+                    // Header القسم العلوي
                     HStack {
                         Button { dismiss() } label: {
                             Image(systemName: "chevron.backward")
-                                .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
+                                .scaledFont(size: 16, weight: .regular, relativeTo: .headline)
                                 .foregroundColor(Color("Green2Primary"))
-                                .frame(width: 52, height: 52)
+                                .frame(width: 48, height: 48)
                                 .background(Color("GreyBackground"))
                                 .clipShape(Circle())
-                                .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 8)
+                                .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
                         }
+                        
                         Spacer()
+                        
+                        Text(String(localized: "profile_page_title"))
+                            .scaledFont(size: 19, weight: .bold, relativeTo: .title3)
+                            .foregroundStyle(.primary)
+                        
+                        Spacer()
+                        
+                        Color.clear.frame(width: 48, height: 48)
                     }
                     .padding(.horizontal, 26)
                     .padding(.top, 10)
                     
                     VStack(alignment: .center, spacing: 25) {
+                        // بوكس تعديل البروفايل (360)
                         Button(action: { isEditingProfile = true }) {
                             HStack(spacing: 15) {
                                 Image(systemName: "person.circle.fill")
                                     .resizable()
-                                    .frame(width: 50, height: 50)
+                                    .frame(width: 44, height: 44)
                                     .foregroundColor(Color("GreenPrimary"))
                                 
-                                VStack(alignment: .leading, spacing: 4) {
+                                VStack(alignment: .leading, spacing: 2) {
                                     Text(viewModel.userName)
-                                        .scaledFont(size: 20, weight: .bold, relativeTo: .headline)
-                                        // ✅ لايت: أسود / دارك: أبيض
+                                        .scaledFont(size: 18, weight: .bold, relativeTo: .headline)
                                         .foregroundColor(colorScheme == .light ? .black : .white)
                                     
-                                    Text(String(localized: "view_edit_profile")) // "عرض وتعديل الملف الشخصي"
-                                        .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
-                                        // ✅ لايت: رصاصي واضح / دارك: ثانوي
+                                    Text(String(localized: "view_edit_profile"))
+                                        .scaledFont(size: 11, weight: .regular, relativeTo: .caption1)
                                         .foregroundColor(colorScheme == .light ? .gray : .secondary)
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.left")
-                                    // ✅ نفس المنطق (عشان ما يطلع أبيض باللايت)
+                                    .font(.system(size: 12, weight: .medium))
                                     .foregroundColor(colorScheme == .light ? .gray : .secondary)
                             }
-                            .padding(20)
+                            .padding(25)
                             .frame(width: 360)
                             .background(Color("GreyBackground"))
-                            .cornerRadius(15)
-                            .shadow(color: Color.black.opacity(0.05), radius: 5)
+                            .cornerRadius(18)
+                            .shadow(color: Color.black.opacity(0.03), radius: 4)
                         }
 
-                        HeaderSection(title: String(localized: "saved_neighborhoods_title"), icon: "heart") // "الأحياء المحفوظة:"
+                        HeaderSection(title: String(localized: "saved_neighborhoods_title"), icon: "heart")
                             .frame(width: 360)
 
                         VStack(spacing: 16) {
                             if viewModel.savedNeighborhoodNames.isEmpty {
-                                Text(String(localized: "no_saved_neighborhoods")) // "لم تقم بحفظ أي أحياء بعد"
+                                Text(String(localized: "no_saved_neighborhoods"))
                                     .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
                                     .foregroundStyle(.secondary)
                                     .padding()
                             } else {
-                                ForEach(viewModel.savedNeighborhoodNames, id: \.self) { name in
-                                    NeighborhoodCard(
-                                        name: name,
-                                        reviewCount: String(localized: "view_details") // "عرض التفاصيل"
-                                    ) {
-                                        selectedNeighborhoodName = name
-                                        showServices = true
+                                ForEach(viewModel.savedNeighborhoodNames, id: \.self) { nameAr in
+                                    if let n = getNeighborhood(for: nameAr) {
+                                        NeighborhoodCard(
+                                            name: n.name, // يترجم الاسم تلقائياً
+                                            reviewCount: n.reviewCount // يجلب العدد الحقيقي
+                                        ) {
+                                            selectedNeighborhoodName = nameAr
+                                            showServices = true
+                                        }
                                     }
                                 }
                             }
                         }
                         
-                        HeaderSection(title: String(localized: "your_comments_title"), icon: "text.bubble") // "تعليقاتك:"
+                        HeaderSection(title: String(localized: "your_comments_title"), icon: "text.bubble")
                             .frame(width: 360)
                             .padding(.top, 10)
 
                         if !viewModel.userComments.isEmpty {
                             commentsPagerView
                         } else {
-                            Text(String(localized: "no_comments_yet")) // "لا توجد تعليقات منشورة بعد"
-                                .scaledFont(size: 14, weight: .regular, relativeTo: .subheadline)
+                            Text(String(localized: "no_comments_posted_yet"))
+                                .scaledFont(size: 13, weight: .regular, relativeTo: .subheadline)
                                 .foregroundStyle(.secondary)
                                 .padding(.top, 20)
                         }
@@ -130,34 +140,29 @@ struct FavouritePage: View {
                     .padding(.bottom, 30)
                     .frame(maxWidth: .infinity)
                 }
-                // ✅ هذا هو الإصلاح الوحيد: منع ZStack من توسيط الصفحة، ورفع كل المحتوى للأعلى
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
             .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(isPresented: $showServices) {
-                // 1. نبحث عن الحي بالاسم المختار
-                if let neighborhood = NeighborhoodData.all.first(where: { $0.nameAr == selectedNeighborhoodName }) {
+                if let neighborhood = getNeighborhood(for: selectedNeighborhoodName) {
                     NeighborhoodServicesView(
-                        neighborhoodName: neighborhood.nameAr, // الهوية الثابتة للـ Database
-                        displayName: neighborhood.name,        // لغة العرض للـ UI (تتغير حسب الجهاز)
+                        neighborhoodName: neighborhood.nameAr,
+                        displayName: neighborhood.name,
                         coordinate: neighborhood.coordinate
                     )
                 }
             }
             .sheet(isPresented: $isEditingProfile) {
-                EditProfileView(name: $viewModel.userName, email: viewModel.userEmail) {
-                    self.dismiss()
-                }
+                EditProfileView(viewModel: viewModel, name: $viewModel.userName, email: viewModel.userEmail)
             }
         }
     }
-    // ... باقي الـ pagerView كما هو ...
+
     private var commentsPagerView: some View {
         List {
             ForEach($viewModel.userComments) { $comment in
-                CommentCard(viewModel: viewModel, comment: $comment, userName: viewModel.userName)
-
+                CommentCard(comment: $comment, userName: viewModel.userName)
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .swipeActions(edge: .trailing) {
@@ -165,7 +170,7 @@ struct FavouritePage: View {
                             commentToDelete = comment
                             showDeleteAlert = true
                         } label: {
-                            Label("حذف", systemImage: "trash")
+                            Label(String(localized: "delete_button"), systemImage: "trash")
                         }
                     }
             }
@@ -173,308 +178,116 @@ struct FavouritePage: View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(Color.clear)
-        .alert("تأكيد الحذف", isPresented: $showDeleteAlert) {
-            Button("حذف", role: .destructive) {
+        .alert(String(localized: "delete_confirm_title"), isPresented: $showDeleteAlert) {
+            Button(String(localized: "delete_button"), role: .destructive) {
                 if let comment = commentToDelete {
                     viewModel.deleteComment(comment)
                 }
             }
-            Button("إلغاء", role: .cancel) {}
+            Button(String(localized: "cancel_button"), role: .cancel) {}
         } message: {
-            Text("delete_comment")
+            Text(String(localized: "delete_confirm_message"))
         }
     }
 }
 
-// MARK: - Components المحدثة للترجمة
+// MARK: - Components
 
 struct NeighborhoodCard: View {
     var name: String
     var reviewCount: String
     var onMoreInfo: () -> Void
-    
-    // ✅ التعديل المطلوب فقط (ألوان لايت/دارك)
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
-        VStack(alignment: .trailing, spacing: 15) {
+        VStack(alignment: .trailing, spacing: 10) {
             HStack {
-                // استخدام الـ Key المتفق عليه لدعم "حي الياسمين" / "Al-Yasmin District"
-                Text("neighborhood_prefix \(name)")
-                    .scaledFont(size: 20, weight: .bold, relativeTo: .headline)
-                    // ✅ لايت: أسود / دارك: أبيض
+                Text(name) // يظهر الاسم مترجماً
+                    .scaledFont(size: 17, weight: .semibold, relativeTo: .headline)
                     .foregroundColor(colorScheme == .light ? .black : .white)
-                
                 Spacer()
-                
-                Text("(\(reviewCount))")
-                    .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
+                Text("(\(reviewCount))") // الرقم الحقيقي
+                    .scaledFont(size: 11, weight: .regular, relativeTo: .caption1)
                     .foregroundStyle(.secondary)
-                
                 ForEach(0..<5) { _ in
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.yellow)
-                        .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
+                    Image(systemName: "star.fill").foregroundColor(.yellow).font(.system(size: 9))
                 }
             }
-            Divider()
+            Divider().opacity(0.6)
             Button(action: onMoreInfo) {
-                HStack {
-                    Text(String(localized: "view_neighborhood_button")) // "عرض الحي"
-                    Image(systemName: "arrow.left")
+                HStack(spacing: 4) {
+                    Text(String(localized: "view_neighborhood_button"))
+                    Image(systemName: "arrow.left").font(.system(size: 11))
                 }
-                .scaledFont(size: 14, weight: .medium, relativeTo: .subheadline)
-                // ✅ لايت: أسود / دارك: أبيض (عشان ما يطلع أبيض في اللايت)
+                .scaledFont(size: 13, weight: .medium, relativeTo: .subheadline)
                 .foregroundColor(colorScheme == .light ? .black : .white)
             }
         }
-        .padding(25)
-        .frame(width: 360)
-        .background(Color("GreyBackground"))
-        .cornerRadius(30)
-        .shadow(radius: 5)
+        .padding(25).frame(width: 360).background(Color("GreyBackground")).cornerRadius(18).shadow(color: .black.opacity(0.03), radius: 4)
     }
 }
 
 struct EditProfileView: View {
+    @ObservedObject var viewModel: ProfileViewModel
     @Binding var name: String
     var email: String
     @Environment(\.dismiss) var dismiss
-    var onSignOut: () -> Void
     
-    @State private var showSignOutError = false
-    @State private var errorMessage = ""
-    
-    // ✅ NEW (only for new delete-account UI)
     @State private var showDeleteAccountConfirm = false
-    @State private var showDeleteAccountError = false
-    @State private var deleteAccountErrorMessage = ""
-
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text(String(localized: "personal_info_header"))) { // "المعلومات الشخصية"
-                    TextField(String(localized: "name_placeholder"), text: $name) // "الاسم"
+                Section(header: Text(String(localized: "personal_info_header"))) {
+                    TextField(String(localized: "name_placeholder"), text: $name)
                     Text(email).foregroundStyle(.secondary)
                 }
-                
                 Section {
-                    Button(role: .destructive) {
-                        signOut()
-                    } label: {
-                        HStack {
-                            Spacer()
-                            Text(String(localized: "sign_out_button")) // "تسجيل الخروج"
-                                .fontWeight(.bold)
-                            Image(systemName: "log.out.fill")
-                            Spacer()
-                        }
+                    Button(role: .destructive) { try? Auth.auth().signOut(); dismiss() } label: {
+                        HStack { Spacer(); Text(String(localized: "sign_out_button")).fontWeight(.semibold); Image(systemName: "log.out.fill"); Spacer() }
                     }
-                    
-                    // ✅ NEW: Delete Account button (localized keys are NEW)
-                    Button(role: .destructive) {
-                        showDeleteAccountConfirm = true
-                    } label: {
-                        HStack {
-                            Spacer()
-                            Text(String(localized: "delete_account_button"))
-                                .fontWeight(.bold)
-                            Image(systemName: "person.fill.xmark")
-                            Spacer()
-                        }
+                    Button(role: .destructive) { showDeleteAccountConfirm = true } label: {
+                        HStack { Spacer(); Text(String(localized: "delete_account_button")).fontWeight(.semibold); Image(systemName: "person.fill.xmark"); Spacer() }
                     }
                 }
             }
-            .navigationTitle(String(localized: "edit_profile_title")) // "تعديل الحساب"
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(String(localized: "done_button")) { dismiss() } // "تم"
-                }
-            }
-            .alert(String(localized: "alert_error_title"), isPresented: $showSignOutError) { // "تنبيه"
-                Button(String(localized: "ok_button"), role: .cancel) { } // "موافق"
-            } message: {
-                Text(errorMessage)
-            }
-            
-            // ✅ NEW: Confirm delete (localized)
-            .alert(String(localized: "delete_account_confirm_title"), isPresented: $showDeleteAccountConfirm) {
-                Button(String(localized: "delete_account_confirm_delete_button"), role: .destructive) {
-                    deleteAccount()
-                }
-                Button(String(localized: "delete_account_confirm_cancel_button"), role: .cancel) {}
-            } message: {
-                Text(String(localized: "delete_account_confirm_message"))
-            }
-            
-            // ✅ NEW: Delete error (localized title + ok)
-            .alert(String(localized: "delete_account_error_title"), isPresented: $showDeleteAccountError) {
-                Button(String(localized: "delete_account_error_ok_button"), role: .cancel) {}
-            } message: {
-                Text(deleteAccountErrorMessage)
-            }
+            .navigationTitle(String(localized: "edit_profile_title")).navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .navigationBarTrailing) { Button(String(localized: "done_button")) { viewModel.updateUserName(newName: name); dismiss() }.fontWeight(.bold) } }
         }
-    }
-    
-    private func signOut() {
-        do {
-            try Auth.auth().signOut()
-            dismiss()
-            onSignOut()
-        } catch let error {
-            errorMessage = error.localizedDescription
-            showSignOutError = true
-        }
-    }
-    
-    // ✅ NEW: Delete user data + auth account (uses your existing Firestore structure)
-    private func deleteAccount() {
-        guard let user = Auth.auth().currentUser else {
-            deleteAccountErrorMessage = String(localized: "delete_account_no_user_error")
-            showDeleteAccountError = true
-            return
-        }
-        
-        let uid = user.uid
-        let db = Firestore.firestore()
-        
-        // 1) delete all neighborhood_reviews for this user (batch)
-        db.collection("neighborhood_reviews")
-            .whereField("userId", isEqualTo: uid)
-            .getDocuments { snapshot, error in
-                if let error = error {
-                    deleteAccountErrorMessage = error.localizedDescription
-                    showDeleteAccountError = true
-                    return
-                }
-                
-                let docs = snapshot?.documents ?? []
-                let batch = db.batch()
-                docs.forEach { batch.deleteDocument($0.reference) }
-                
-                batch.commit { err in
-                    if let err = err {
-                        deleteAccountErrorMessage = err.localizedDescription
-                        showDeleteAccountError = true
-                        return
-                    }
-                    
-                    // 2) delete users/{uid}
-                    db.collection("users").document(uid).delete { err2 in
-                        if let err2 = err2 {
-                            deleteAccountErrorMessage = err2.localizedDescription
-                            showDeleteAccountError = true
-                            return
-                        }
-                        
-                        // 3) delete auth user
-                        user.delete { err3 in
-                            if let err3 = err3 as NSError? {
-                                if err3.code == AuthErrorCode.requiresRecentLogin.rawValue {
-                                    deleteAccountErrorMessage = String(localized: "delete_account_requires_recent_login")
-                                } else {
-                                    deleteAccountErrorMessage = err3.localizedDescription
-                                }
-                                showDeleteAccountError = true
-                                return
-                            }
-                            
-                            dismiss()
-                            onSignOut()
-                        }
-                    }
-                }
-            }
     }
 }
 
-// MARK: - Supporting Components (باقي الكود كما هو)
-
 struct CommentCard: View {
-    @ObservedObject var viewModel: ProfileViewModel
     @Binding var comment: ProfileViewModel.UserComment
     var userName: String
-
-    @State private var isEditing = false
-    @FocusState private var isFocused: Bool
+    
+    func getLocalizedName(for nameAr: String) -> String {
+        if let neighborhood = NeighborhoodData.all.first(where: { $0.nameAr == nameAr }) {
+            return neighborhood.name
+        }
+        return nameAr
+    }
 
     var body: some View {
-        VStack(alignment: .trailing, spacing: 10) {
+        VStack(alignment: .trailing, spacing: 8) {
             HStack {
-                Image(systemName: "person.circle.fill")
-                    .resizable()
-                    .frame(width: 30, height: 30)
-                    .foregroundColor(Color("GreenPrimary"))
-
-                VStack(alignment: .leading) {
-                    Text(userName)
-                        .scaledFont(size: 12, weight: .regular, relativeTo: .caption1)
-                        .foregroundColor(.gray.opacity(0.6))
-
-                    Text(comment.neighborhoodName)
-                        .scaledFont(size: 16, weight: .regular, relativeTo: .callout)
+                Image(systemName: "person.circle.fill").resizable().frame(width: 28, height: 28).foregroundColor(Color("GreenPrimary"))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(userName).scaledFont(size: 11, weight: .regular, relativeTo: .caption1).foregroundColor(.gray.opacity(0.7))
+                    Text(getLocalizedName(for: comment.neighborhoodName)) // مترجم
+                        .scaledFont(size: 14, weight: .medium, relativeTo: .callout)
                         .foregroundStyle(.primary)
                 }
-
                 Spacer()
-
-                HStack(spacing: 6) {
+                HStack(spacing: 4) {
                     ForEach(1...5, id: \.self) { i in
-                        Image(systemName: "star.fill")
-                            .scaledFont(size: 18, weight: .regular, relativeTo: .headline)
-                            .foregroundStyle(i <= (isEditing ? Int(comment.rating) : Int(comment.rating)) ? Color.yellow : Color.gray.opacity(0.35))
-                            .onTapGesture {
-                                if isEditing { comment.rating = Double(i) }
-                            }
+                        Image(systemName: "star.fill").font(.system(size: 13))
+                            .foregroundStyle(i <= Int(comment.rating) ? Color.yellow : Color.gray.opacity(0.3))
                     }
                 }
-            }
-            .environment(\.layoutDirection, .leftToRight)
-
-            TextField("", text: $comment.text)
-                .scaledFont(size: 17, weight: .regular, relativeTo: .body)
-                .foregroundColor(.primary)
-                .multilineTextAlignment(.trailing)
-                .textFieldStyle(.plain)
-                .background(Color.clear)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .disabled(!isEditing)
-                .focused($isFocused)
-
-            HStack {
-                if isEditing {
-                    Button("إلغاء") {
-                        isEditing = false
-                        viewModel.fetchUserComments() // استرجاع النص الأصلي من Firebase
-                    }
-                    .foregroundColor(.gray)
-
-                    Spacer()
-
-                    Button("حفظ") {
-                        isEditing = false
-                        viewModel.updateComment(comment, newText: comment.text, newRating: comment.rating)
-                    }
-                    .foregroundColor(Color("GreenPrimary"))
-                } else {
-                    Button {
-                        isEditing = true
-                        isFocused = true
-                    } label: {
-                        Image(systemName: "pencil")
-                            .foregroundColor(Color("GreenPrimary"))
-                    }
-                    Spacer()
-                }
-            }
-
+            }.environment(\.layoutDirection, .leftToRight)
+            Text(comment.text).scaledFont(size: 15, weight: .regular, relativeTo: .body).foregroundColor(.primary).multilineTextAlignment(.trailing).frame(maxWidth: .infinity, alignment: .trailing)
         }
-        .padding(16)
-        .background(Color("GreyBackground"))
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 8)
-        .animation(.easeInOut, value: isEditing)
+        .padding(14).background(Color("GreyBackground")).clipShape(RoundedRectangle(cornerRadius: 18))
     }
 }
 
@@ -482,14 +295,13 @@ struct HeaderSection: View {
     let title: String
     let icon: String
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon).font(.title2).foregroundColor(Color("GreenPrimary"))
-            Text(title).scaledFont(size: 22, weight: .bold, relativeTo: .title3).foregroundStyle(.primary)
+        HStack(spacing: 6) {
+            Image(systemName: icon).font(.system(size: 16, weight: .medium)).foregroundColor(Color("GreenPrimary"))
+            Text(title).scaledFont(size: 18, weight: .bold, relativeTo: .title3).foregroundStyle(.primary)
             Spacer()
         }
     }
 }
-
 #Preview {
     FavouritePage()
 }

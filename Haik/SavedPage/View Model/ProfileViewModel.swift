@@ -41,7 +41,21 @@ class ProfileViewModel: ObservableObject {
             }
         }
     }
-    
+    func updateUserName(newName: String) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        db.collection("users").document(uid).updateData([
+            "name": newName
+        ]) { error in
+            if let error = error {
+                print("Error updating name: \(error.localizedDescription)")
+            } else {
+                DispatchQueue.main.async {
+                    self.userName = newName
+                }
+            }
+        }
+    }
     // جلب كل التعليقات التي كتبها هذا المستخدم فقط
     func fetchUserComments() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
