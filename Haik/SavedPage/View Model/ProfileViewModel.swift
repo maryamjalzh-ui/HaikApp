@@ -14,6 +14,7 @@ class ProfileViewModel: ObservableObject {
     @Published var userEmail: String = ""
     @Published var userComments: [UserComment] = []
     @Published var savedNeighborhoodNames: [String] = []
+    @Published var neighborhoodRatings: [String: (avg: Double, count: Int)] = [:]
 
   
     private let db = Firestore.firestore()
@@ -36,11 +37,35 @@ class ProfileViewModel: ObservableObject {
                     // جلب مصفوفة الأحياء المحفوظة حقيقياً من Firebase
                     if let favorites = data["favoriteNeighborhoods"] as? [String] {
                         self.savedNeighborhoodNames = favorites
+                        self.fetchRatingsForNeighborhoods()
                     }
                 }
             }
         }
     }
+    
+    func fetchRatingsForNeighborhoods() {
+        let db = Firestore.firestore()
+        
+        for name in savedNeighborhoodNames {
+            db.collection("neighborhood_reviews")
+                .whereField("neighborhoodName", isEqualTo: name)
+                .getDocuments { snapshot, _ in
+                    guard let docs = snapshot?.documents else { return }
+                    
+                    let ratings = docs.compactMap { $0.data()["rating"] as? Int }
+                    
+                    let count = ratings.count
+                    let avg = count > 0 ? Double(ratings.reduce(0, +)) / Double(count) : 0
+                    
+                    DispatchQueue.main.async {
+                        self.neighborhoodRatings[name] = (avg, count)
+                    }
+                }
+        }
+    }
+    
+    
     func updateUserName(newName: String) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
