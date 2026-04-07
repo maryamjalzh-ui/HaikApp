@@ -81,6 +81,22 @@ class ProfileViewModel: ObservableObject {
             }
         }
     }
+    func signOut(completion: (() -> Void)? = nil) {
+        do {
+            try Auth.auth().signOut()
+
+            DispatchQueue.main.async {
+                self.userName = ""
+                self.userEmail = ""
+                self.userComments = []
+                self.savedNeighborhoodNames = []
+                self.neighborhoodRatings = [:]
+                completion?()
+            }
+        } catch {
+            print("Sign out failed: \(error.localizedDescription)")
+        }
+    }
     // جلب كل التعليقات التي كتبها هذا المستخدم فقط
     func fetchUserComments() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
@@ -104,15 +120,12 @@ class ProfileViewModel: ObservableObject {
     }
 
     func deleteComment(_ comment: UserComment) {
-        guard let userId = Auth.auth().currentUser?.uid else { return }
-
-        db.collection("neighborhood_reviews") // نفس الـ collection اللي جلبنا منها التعليقات
+        db.collection("neighborhood_reviews")
             .document(comment.documentId)
             .delete { error in
                 if let error = error {
                     print("Error deleting comment: \(error.localizedDescription)")
                 } else {
-                    // كمان ممكن تحدث الـ array locally بعد الحذف
                     DispatchQueue.main.async {
                         self.userComments.removeAll { $0.id == comment.id }
                     }
@@ -138,56 +151,69 @@ class ProfileViewModel: ObservableObject {
     //  حذف حساب المستخدم + بياناته من Firestore
     func deleteAccount(completion: @escaping (Result<Void, Error>) -> Void) {
         guard let user = Auth.auth().currentUser else {
-            completion(.failure(NSError(
+            let error = NSError(
                 domain: "Auth",
                 code: -1,
                 userInfo: [NSLocalizedDescriptionKey: "No signed-in user."]
-            )))
+            )
+            print("Delete failed: \(error.localizedDescription)")
+            completion(.failure(error))
             return
         }
 
         let uid = user.uid
+        print("Start deleting account for uid: \(uid)")
 
-        // 1) حذف كل neighborhood_reviews للمستخدم (Batch)
         db.collection("neighborhood_reviews")
             .whereField("userId", isEqualTo: uid)
             .getDocuments { [weak self] snapshot, error in
                 guard let self = self else { return }
 
                 if let error = error {
+                    print("Failed fetching user reviews: \(error.localizedDescription)")
                     completion(.failure(error))
                     return
                 }
 
                 let docs = snapshot?.documents ?? []
+                print("Found \(docs.count) reviews to delete")
+
                 let batch = self.db.batch()
                 docs.forEach { batch.deleteDocument($0.reference) }
 
                 batch.commit { err in
                     if let err = err {
+                        print("Batch delete failed: \(err.localizedDescription)")
                         completion(.failure(err))
                         return
                     }
 
-                    // 2) حذف مستند المستخدم users/{uid}
+                    print("Reviews deleted successfully")
+
                     self.db.collection("users").document(uid).delete { err2 in
                         if let err2 = err2 {
+                            print("User document delete failed: \(err2.localizedDescription)")
                             completion(.failure(err2))
                             return
                         }
 
-                        // 3) حذف حساب Firebase Auth
+                        print("User document deleted successfully")
+
                         user.delete { err3 in
                             if let err3 = err3 {
+                                print("Firebase Auth delete failed: \(err3.localizedDescription)")
                                 completion(.failure(err3))
                                 return
                             }
+
+                            print("Auth account deleted successfully")
 
                             DispatchQueue.main.async {
                                 self.userName = ""
                                 self.userEmail = ""
                                 self.userComments = []
                                 self.savedNeighborhoodNames = []
+                                self.neighborhoodRatings = [:]
                             }
 
                             completion(.success(()))

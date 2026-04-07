@@ -629,24 +629,29 @@ struct EditProfileView: View {
     @Environment(\.dismiss) var dismiss
 
     @State private var showDeleteAccountConfirm = false
+    @State private var deleteErrorMessage = ""
+    @State private var showDeleteError = false
 
     var body: some View {
         NavigationStack {
             Form {
                 Section(header: Text(String(localized: "personal_info_header"))) {
                     TextField(String(localized: "name_placeholder"), text: $name)
-                    Text(email).foregroundStyle(.secondary)
+                    Text(email)
+                        .foregroundStyle(.secondary)
                 }
 
                 Section {
                     Button(role: .destructive) {
-                        try? Auth.auth().signOut()
-                        dismiss()
+                        viewModel.signOut {
+                            dismiss()
+                        }
                     } label: {
                         HStack {
                             Spacer()
-                            Text(String(localized: "sign_out_button")).fontWeight(.semibold)
-                            Image(systemName: "log.out.fill")
+                            Text(String(localized: "sign_out_button"))
+                                .fontWeight(.semibold)
+                            Image(systemName: "rectangle.portrait.and.arrow.right.fill")
                             Spacer()
                         }
                     }
@@ -656,7 +661,8 @@ struct EditProfileView: View {
                     } label: {
                         HStack {
                             Spacer()
-                            Text(String(localized: "delete_account_button")).fontWeight(.semibold)
+                            Text(String(localized: "delete_account_button"))
+                                .fontWeight(.semibold)
                             Image(systemName: "person.fill.xmark")
                             Spacer()
                         }
@@ -674,10 +680,33 @@ struct EditProfileView: View {
                     .fontWeight(.bold)
                 }
             }
+            .alert(String(localized: "delete_account_button"), isPresented: $showDeleteAccountConfirm) {
+                Button(String(localized: "cancel_button"), role: .cancel) {}
+
+                Button(String(localized: "delete_button"), role: .destructive) {
+                    viewModel.deleteAccount { result in
+                        DispatchQueue.main.async {
+                            switch result {
+                            case .success:
+                                dismiss()
+                            case .failure(let error):
+                                deleteErrorMessage = error.localizedDescription
+                                showDeleteError = true
+                            }
+                        }
+                    }
+                }
+            } message: {
+                Text("Are you sure you want to delete your account? This action cannot be undone.")
+            }
+            .alert("Delete Failed", isPresented: $showDeleteError) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(deleteErrorMessage)
+            }
         }
     }
 }
-
 struct CommentCard: View {
     @ObservedObject var viewModel: ProfileViewModel
     @Binding var comment: ProfileViewModel.UserComment

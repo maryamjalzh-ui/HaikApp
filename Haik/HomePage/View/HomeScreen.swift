@@ -411,19 +411,16 @@ struct HomeScreen: View {
         NavigationStack {
             ZStack(alignment: .bottom) {
                 // الخريطة
-                Map(coordinateRegion: .init(get: {
-                    viewModel.position.region ?? MKCoordinateRegion(
-                        center: CLLocationCoordinate2D(latitude: 24.7136, longitude: 46.6753),
-                        span: MKCoordinateSpan(latitudeDelta: 0.15, longitudeDelta: 0.15)
-                    )
-                }, set: { _ in }), annotationItems: viewModel.neighborhoods) { neighborhood in
-                    MapAnnotation(coordinate: neighborhood.coordinate) {
-                        NeighborhoodPin(
-                            neighborhood: neighborhood,
-                            isCoachTarget: neighborhood.nameAr == "العليا"
-                        ) {
-                            hideKeyboard()
-                            viewModel.selectNeighborhood(neighborhood)
+                Map(position: $viewModel.position) {
+                    ForEach(viewModel.neighborhoods) { neighborhood in
+                        Annotation("", coordinate: neighborhood.coordinate) {
+                            NeighborhoodPin(
+                                neighborhood: neighborhood,
+                                isCoachTarget: neighborhood.nameAr == "العليا"
+                            ) {
+                                hideKeyboard()
+                                viewModel.selectNeighborhood(neighborhood)
+                            }
                         }
                     }
                 }
@@ -432,7 +429,6 @@ struct HomeScreen: View {
                     hideKeyboard()
                 }
 
-                // إظهار بطاقة المعلومات تلقائياً
                 if !isKeyboardVisible {
                     if let neighborhood = viewModel.selectedNeighborhood {
                         bottomInfoCard(neighborhood: neighborhood)
@@ -443,13 +439,15 @@ struct HomeScreen: View {
                     }
                 }
             }
-            .safeAreaInset(edge: .top) {
+            .overlay(alignment: .top) {
                 VStack(spacing: 8) {
                     topSearchBar
                     searchResultsList
                 }
-                .padding(.vertical, 8)
+                .padding(.horizontal, 0)
+                .padding(.top, 4)
             }
+            .toolbar(.hidden, for: .navigationBar)
             .onPreferenceChange(CoachmarkAnchorKey.self) { value in
                 coachAnchors = value
             }
@@ -613,8 +611,7 @@ extension HomeScreen {
 
     private var searchResultsList: some View {
         Group {
-            if !viewModel.searchText.isEmpty && viewModel.isKeyboardVisible {
-                VStack(spacing: 0) {
+            if !viewModel.searchText.isEmpty && isKeyboardVisible {                VStack(spacing: 0) {
                     if viewModel.filteredNeighborhoods.isEmpty {
                         VStack(spacing: 12) {
                             Image(systemName: "mappin.slash.circle")
