@@ -76,7 +76,7 @@ final class NeighborhoodServicesViewModel: ObservableObject {
                     case "الكهرباء", "electricity": category = .electricity
                     case "المياه", "water":        category = .water
                     case "الانترنت", "internet":   category = .internet
-                    case "عام", "general":         category = .general
+                    case "عام", "General":         category = .General
                     case "الهدوء", "quiet":        category = .quiet
                     case "ثقافة الناس", "culture": category = .culture
                     default:                       category = .electricity

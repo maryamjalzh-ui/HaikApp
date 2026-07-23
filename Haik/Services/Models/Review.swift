@@ -15,7 +15,7 @@ import Foundation
 //    case culture = "ثقافة الناس"
 
 enum ReviewCategory: String, CaseIterable, Identifiable {
-    case general = "general"
+    case General = "General"
     case electricity = "electricity"
     case water = "water"
     case internet = "internet"

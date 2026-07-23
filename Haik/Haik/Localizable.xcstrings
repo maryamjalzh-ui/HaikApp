@@ -863,7 +863,7 @@
         }
       }
     },
-    "general" : {
+    "General" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
@@ -875,7 +875,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "general"
+            "value" : "General"
           }
         }
       }
