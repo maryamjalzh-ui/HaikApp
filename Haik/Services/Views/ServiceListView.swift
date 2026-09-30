@@ -26,6 +26,7 @@ struct ServiceListView: View {
     // MARK: - Navigation
     @Environment(\.dismiss) private var dismiss
     @State private var showLoginSheet = false
+    @State private var placeToOpen: Place?
 
     var body: some View {
         ZStack {
@@ -61,6 +62,21 @@ struct ServiceListView: View {
             WelcomeView().presentationDetents([.medium, .large])
         }
         .task { await vm.loadPlacesIfNeeded(for: service) }
+        // اختيار تطبيق الخرائط: Apple أو Google (بشكل alert في النص)
+        .alert(
+            String(localized: "open_in_maps_title"),
+            isPresented: Binding(
+                get: { placeToOpen != nil },
+                set: { if !$0 { placeToOpen = nil } }
+            ),
+            presenting: placeToOpen
+        ) { place in
+            Button(String(localized: "apple_maps_option")) { openInAppleMaps(place) }
+            Button(String(localized: "google_maps_option")) { openInGoogleMaps(place) }
+            Button(String(localized: "cancel_button"), role: .cancel) {}
+        } message: { place in
+            Text(place.name)
+        }
     }
 
     // MARK: - Header (دعم انعكاس الاتجاه)
@@ -98,7 +114,7 @@ struct ServiceListView: View {
     // MARK: - Row (نفس الديزاين مع دعم الانعكاس)
     // الصف كله ينضغط ويفتح الخرائط
     private func placeRow(_ place: Place) -> some View {
-        Button { openInMaps(place) } label: {
+        Button { placeToOpen = place } label: {
             HStack(spacing: 12) {
                 // اسم المكان ياخذ كل المساحة (يبدأ من اليمين في AR ومن اليسار في EN)
                 Text(place.name)
@@ -144,11 +160,35 @@ struct ServiceListView: View {
         }
     }
 
-    private func openInMaps(_ place: Place) {
+    private func openInAppleMaps(_ place: Place) {
         let coordinate = CLLocationCoordinate2D(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
         let placemark = MKPlacemark(coordinate: coordinate)
         let mapItem = MKMapItem(placemark: placemark)
         mapItem.name = place.name
         mapItem.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
+    }
+
+    // يفتح تطبيق Google Maps إذا موجود، وإذا مو موجود يفتحه في المتصفح
+    // نبحث باسم المكان حول إحداثياته عشان يطلع اسمه بدل الأرقام
+    private func openInGoogleMaps(_ place: Place) {
+        let center = "\(place.coordinate.latitude),\(place.coordinate.longitude)"
+        var app = URLComponents(string: "comgooglemaps://")
+        app?.queryItems = [
+            URLQueryItem(name: "q", value: place.name),
+            URLQueryItem(name: "center", value: center),
+            URLQueryItem(name: "zoom", value: "17")
+        ]
+        var web = URLComponents(string: "https://www.google.com/maps/search/")
+        web?.queryItems = [
+            URLQueryItem(name: "api", value: "1"),
+            URLQueryItem(name: "query", value: "\(place.name), Riyadh")
+        ]
+        guard let appURL = app?.url, let webURL = web?.url else { return }
+
+        UIApplication.shared.open(appURL) { opened in
+            if !opened {
+                UIApplication.shared.open(webURL)
+            }
+        }
     }
 }
