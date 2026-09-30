@@ -13,6 +13,12 @@ enum DS {
 
     static let selectedFillOpacity: Double = 0.15
 
+    // نفس لون خلفية الصفحة — يتغير تلقائياً مع الدارك مود
+    static let cardFill: Color = Color("GreyBackground")
+    // حد أخضر خفيف للكروت، وأوضح للكرت المختار
+    static let cardBorder: Color = Color("Green2Primary").opacity(0.25)
+    static let cardBorderSelected: Color = Color("Green2Primary").opacity(0.8)
+
     static let shadowRadius: CGFloat = 10
     static let shadowX: CGFloat = 0
     static let shadowY: CGFloat = 6

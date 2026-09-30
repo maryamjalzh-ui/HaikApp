@@ -348,8 +348,12 @@ struct ExpandableNeighborhoodOptionCard: View {
         .frame(minHeight: isExpanded ? expandedCardMinHeight : DS.cardHeight, alignment: .top)
         .background(
             RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous)
-                .fill(isSelected ? Color("Green2Primary").opacity(0.15) : Color.white)
+                .fill(isSelected ? Color("Green2Primary").opacity(0.15) : DS.cardFill)
                 .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4))
+        .overlay(
+            RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous)
+                .strokeBorder(isSelected ? DS.cardBorderSelected : DS.cardBorder, lineWidth: isSelected ? 1.5 : 1)
+        )
         .clipShape(RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous))
     }
 }
@@ -363,8 +367,11 @@ struct OptionCardButton: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous)
-                .fill(isSelected ? Color("Green2Primary").opacity(0.15) : Color.white)
+                .fill(isSelected ? Color("Green2Primary").opacity(0.15) : DS.cardFill)
                 .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+
+            RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous)
+                .strokeBorder(isSelected ? DS.cardBorderSelected : DS.cardBorder, lineWidth: isSelected ? 1.5 : 1)
 
             HStack(spacing: 12) {
                 Image(systemName: icon.systemName)
@@ -440,7 +447,7 @@ struct NeighborhoodRow: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(isChosen ? Color("Green2Primary").opacity(0.15) : Color.white)
+                .fill(isChosen ? Color("Green2Primary").opacity(0.15) : DS.cardFill)
                 .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
 
             HStack(spacing: 10) {

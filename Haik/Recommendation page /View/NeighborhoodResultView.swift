@@ -89,7 +89,7 @@ struct NeighborhoodResultView: View {
             Button(action: { goHome = true }) {
                 Text(String(localized: "done_button"))
                     .scaledFont(size: 22, weight: .bold, relativeTo: .title3)
-                    .foregroundColor(Color("PageBackground"))
+                    .foregroundColor(.white)
                     .frame(width: 330, height: 65)
                     .background(Color("Green2Primary"))
                     .opacity(0.80)
@@ -311,8 +311,12 @@ struct ResultCardView: View {
             Spacer()
         }
         .frame(width: 342, height: 327)
-        .background(Color("GreyBackground"))
+        .background(DS.cardFill)
         .cornerRadius(DS.cardCornerRadius)
+        .overlay(
+            RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous)
+                .strokeBorder(DS.cardBorder, lineWidth: 1)
+        )
         .cardShadow()
     }
 }

@@ -73,7 +73,7 @@ struct RecommendationOnboardingView: View {
                     } label: {
                         Text(page < 1 ? String(localized: "onboarding_next") : String(localized: "onboarding_start"))
                             .scaledFont(size: 18, weight: .bold, relativeTo: .headline)
-                            .foregroundColor(Color("GreyBackground"))
+                            .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 58)
                             .background(Color("Green2Primary"))
@@ -181,7 +181,7 @@ private extension RecommendationOnboardingView {
                 .padding(.horizontal, 6)
             }
             .padding(18)
-            .background(Color("GreyBackground"))
+            .background(DS.cardFill)
             .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
             .shadow(color: .black.opacity(0.08), radius: 18, x: 0, y: 12)
             .padding(.horizontal, 26)
@@ -219,8 +219,11 @@ private struct OnboardingInfoCard: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous)
-                .fill(Color("GreyBackground"))
+                .fill(DS.cardFill)
                 .cardShadow()
+
+            RoundedRectangle(cornerRadius: DS.cardCornerRadius, style: .continuous)
+                .strokeBorder(DS.cardBorder, lineWidth: 1)
 
             HStack(spacing: 12) {
 
