@@ -70,7 +70,8 @@ struct ServiceListView: View {
                 .scaledFont(size: 30, weight: .regular, relativeTo: .title1)
                 .foregroundStyle(.primary)
                 .lineLimit(1)
-                .padding(.horizontal, 90)
+                .minimumScaleFactor(0.8)
+                .padding(.horizontal, 80)
 
             HStack {
                 // زر العودة: صار "backward" عشان يلف معك يمين ويسار حسب اللغة
@@ -95,34 +96,38 @@ struct ServiceListView: View {
     }
 
     // MARK: - Row (نفس الديزاين مع دعم الانعكاس)
+    // الصف كله ينضغط ويفتح الخرائط
     private func placeRow(_ place: Place) -> some View {
-        HStack(spacing: 12) {
-            // 1. أيقونة الموقع (ستكون يسار في EN ويمين في AR)
-            Button { openInMaps(place) } label: {
+        Button { openInMaps(place) } label: {
+            HStack(spacing: 12) {
+                // اسم المكان ياخذ كل المساحة (يبدأ من اليمين في AR ومن اليسار في EN)
+                Text(place.name)
+                    .scaledFont(size: 18, weight: .regular, relativeTo: .title3)
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                // أيقونة اللوكيشن في آخر الصف
                 Image(systemName: "location")
-                    .font(.system(size: 18))
+                    .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(blueSecondary)
+                    .frame(width: 36, height: 36)
+                    .background(blueSecondary.opacity(0.12))
+                    .clipShape(Circle())
             }
-            .buttonStyle(.plain)
-            
-            // 2. اسم المكان
-            Text(place.name)
-                .scaledFont(size: 20, weight: .regular, relativeTo: .title3)
-                .foregroundStyle(.primary)
-                .lineLimit(1)
-            
-            Spacer() // هذا هو البطل! بيدفع الأيقونة اللي بعده لآخر الشطر حسب اللغة
-            
-            // 3. أيقونة الخدمة (ستكون يمين في EN ويسار في AR)
-            Image(systemName: service.fallbackSystemSymbol ?? service.icon.systemName)
-                .font(.system(size: 28))
-                .foregroundStyle(serviceIconColor(service))
+            .padding(.horizontal, 18)
+            .padding(.vertical, 12)
+            .frame(width: rowWidth)
+            .frame(minHeight: rowHeight)
+            .background(Color("GreyBackground"))
+            .clipShape(RoundedRectangle(cornerRadius: rowCorner, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: rowCorner, style: .continuous))
+            .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 5)
         }
-        .padding(.horizontal, 18)
-        .frame(width: rowWidth, height: rowHeight)
-        .background(Color("GreyBackground"))
-        .clipShape(RoundedRectangle(cornerRadius: rowCorner, style: .continuous))
-        .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 5)
+        .buttonStyle(.plain)
     }
 
     // دالة مساعدة للتأكد من اللغة
